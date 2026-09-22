@@ -24,7 +24,7 @@ from .selectors import (
 )
 from .smart_workbook import get_smart_dashboard_context
 from .spreadsheet import read_xlsx_preview
-from .user_profile_v67 import get_user_profile_context
+from .user_profile import get_user_profile_context
 
 from .workbench import (
     entity_detail_view,

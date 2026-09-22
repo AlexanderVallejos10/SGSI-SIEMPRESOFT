@@ -1,36 +1,55 @@
-# Arquitectura base del SGSI
+# Arquitectura del SGSI
 
-## Decisiones cerradas
-- Framework: Django 5.2 LTS.
-- Patrón web: MTV de Django.
-- Persistencia: Django ORM.
-- Base de datos: PostgreSQL 16.
-- Entorno: Docker / Docker Compose.
-- Configuración: variables de entorno `.env`.
-- Código: modular por dominio, evitando lógica de negocio en vistas/templates.
+## Organización actual
 
-## Capas pragmáticas dentro de cada app
-- `models.py`: estado persistente y relaciones ORM.
-- `selectors.py`: consultas de lectura optimizadas.
-- `services.py`: casos de uso y reglas transaccionales de escritura.
-- `forms.py`: validación HTTP/MTV cuando corresponda.
-- `views.py`: coordinación de request/response, sin reglas de negocio.
-- `templates/`: presentación.
-- `admin.py`: administración operativa inicial y soporte de carga controlada.
+Aplicación modular Django con patrón MTV y persistencia mediante el ORM.
+`config/urls.py` conecta las rutas; las vistas coordinan solicitudes y respuestas;
+los modelos representan datos y relaciones; las plantillas presentan el contenido.
 
-## Módulos iniciales
-- accounts: usuarios e identidad SGSI.
-- auditlog: bitácora técnica inmutable para usuarios funcionales.
-- documents: documentos, versiones y evidencias.
-- controls: marcos y controles (ISO 27001:2022, SUNAT u otros).
-- assets: activos, movimientos y mantenimiento.
-- risks: riesgo, evaluaciones y tratamientos.
-- incidents: incidentes, cronología y vulnerabilidades.
-- assurance: auditorías, hallazgos y acciones de mejora.
-- dashboard: vista consolidada calculada desde datos reales.
+| Módulo | Responsabilidad |
+| --- | --- |
+| core | Modelos comunes, estados y protección de eliminación |
+| accounts | Usuarios, roles y registros de accesos corporativos |
+| auditlog | Registro de eventos de los módulos conectados a sus señales |
+| documents | Documentos, versiones, evidencias e inventario de fuentes |
+| controls | Controles, requisitos y vínculos documentales |
+| assets | Activos, movimientos y mantenimiento |
+| risks | Riesgos, evaluaciones y tratamientos |
+| incidents | Incidentes y vulnerabilidades |
+| assurance | Auditorías, hallazgos y mejoras |
+| organization | Áreas, cargos y asignaciones |
+| processes | Mapa de procesos y relaciones con otros módulos |
+| context41 | Documentos del contexto 4.1 y requisitos legales |
+| context42 | Partes interesadas y registros del contexto 4.2 |
+| dashboard | Consultas, reportes y gestión genérica de entidades |
+| dashboard_live | Tablero principal y datos importados de su Excel |
 
-## Regla de identificación
-Los UUID son claves internas. Códigos como `USR-001`, `EQ-002`, `R-007`, `INC-0021` o `8.8` son identificadores de negocio y nunca reemplazan la clave interna.
+## Convenciones de mantenimiento
 
-## Historial
-No se diseña eliminación física como mecanismo ordinario de edición de información auditable. La evolución se resuelve mediante estados, eventos y versionado.
+- `models.py`: entidades, relaciones y restricciones persistentes.
+- `forms.py`: validación de datos recibidos por formularios.
+- `services.py`: operaciones de negocio y transacciones cuando corresponda.
+- `selectors.py`: consultas de lectura reutilizables.
+- `views.py`: coordinación HTTP y control de acceso.
+- `management/commands/`: operaciones explícitas de carga o mantenimiento.
+- `migrations/`: evolución versionada del esquema; se conserva su historial.
+
+Estas responsabilidades son la dirección de mantenimiento. Su aplicación actual
+es parcial: existen operaciones directas en vistas y en la gestión genérica.
+No se presenta esta estructura como una implementación completa de Clean Architecture.
+
+## Identidad e historial
+
+Los UUID identifican internamente las entidades. Los códigos de negocio no los sustituyen.
+Se utilizan estados, versiones y eventos para conservar trazabilidad.
+La cobertura de auditoría y protección de eliminación debe verificarse por módulo;
+no es uniforme en toda la aplicación.
+
+## Dependencias que se conservan
+
+`dashboard` y `dashboard_live` siguen activos y almacenan conjuntos de datos distintos.
+Su consolidación requiere revisar consultas, datos y migraciones: no basta con eliminar
+uno de los directorios. Lo mismo aplica a los requisitos legales de context41 y context42.
+
+Los nombres versionados de algunos CSS y JS siguen referenciados por las plantillas.
+Son archivos activos, no instaladores; se conservan hasta una refactorización coordinada.

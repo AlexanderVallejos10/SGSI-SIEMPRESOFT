@@ -1,12 +1,16 @@
-# Próximos pasos de implementación
+# Pendientes de desarrollo
 
-1. Generar y versionar las migraciones iniciales.
-2. Crear el superusuario y grupos/permisos RBAC.
-3. Cargar catálogos base y el catálogo de 93 controles ISO/IEC 27001:2022.
-4. Implementar MK-01 Dashboard con indicadores reales.
-5. Implementar MK-02 y MK-03 Anexo A / ficha de control.
-6. Implementar importador controlado para los Excel existentes con modo simulación.
-7. Incorporar gestión de documentos/evidencias y deduplicación por SHA-256.
-8. Continuar con usuarios/accesos, activos, riesgos, incidentes y auditorías.
+La limpieza estructural está registrada en CLEANUP.md. No resuelve estos pendientes funcionales:
 
-No migrar Excel directamente a tablas sin antes mapear columnas, códigos, periodos, relaciones y conflictos de fuente.
+1. Aplicar autorización por documento y cargo a consulta, visualización y descarga.
+2. Restringir la asignación de grupos desde formularios genéricos de usuarios.
+3. Completar la metodología de riesgos: catálogos, valoración 5x4 y seguimiento residual.
+4. Integrar movimientos de activos y accesos en un flujo de actas de entrega.
+5. Incorporar historial de asignaciones de propietarios documentales.
+6. Revisar divergencias entre dashboard/dashboard_live y context41/context42.
+7. Centralizar escrituras de negocio que actualmente omiten servicios existentes.
+8. Ampliar pruebas de permisos, importaciones y flujos completos; validar con PostgreSQL.
+9. Preparar configuración y procedimiento de despliegue de producción.
+
+Antes de cargar los Excel se deben validar fechas, cargos, identificadores y escalas.
+Las migraciones ya existen y están versionadas; no regenerarlas como paso de instalación.
