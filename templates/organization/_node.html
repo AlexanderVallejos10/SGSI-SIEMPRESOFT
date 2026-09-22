@@ -1,0 +1,253 @@
+<li
+    class="
+    org-node-item
+    relation-{{ node.position.relation_type }}
+    "
+>
+
+    <article
+        class="
+        org-node
+        {% if not node.assignments %}
+        vacant
+        {% endif %}
+        {% if node.position.is_critical %}
+        critical
+        {% endif %}
+        "
+        style="
+        --node-accent:
+        {{ node.color }};
+        "
+    >
+
+        <header>
+
+            <div class="node-title">
+
+                <strong>
+                    {{ node.position.title }}
+                </strong>
+
+                <small>
+                    {{ node.position.code }}
+                    {% if node.position.area %}
+                    ·
+                    {{ node.position.area.name }}
+                    {% endif %}
+                </small>
+
+            </div>
+
+            {% if can_change %}
+
+            <div class="node-menu">
+
+                <button
+                    type="button"
+                    class="node-menu-button"
+                    data-node-menu-button
+                    title="Acciones del puesto"
+                >
+                    ⋮
+                </button>
+
+                <div
+                    class="node-menu-popover"
+                    data-node-menu
+                >
+
+                    <b>
+                        Agregar cuadro
+                    </b>
+
+                    <a
+                        href="{% url 'organization:position_create' %}?mode=sibling&relative={{ node.position.pk }}"
+                    >
+                        ＋ Al lado
+                    </a>
+
+                    <a
+                        href="{% url 'organization:position_create' %}?mode=child&relative={{ node.position.pk }}"
+                    >
+                        ＋ Debajo
+                    </a>
+
+                    <a
+                        href="{% url 'organization:position_create' %}?mode=assistant&relative={{ node.position.pk }}"
+                    >
+                        ＋ Asistente / staff
+                    </a>
+
+                    <hr>
+
+                    <a
+                        href="{% url 'organization:assign_user' node.position.pk %}"
+                    >
+                        Asignar usuario existente
+                    </a>
+
+                    <a
+                        href="{% url 'organization:quick_user_create' node.position.pk %}"
+                    >
+                        Crear usuario aquí
+                    </a>
+
+                    <hr>
+
+                    <a
+                        href="{% url 'organization:position_edit' node.position.pk %}"
+                    >
+                        Editar puesto
+                    </a>
+
+                    <a
+                        href="{% url 'organization:position_move' node.position.pk %}"
+                    >
+                        Mover puesto
+                    </a>
+
+                    {% if not node.children %}
+
+                    <form
+                        method="post"
+                        action="{% url 'organization:position_archive' node.position.pk %}"
+                        onsubmit="
+                        return confirm(
+                        '¿Desactivar este puesto? Se conservará el historial.'
+                        );
+                        "
+                    >
+
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="danger-action"
+                        >
+                            Desactivar puesto
+                        </button>
+
+                    </form>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            {% endif %}
+
+        </header>
+
+        <div class="node-body">
+
+            {% for assignment in node.assignments %}
+
+            <div class="node-person">
+
+                <a
+                    href="{% url 'dashboard:user_profile' assignment.user.pk %}"
+                >
+                    <b>
+                        {{ assignment.user.get_full_name|default:assignment.user.username }}
+                    </b>
+
+                    <small>
+                        {{ assignment.user.business_code|default:assignment.user.username }}
+                    </small>
+                </a>
+
+                {% if can_change %}
+
+                <form
+                    method="post"
+                    action="{% url 'organization:assignment_close' assignment.pk %}"
+                    onsubmit="
+                    return confirm(
+                    '¿Cerrar esta asignación y dejar el puesto disponible?'
+                    );
+                    "
+                >
+
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        title="Cerrar asignación"
+                    >
+                        ×
+                    </button>
+
+                </form>
+
+                {% endif %}
+
+            </div>
+
+            {% empty %}
+
+            <div class="vacancy">
+
+                <strong>
+                    VACANTE
+                </strong>
+
+                {% if can_change %}
+
+                <div>
+
+                    <a
+                        href="{% url 'organization:assign_user' node.position.pk %}"
+                    >
+                        Asignar
+                    </a>
+
+                    <a
+                        href="{% url 'organization:quick_user_create' node.position.pk %}"
+                    >
+                        Crear usuario
+                    </a>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% if node.children %}
+
+        <button
+            type="button"
+            class="collapse-branch"
+            data-collapse-branch
+            aria-expanded="true"
+        >
+            −
+        </button>
+
+        {% endif %}
+
+    </article>
+
+    {% if node.children %}
+
+    <ul
+        data-child-branch
+    >
+
+        {% for child in node.children %}
+
+        {% include "organization/_node.html" with node=child %}
+
+        {% endfor %}
+
+    </ul>
+
+    {% endif %}
+
+</li>

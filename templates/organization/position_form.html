@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ title }} | Organización
+{% endblock %}
+
+{% block content %}
+
+<div class="breadcrumb">
+    ⌂ /
+    <a href="{% url 'organization:chart' %}">
+        Organización
+    </a>
+    / {{ title }}
+</div>
+
+<div class="page-head">
+
+    <div>
+        <h1>
+            {{ title }}
+        </h1>
+
+        {% if relative %}
+
+        <p>
+            Referencia:
+            <b>
+                {{ relative.title }}
+            </b>
+
+            {% if mode == "sibling" %}
+            · nuevo cuadro al mismo nivel
+            {% elif mode == "child" %}
+            · nuevo cuadro debajo
+            {% elif mode == "assistant" %}
+            · nuevo cuadro de apoyo
+            {% endif %}
+        </p>
+
+        {% else %}
+
+        <p>
+            Configure el puesto,
+            su dependencia y orden visual.
+        </p>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+<section class="mock-panel organization-form">
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        {{ form.non_field_errors }}
+
+        <div class="form-grid">
+
+            {% for field in form %}
+
+            <div class="form-field">
+
+                <label>
+                    {{ field.label }}
+                </label>
+
+                {{ field }}
+
+                {% if field.help_text %}
+
+                <small>
+                    {{ field.help_text }}
+                </small>
+
+                {% endif %}
+
+                {% for error in field.errors %}
+
+                <div class="field-error">
+                    {{ error }}
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        <div class="form-actions">
+
+            <a
+                class="outline-btn"
+                href="{% url 'organization:chart' %}"
+            >
+                Cancelar
+            </a>
+
+            <button
+                class="primary-btn"
+                type="submit"
+            >
+                Guardar puesto
+            </button>
+
+        </div>
+
+    </form>
+
+</section>
+
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | Procesos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/processes_v71.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    Inicio / <a href="{% url 'processes:map' %}">Procesos</a> / {{ title }}
+</div>
+
+<div class="page-head">
+    <div>
+        <h1>{{ title }}</h1>
+        <p>
+            Mantén el proceso relacionado con la estructura organizacional
+            y con los demás componentes del SGSI.
+        </p>
+    </div>
+</div>
+
+<section class="mock-panel process-form-card">
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-grid process-form-grid">
+            {% for field in form %}
+            <div
+                class="form-field {% if field.name == 'description' %}span-2{% endif %}"
+            >
+                <label>{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                {% for error in field.errors %}
+                <div class="field-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="form-actions">
+            <a class="outline-btn" href="{% url 'processes:map' %}">
+                Cancelar
+            </a>
+            <button class="primary-btn" type="submit">
+                Guardar proceso
+            </button>
+        </div>
+    </form>
+</section>
+{% endblock %}

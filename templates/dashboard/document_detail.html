@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}{{ document.code }} | Documento SGSI{% endblock %}
+{% block content %}
+<div class="breadcrumb">⌂ / Documentos y evidencias / {{ document.code }}</div>
+
+<div class="page-head">
+    <div>
+        <h1>{{ document.code }} · {{ document.title }}</h1>
+        <p>{{ document.document_type }} · {{ document.category }}</p>
+    </div>
+    <div class="head-actions">
+        <a class="outline-btn" href="{% url 'dashboard:entity_edit' 'documentos' document.pk %}">Editar metadatos</a>
+        <a class="primary-btn" href="{% url 'dashboard:entity_list' 'documentos' %}">Volver</a>
+    </div>
+</div>
+
+<div class="doc-three-cols">
+    <section class="mock-panel">
+        <div class="panel-title">Vista del documento</div>
+        <div class="doc-preview">
+            {% if preview %}
+                {% if preview.kind == "pdf" %}
+                    <iframe src="{{ preview.url }}"></iframe>
+                {% elif preview.kind == "image" %}
+                    <img src="{{ preview.url }}" alt="{{ preview.file_name }}">
+                {% elif preview.kind == "sheet" %}
+                    <div class="sheet-cta">
+                        <h3>Archivo tabular detectado</h3>
+                        <p>Este archivo se puede ver como datos estructurados dentro del sistema.</p>
+                        <a class="primary-btn" href="{{ preview.url }}">Abrir datos</a>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="empty-preview">No hay un archivo visualizable para mostrar en esta ficha.</div>
+            {% endif %}
+        </div>
+
+        {% if preview %}
+        <div class="preview-actions">
+            {% if preview.kind != "sheet" %}
+            <a class="primary-small" target="_blank" href="{{ preview.url }}">Ver en pestaña nueva</a>
+            {% endif %}
+            <a class="btn-light" href="{{ preview.download_url }}">Descargar archivo</a>
+        </div>
+        {% endif %}
+    </section>
+
+    <section class="mock-panel">
+        <div class="panel-title">Trazabilidad</div>
+        <div class="trace-cards">
+            <div><small>Secciones SGSI</small><strong>{{ sections|length }}</strong></div>
+            <div><small>Controles ISO</small><strong>{{ controls|length }}</strong></div>
+            <div><small>Versiones</small><strong>{{ versions|length }}</strong></div>
+        </div>
+        <h3 class="subheading">Secciones del Manual / Norma</h3>
+        <div class="chips">
+            {% for section in sections %}
+            <a href="{% url 'dashboard:clause_detail' section.code %}">{{ section.code }} {{ section.title }}</a>
+            {% empty %}
+            <span class="muted">Sin sección vinculada.</span>
+            {% endfor %}
+        </div>
+        <h3 class="subheading">Controles vinculados</h3>
+        <div class="control-links">
+            {% for control in controls %}
+            <a href="{% url 'dashboard:control_detail' control.pk %}"><b>{{ control.code }}</b> {{ control.name }}</a>
+            {% empty %}
+            <span class="muted">Sin controles vinculados.</span>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="mock-panel">
+        <div class="panel-title">Versiones y archivos</div>
+        {% for version in versions %}
+        <div class="version-block">
+            <div class="version-head"><div><b>Versión {{ version.version }}</b><small>{{ version.status }}</small></div></div>
+            {% for file in version.files %}
+            <div class="file-row">
+                <div>
+                    <span class="file-icon">{{ file.extension|upper }}</span>
+                    <div><b>{{ file.name }}</b><small>{{ file.extension|upper }}</small></div>
+                </div>
+                <div class="doc-actions">
+                    {% if file.is_pdf %}
+                    <a target="_blank" href="{% url 'dashboard:artifact_view' file.artifact_id %}" class="primary-small">Ver PDF</a>
+                    {% endif %}
+                    {% if file.extension == "xlsx" or file.extension == "xlsm" %}
+                    <a href="{% url 'dashboard:artifact_table' file.artifact_id %}" class="primary-small">Abrir datos</a>
+                    {% endif %}
+                    <a href="{% url 'dashboard:artifact_download' file.artifact_id %}" class="btn-light">Descargar</a>
+                </div>
+            </div>
+            {% empty %}
+            <p class="muted">Esta versión no tiene archivo materializado.</p>
+            {% endfor %}
+        </div>
+        {% empty %}
+        <p class="muted">Sin versiones.</p>
+        {% endfor %}
+        <div class="update-note">
+            <b>Actualización:</b> si necesitas sustituir o subir una nueva versión, usa la edición del documento o el flujo de carga del repositorio documental.
+        </div>
+    </section>
+</div>
+{% endblock %}

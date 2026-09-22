@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Organización | SIEMPRESOFT{% endblock %}
+{% block content %}
+<div class="breadcrumb">⌂ / Gestión / Organización</div>
+
+<div class="page-head">
+    <div>
+        <h1>Organización y puestos</h1>
+        <p>Vista dinámica basada en usuarios reales. Si creas un usuario con un nuevo cargo o nueva área, aparece un nuevo recuadro automáticamente.</p>
+    </div>
+    <div class="head-actions">
+        <a class="outline-btn" href="{% url 'dashboard:entity_list' 'usuarios' %}">Ver usuarios</a>
+        <a class="primary-btn" href="{% url 'dashboard:entity_add' 'usuarios' %}">+ Nuevo usuario</a>
+    </div>
+</div>
+
+<div class="org-shell">
+    <div class="org-company">
+        <strong>SIEMPRESOFT E.I.R.L.</strong>
+        <small>{{ user_count }} usuarios registrados</small>
+    </div>
+
+    {% if mode == "areas" %}
+    <div class="org-area-grid">
+        {% for area in areas %}
+        <section class="org-area-block">
+            <header>
+                <b>{{ area.name }}</b>
+                <a class="mini-link" href="{% url 'dashboard:entity_add' 'usuarios' %}?area={{ area.name|urlencode }}">+ usuario</a>
+            </header>
+            <div class="org-position-grid">
+                {% for position in area.positions %}
+                <article class="org-position-box">
+                    <div class="org-position-head">
+                        <h3>{{ position.name }}</h3>
+                        <a class="mini-link" href="{% url 'dashboard:entity_add' 'usuarios' %}?area={{ area.name|urlencode }}&position={{ position.name|urlencode }}">+ crear aquí</a>
+                    </div>
+                    {% for user in position.users %}
+                    <a class="org-user-chip" href="{% url 'dashboard:user_profile' user.pk %}">
+                        <b>{{ user.get_full_name|default:user.username }}</b>
+                        <small>{{ user.business_code|default:user.username }}</small>
+                    </a>
+                    {% endfor %}
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="org-position-grid solo">
+        {% for position in positions %}
+        <article class="org-position-box">
+            <div class="org-position-head">
+                <h3>{{ position.name }}</h3>
+                <a class="mini-link" href="{% url 'dashboard:entity_add' 'usuarios' %}?position={{ position.name|urlencode }}">+ crear aquí</a>
+            </div>
+            {% for user in position.users %}
+            <a class="org-user-chip" href="{% url 'dashboard:user_profile' user.pk %}">
+                <b>{{ user.get_full_name|default:user.username }}</b>
+                <small>{{ user.business_code|default:user.username }}</small>
+            </a>
+            {% endfor %}
+        </article>
+        {% endfor %}
+        <article class="org-position-box ghost-box">
+            <div class="org-position-head">
+                <h3>Nuevo cargo / puesto</h3>
+            </div>
+            <p>Para crear otro recuadro, crea un usuario con un cargo nuevo o con una nueva área.</p>
+            <a class="primary-small" href="{% url 'dashboard:entity_add' 'usuarios' %}">Crear usuario</a>
+        </article>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}
+Nueva versión | {{ document.title }}
+{% endblock %}
+
+{% block content %}
+
+<div class="breadcrumb">
+    Inicio / SGSI / 4.1 /
+    <a href="{% url 'context41:home' %}">
+        {{ document.title }}
+    </a>
+    / Nueva versión
+</div>
+
+<div class="page-head">
+    <div>
+        <h1>
+            Subir nueva versión
+        </h1>
+        <p>
+            {{ document.title }}
+        </p>
+    </div>
+</div>
+
+<section class="mock-panel context-version-form">
+    <div class="version-policy">
+        <strong>
+            Historial protegido
+        </strong>
+        <p>
+            La carga de un nuevo archivo no elimina la versión anterior.
+            El sistema la conserva como versión histórica y marca
+            el nuevo archivo como vigente.
+        </p>
+    </div>
+
+    <form
+        method="post"
+        enctype="multipart/form-data"
+    >
+        {% csrf_token %}
+
+        <div class="form-grid">
+            {% for field in form %}
+            <div class="form-field">
+                <label>{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                <small>{{ field.help_text }}</small>
+                {% endif %}
+                {% for error in field.errors %}
+                <div class="field-error">
+                    {{ error }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="form-actions">
+            <a
+                class="outline-btn"
+                href="{% url 'context41:home' %}"
+            >
+                Cancelar
+            </a>
+            <button
+                class="primary-btn"
+                type="submit"
+            >
+                Registrar nueva versión
+            </button>
+        </div>
+    </form>
+</section>
+
+{% endblock %}

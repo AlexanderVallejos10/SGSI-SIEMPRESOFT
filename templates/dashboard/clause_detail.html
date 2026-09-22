@@ -1,0 +1,81 @@
+{% extends "dashboard/mockup_shell.html" %}
+{% block title %}{{ clause.root }}. {{ clause.title }} | SGSI{% endblock %}
+{% block content %}
+<div class="breadcrumb">⌂ / SGSI / Cláusula {{ clause.root }}</div>
+<div class="page-head">
+    <div>
+        <h1>{{ clause.root }}. {{ clause.title }}</h1>
+        <p>Matriz de requisitos y documentos sustentatorios importada desde VerificacionNorma.xlsx.</p>
+    </div>
+    <div class="head-badges">
+        <span class="summary-badge">{{ clause.requirement_count }} requisitos</span>
+    </div>
+</div>
+
+<div class="clause-list">
+{% for group in clause.groups %}
+<details class="requirement-group" {% if forloop.first %}open{% endif %}>
+    <summary>
+        <div>
+            <b>{{ group.code }}</b>
+            <strong>{{ group.title }}</strong>
+        </div>
+        <span>{{ group.rows|length }} filas ▾</span>
+    </summary>
+    <div class="requirement-body">
+        <table class="requirements-table">
+            <thead>
+                <tr>
+                    <th>Cláusula / ítem</th>
+                    <th>Descripción</th>
+                    <th>Documento sustentatorio</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for row in group.rows %}
+                <tr>
+                    <td class="req-label">{{ row.label }}</td>
+                    <td>{{ row.description }}</td>
+                    <td class="support-cell">
+                        {% for support in row.support %}
+                            <div class="support-item">
+                                <div>
+                                    <b>{{ support.label }}</b>
+                                    {% if support.match %}
+                                    <small>Vinculado: {{ support.match.matched }} · {{ support.match.score }}%</small>
+                                    {% else %}
+                                    <small class="unmatched">Referencia del Excel todavía sin archivo vinculado</small>
+                                    {% endif %}
+                                </div>
+                                {% if support.match %}
+                                <div class="doc-actions">
+                                    {% if support.match.kind == "document" %}
+                                    <a href="{% url 'dashboard:document_detail' support.match.id %}" class="btn-light">Ficha</a>
+                                    {% endif %}
+                                    {% if support.match.kind == "artifact" %}
+                                        {% if support.match.is_pdf %}
+                                        <a target="_blank" href="{% url 'dashboard:artifact_view' support.match.id %}" class="btn-light">Ver PDF</a>
+                                        {% endif %}
+                                        {% if support.match.is_spreadsheet %}
+                                        <a href="{% url 'dashboard:artifact_table' support.match.id %}" class="primary-small">Ver tabla</a>
+                                        {% endif %}
+                                        <a href="{% url 'dashboard:artifact_download' support.match.id %}" class="btn-light">Descargar</a>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        {% empty %}
+                            <span class="muted">—</span>
+                        {% endfor %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="3" class="empty-cell">Esta fila de cláusula no tiene subrequisitos cargados.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</details>
+{% endfor %}
+</div>
+{% endblock %}

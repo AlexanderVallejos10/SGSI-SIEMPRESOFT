@@ -1,0 +1,506 @@
+:root {
+  --navy: #163a63;
+  --bg: #f3f6fa;
+  --line: #dfe6ee;
+  --text: #1f2937;
+  --muted: #6b7280;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: var(--bg); color: var(--text); }
+.sidebar { position: fixed; inset: 0 auto 0 0; width: 235px; background: #fff; border-right: 1px solid var(--line); padding: 22px 16px; }
+.brand { font-weight: 700; color: var(--navy); line-height: 1.2; padding: 0 8px 22px; }
+.brand span { font-size: 13px; color: var(--muted); }
+nav { display: grid; gap: 4px; }
+nav a { color: #334155; text-decoration: none; padding: 10px 12px; border-radius: 6px; font-size: 14px; }
+nav a:hover { background: #edf3f9; color: var(--navy); }
+.content { margin-left: 235px; min-height: 100vh; }
+.topbar { height: 68px; background: #fff; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; padding: 0 26px; }
+.topbar small { display: block; color: var(--muted); margin-top: 3px; }
+.user { font-size: 14px; }
+.page-head { padding: 26px 28px 12px; }
+h1 { margin: 0 0 8px; font-size: 25px; }
+p { color: var(--muted); }
+.cards { padding: 8px 28px 24px; display: grid; grid-template-columns: repeat(4, minmax(180px, 1fr)); gap: 14px; }
+.card, .panel { background: #fff; border: 1px solid var(--line); border-radius: 8px; }
+.card { padding: 18px; }
+.card span { display: block; color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+.card strong { font-size: 28px; color: var(--navy); }
+.panel { margin: 0 28px 28px; padding: 20px; }
+.panel h2 { margin-top: 0; }
+@media (max-width: 1050px) { .cards { grid-template-columns: repeat(2, 1fr); } }
+
+/* =========================================================
+   SGSI - MK-04 USUARIOS Y ACCESOS
+   ========================================================= */
+
+nav a.active {
+    background: #e8f0f8;
+    color: var(--navy);
+    font-weight: 700;
+}
+
+.page-head-actions {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.eyebrow {
+    margin-bottom: 7px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 8px 14px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: var(--navy);
+    color: #fff;
+    border-color: var(--navy);
+}
+
+.btn-primary:hover {
+    opacity: .92;
+}
+
+.btn-secondary {
+    background: #fff;
+    color: #334155;
+    border-color: var(--line);
+}
+
+.btn-secondary:hover {
+    background: #f8fafc;
+}
+
+.btn-small {
+    min-height: 32px;
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+.metric-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(150px, 1fr));
+    gap: 12px;
+    padding: 8px 28px 22px;
+}
+
+.metric-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.metric-card span {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.metric-card strong {
+    display: block;
+    color: var(--navy);
+    font-size: 26px;
+}
+
+.metric-card small {
+    display: block;
+    margin-top: 6px;
+    color: #94a3b8;
+    font-size: 11px;
+}
+
+.module-tabs {
+    display: flex;
+    gap: 4px;
+    margin: 0 28px 14px;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--line);
+}
+
+.module-tab {
+    flex: 0 0 auto;
+    padding: 11px 13px;
+    color: #64748b;
+    border-bottom: 2px solid transparent;
+    font-size: 12px;
+    text-decoration: none;
+}
+
+.module-tab.active {
+    color: var(--navy);
+    border-bottom-color: var(--navy);
+    font-weight: 700;
+}
+
+.module-tab.disabled {
+    color: #a8b1bd;
+    cursor: default;
+}
+
+.users-panel {
+    padding: 0;
+    overflow: hidden;
+}
+
+.filter-bar {
+    display: grid;
+    grid-template-columns:
+        minmax(280px, 2fr)
+        minmax(150px, .7fr)
+        minmax(150px, .7fr)
+        auto;
+    gap: 12px;
+    align-items: end;
+    padding: 18px;
+    border-bottom: 1px solid var(--line);
+}
+
+.filter-search,
+.filter-field {
+    display: grid;
+    gap: 6px;
+}
+
+.filter-bar label {
+    color: #475569;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.filter-bar input,
+.filter-bar select {
+    width: 100%;
+    min-height: 38px;
+    padding: 8px 10px;
+    background: #fff;
+    color: var(--text);
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    outline: none;
+}
+
+.filter-bar input:focus,
+.filter-bar select:focus {
+    border-color: #6f94ba;
+    box-shadow: 0 0 0 3px rgba(22, 58, 99, .08);
+}
+
+.filter-actions {
+    display: flex;
+    gap: 7px;
+}
+
+.table-summary {
+    display: flex;
+    justify-content: space-between;
+    padding: 13px 18px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    min-width: 1180px;
+    border-collapse: collapse;
+}
+
+.data-table th {
+    padding: 11px 12px;
+    background: #f8fafc;
+    color: #64748b;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    font-size: 11px;
+    font-weight: 700;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: .025em;
+}
+
+.data-table td {
+    padding: 12px;
+    border-bottom: 1px solid #edf1f5;
+    font-size: 12px;
+    vertical-align: middle;
+}
+
+.data-table tbody tr:hover {
+    background: #fbfdff;
+}
+
+.business-code {
+    color: var(--navy);
+    white-space: nowrap;
+}
+
+.person-cell {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 170px;
+}
+
+.person-cell small {
+    display: block;
+    margin-top: 3px;
+    color: var(--muted);
+}
+
+.person-avatar {
+    display: grid;
+    flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    border-radius: 50%;
+    background: #e8f0f8;
+    color: var(--navy);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.status-badge {
+    display: inline-flex;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.status-active {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-blocked {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status-inactive {
+    background: #e2e8f0;
+    color: #475569;
+}
+
+.role-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    min-width: 130px;
+}
+
+.role-chip {
+    display: inline-flex;
+    padding: 3px 6px;
+    border: 1px solid #dbe4ee;
+    border-radius: 4px;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 10px;
+}
+
+.table-action {
+    color: var(--navy);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.table-action:hover {
+    text-decoration: underline;
+}
+
+.actions-cell {
+    text-align: right;
+}
+
+.muted {
+    color: #94a3b8;
+}
+
+.empty-table {
+    padding: 34px !important;
+    color: var(--muted);
+    text-align: center;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 16px 18px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.pagination-actions {
+    display: flex;
+    gap: 7px;
+}
+
+@media (max-width: 1250px) {
+    .metric-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .filter-bar {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 800px) {
+    .page-head-actions {
+        flex-direction: column;
+    }
+
+    .metric-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .filter-bar {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =========================================================
+   MK-04 - DATOS REALES
+   ========================================================= */
+
+.metric-grid-6 {
+    grid-template-columns:
+        repeat(6, minmax(135px, 1fr));
+}
+
+.data-quality-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+
+    margin: 0 28px 18px;
+    padding: 13px 16px;
+
+    border: 1px solid #dbe4ee;
+    border-radius: 7px;
+
+    background: #f8fafc;
+}
+
+.data-quality-strip > div:first-child {
+    display: grid;
+    gap: 3px;
+}
+
+.data-quality-strip strong {
+    color: #334155;
+}
+
+.data-quality-strip span {
+    color: #64748b;
+    font-size: 11px;
+}
+
+.data-quality-numbers {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 14px;
+}
+
+.real-users-table {
+    min-width: 1600px;
+}
+
+.table-subtext,
+.evidence-date {
+    display: block;
+    margin-top: 4px;
+    color: #94a3b8;
+    font-size: 10px;
+}
+
+.status-unknown {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-warning {
+    background: #ffedd5;
+    color: #9a3412;
+}
+
+.source-cell {
+    display: grid;
+    gap: 4px;
+    max-width: 220px;
+}
+
+.source-cell > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.source-verified {
+    color: #15803d;
+}
+
+.source-pending {
+    color: #a16207;
+}
+
+.actions-cell {
+    display: flex;
+    gap: 9px;
+    justify-content: flex-end;
+}
+
+@media (max-width: 1400px) {
+    .metric-grid-6 {
+        grid-template-columns:
+            repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 850px) {
+    .metric-grid-6 {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+    .data-quality-strip {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .data-quality-numbers {
+        justify-content: flex-start;
+    }
+}

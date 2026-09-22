@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}
+Áreas | Organización
+{% endblock %}
+
+{% block content %}
+
+<div class="breadcrumb">
+    ⌂ /
+    <a href="{% url 'organization:chart' %}">
+        Organización
+    </a>
+    / Áreas
+</div>
+
+<div class="page-head">
+
+    <div>
+        <h1>
+            Áreas organizacionales
+        </h1>
+
+        <p>
+            Las áreas permiten colorear
+            y agrupar puestos sin alterar
+            la jerarquía de mando.
+        </p>
+    </div>
+
+    <a
+        class="primary-btn"
+        href="{% url 'organization:area_create' %}"
+    >
+        + Nueva área
+    </a>
+
+</div>
+
+<section class="mock-panel">
+
+    <table class="controls-table">
+
+        <thead>
+        <tr>
+            <th>Color</th>
+            <th>Código</th>
+            <th>Área</th>
+            <th>Área superior</th>
+            <th>Orden</th>
+            <th>Estado</th>
+            <th></th>
+        </tr>
+        </thead>
+
+        <tbody>
+
+        {% for area in areas %}
+
+        <tr>
+
+            <td>
+                <span
+                    class="area-color-dot"
+                    style="
+                    background:
+                    {{ area.color }};
+                    "
+                >
+                </span>
+            </td>
+
+            <td>
+                {{ area.code }}
+            </td>
+
+            <td>
+                <b>
+                    {{ area.name }}
+                </b>
+            </td>
+
+            <td>
+                {{ area.parent|default:"—" }}
+            </td>
+
+            <td>
+                {{ area.sort_order }}
+            </td>
+
+            <td>
+                {% if area.is_active %}
+                Activa
+                {% else %}
+                Inactiva
+                {% endif %}
+            </td>
+
+            <td>
+                <a
+                    class="primary-small"
+                    href="{% url 'organization:area_edit' area.pk %}"
+                >
+                    Editar
+                </a>
+            </td>
+
+        </tr>
+
+        {% empty %}
+
+        <tr>
+            <td
+                colspan="7"
+                class="empty-cell"
+            >
+                Todavía no hay áreas.
+            </td>
+        </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</section>
+
+{% endblock %}

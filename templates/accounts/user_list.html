@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}
+Usuarios y accesos |
+SGSI SIEMPRESOFT
+{% endblock %}
+
+{% block content %}
+
+<div class="breadcrumb">
+    ⌂ / Gestión /
+    Usuarios y accesos
+</div>
+
+<div class="page-head">
+
+    <div>
+        <h1>
+            Usuarios y accesos
+        </h1>
+
+        <p>
+            Identidades, estado y acceso
+            dentro del mismo entorno visual.
+        </p>
+    </div>
+
+    <div class="head-actions">
+
+        <a
+            class="outline-btn"
+            href="{% url 'dashboard:organization' %}"
+        >
+            Organigrama
+        </a>
+
+        <a
+            class="primary-btn"
+            href="{% url 'dashboard:entity_add' 'usuarios' %}"
+        >
+            + Nuevo usuario
+        </a>
+
+    </div>
+
+</div>
+
+<div class="module-tabs">
+
+    <a class="active" href="/usuarios/">
+        ♟ Usuarios
+    </a>
+
+    <a href="{% url 'dashboard:entity_list' 'sistemas' %}">
+        ▦ Sistemas
+    </a>
+
+    <a href="{% url 'dashboard:entity_list' 'accesos' %}">
+        ↔ Accesos
+    </a>
+
+    <a href="{% url 'dashboard:entity_list' 'revisiones-acceso' %}">
+        ✓ Revisiones
+    </a>
+
+</div>
+
+<section class="mock-panel">
+
+    <form
+        class="table-toolbar"
+        method="get"
+    >
+
+        <input
+            class="search-input"
+            name="q"
+            value="{{ filters.q }}"
+            placeholder="Buscar nombre, usuario o correo..."
+        >
+
+        <select name="area">
+            <option value="">
+                Todas las áreas
+            </option>
+
+            {% for area in areas %}
+
+            <option
+                value="{{ area }}"
+                {% if filters.area == area %}selected{% endif %}
+            >
+                {{ area }}
+            </option>
+
+            {% endfor %}
+        </select>
+
+        <select name="status">
+            <option value="">
+                Todos los estados
+            </option>
+
+            {% for value, label in status_choices %}
+
+            <option
+                value="{{ value }}"
+                {% if filters.status == value %}selected{% endif %}
+            >
+                {{ label }}
+            </option>
+
+            {% endfor %}
+        </select>
+
+        <button
+            class="outline-btn"
+            type="submit"
+        >
+            Filtrar
+        </button>
+
+    </form>
+
+    <div class="table-scroll">
+
+        <table class="controls-table">
+
+            <thead>
+            <tr>
+                <th>Código</th>
+                <th>Usuario</th>
+                <th>Nombre</th>
+                <th>Correo</th>
+                <th>Área</th>
+                <th>Cargo</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+            </thead>
+
+            <tbody>
+
+            {% for user in page_obj %}
+
+            <tr>
+                <td>
+                    <a
+                        class="entity-link"
+                        href="{% url 'dashboard:entity_detail' 'usuarios' user.pk %}"
+                    >
+                        {{ user.business_code|default:"—" }}
+                    </a>
+                </td>
+
+                <td>
+                    {{ user.username }}
+                </td>
+
+                <td>
+                    {{ user.get_full_name|default:"—" }}
+                </td>
+
+                <td>
+                    {{ user.email|default:"—" }}
+                </td>
+
+                <td>
+                    {{ user.area|default:"—" }}
+                </td>
+
+                <td>
+                    {{ user.position|default:"—" }}
+                </td>
+
+                <td>
+                    {{ user.status }}
+                </td>
+
+                <td class="row-actions">
+
+                    <a
+                        class="btn-light"
+                        href="{% url 'dashboard:entity_detail' 'usuarios' user.pk %}"
+                    >
+                        Ficha
+                    </a>
+
+                    <a
+                        class="primary-small"
+                        href="{% url 'dashboard:entity_edit' 'usuarios' user.pk %}"
+                    >
+                        Editar
+                    </a>
+
+                </td>
+            </tr>
+
+            {% empty %}
+
+            <tr>
+                <td
+                    class="empty-cell"
+                    colspan="8"
+                >
+                    Sin usuarios.
+                </td>
+            </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+{% endblock %}

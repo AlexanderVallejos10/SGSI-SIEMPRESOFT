@@ -1,0 +1,88 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}SGSI | SIEMPRESOFT{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    <link rel="stylesheet" href="{% static 'css/mockup_sgsi.css' %}">
+    <link rel="stylesheet" href="{% static 'css/product_v64.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+<div class="app-shell">
+    <aside class="sgsi-sidebar">
+        <div class="logo-area">
+            <div class="logo-symbol"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i></div>
+            <div class="logo-text"><strong>Siempresoft</strong><small>E.I.R.L.</small></div>
+        </div>
+
+        <a class="side-home" href="{% url 'dashboard:home' %}"><span>⌂</span><b>Dashboard</b></a>
+
+        <div class="side-section-title">SGSI (ISO/IEC 27001)</div>
+
+        {% for item in global_clause_menu %}
+        <details class="clause-menu">
+            <summary><span class="doc-ico">▧</span><span>{{ item.code }}. {{ item.title }}</span><i>⌄</i></summary>
+            <div class="submenu">
+                <a href="{% url 'dashboard:clause_detail' item.code %}">Ver matriz completa</a>
+                {% for child in item.children %}
+                <a href="{% url 'dashboard:clause_detail' child.code %}">{{ child.code }} {{ child.title }}</a>
+                {% endfor %}
+            </div>
+        </details>
+        {% endfor %}
+
+        <details class="clause-menu">
+            <summary><span class="doc-ico">▧</span><span>11. Anexos</span><i>⌄</i></summary>
+            <div class="submenu">
+                <a href="{% url 'dashboard:annex_controls' %}">Anexo A · 93 controles</a>
+                <a href="{% url 'dashboard:entity_list' 'documentos' %}">Documentación</a>
+                <a href="{% url 'dashboard:entity_list' 'evidencias' %}">Evidencias</a>
+            </div>
+        </details>
+
+        <div class="side-divider"></div>
+        <div class="side-section-title">GESTIÓN DEL SGSI</div>
+
+        <a class="management-link" href="{% url 'dashboard:entity_list' 'usuarios' %}"><span>♟</span>Usuarios y accesos</a>
+        <a class="management-link" href="{% url 'organization:chart' %}"><span>⌘</span>Organización</a>
+        <a class="management-link" href="{% url 'processes:map' %}"><span>⇄</span>Procesos</a>
+        <a class="management-link" href="{% url 'dashboard:entity_list' 'activos' %}"><span>▣</span>Activos y equipos</a>
+        <a class="management-link" href="{% url 'dashboard:entity_list' 'riesgos' %}"><span>▲</span>Riesgos</a>
+        <a class="management-link" href="{% url 'dashboard:entity_list' 'incidentes' %}"><span>▲</span>Incidentes</a>
+        <a class="management-link" href="{% url 'dashboard:entity_list' 'vulnerabilidades' %}"><span>◉</span>Vulnerabilidades</a>
+        <a class="management-link" href="{% url 'dashboard:entity_list' 'documentos' %}"><span>▧</span>Documentos y evidencias</a>
+        <a class="management-link" href="{% url 'dashboard:entity_list' 'auditorias' %}"><span>▣</span>Auditorías</a>
+        <a class="management-link" href="{% url 'dashboard:report_center' %}"><span>▥</span>Reportes y métricas</a>
+        <a class="management-link" href="{% url 'dashboard:entity_list' 'controles' %}"><span>✓</span>Controles ISO</a>
+    </aside>
+
+    <section class="page-column">
+        <header class="topbar">
+            <div class="platform-title">Plataforma aValue · SGSI SIEMPRESOFT</div>
+            <div class="top-actions">
+                <div class="user-box">
+                    <b>{{ request.user.get_full_name|default:request.user.username }}</b>
+                    <small>Usuario autenticado</small>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            {% if messages %}
+            <div class="messages-stack">
+                {% for message in messages %}
+                <div class="system-message">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% block content %}{% endblock %}
+        </main>
+    </section>
+</div>
+<script src="{% static 'js/mockup_sgsi.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

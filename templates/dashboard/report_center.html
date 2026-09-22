@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Reportes y métricas | SGSI{% endblock %}
+{% block content %}
+<div class="breadcrumb">⌂ / Reportes y métricas</div>
+
+<div class="page-head">
+    <div>
+        <h1>Centro de reportes y métricas</h1>
+        <p>Acceso central al tablero SGSI, objetivos OESI y matrices estratégicas.</p>
+    </div>
+    <div class="head-actions">
+        {% if dashboard_url %}
+        <a class="primary-btn" href="{{ dashboard_url }}">Abrir Dashboard 2026</a>
+        {% endif %}
+        <a class="outline-btn" href="{% url 'dashboard:entity_list' 'metricas-sgsi' %}">Editar métricas</a>
+    </div>
+</div>
+
+<div class="report-grid">
+    {% for card in cards %}
+    <article class="report-card">
+        <strong>{{ card.value }}</strong>
+        <h3>{{ card.title }}</h3>
+        <p>{{ card.note }}</p>
+        <a href="{{ card.url }}">Ir al módulo →</a>
+    </article>
+    {% endfor %}
+</div>
+
+{% if snapshot %}
+<section class="mock-panel">
+    <div class="panel-title">Dashboard cargado</div>
+    <div class="report-snapshot">
+        <div><small>Snapshot</small><strong>{{ snapshot.code }}</strong></div>
+        <div><small>Año</small><strong>{{ snapshot.year }}</strong></div>
+        {% if dashboard_url %}
+        <div><a class="primary-small" href="{{ dashboard_url }}">Ver tablero interactivo</a></div>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
+{% endblock %}

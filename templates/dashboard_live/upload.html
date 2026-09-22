@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Nueva versión Dashboard | SGSI{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard_live_v72.css' %}">{% endblock %}
+{% block content %}
+<div class="breadcrumb">Inicio / <a href="/">Dashboard SGSI</a> / Nueva versión</div>
+<div class="page-head"><div><h1>Subir nueva versión del Dashboard</h1><p>Se importa como nueva fuente y la versión anterior permanece en la base de datos.</p></div></div>
+<section class="mock-panel dashboard-edit-card">
+<form method="post" enctype="multipart/form-data">{% csrf_token %}
+<div class="form-grid">{% for field in form %}<div class="form-field"><label>{{ field.label }}</label>{{ field }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}{% for error in field.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>{% endfor %}</div>
+<div class="form-actions"><a class="outline-btn" href="/">Cancelar</a><button class="primary-btn" type="submit">Importar nueva versión</button></div>
+</form>
+</section>
+{% endblock %}

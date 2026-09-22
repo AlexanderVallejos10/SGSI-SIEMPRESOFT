@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ object_label }} | {{ entity.title }}
+{% endblock %}
+
+{% block content %}
+
+<div class="breadcrumb">
+    ⌂ / Gestión /
+    <a href="{% url 'dashboard:entity_list' entity_key %}">
+        {{ entity.title }}
+    </a>
+    / {{ object_label }}
+</div>
+
+<div class="page-head">
+
+    <div>
+        <h1>
+            {{ entity.icon }}
+            {{ object_label }}
+        </h1>
+
+        <p>
+            Ficha relacional del registro.
+        </p>
+    </div>
+
+    {% if can_change %}
+
+    <a
+        class="primary-btn"
+        href="{% url 'dashboard:entity_edit' entity_key object.pk %}"
+    >
+        Editar
+    </a>
+
+    {% endif %}
+
+</div>
+
+<div class="module-tabs">
+
+    {% for tab in group_links %}
+
+    <a
+        class="{% if tab.active %}active{% endif %}"
+        href="{% url 'dashboard:entity_list' tab.entity %}"
+    >
+        {{ tab.icon }}
+        {{ tab.title }}
+    </a>
+
+    {% endfor %}
+
+</div>
+
+<div class="detail-grid">
+
+    <section class="mock-panel">
+
+        <div class="panel-title">
+            Datos del registro
+        </div>
+
+        <div class="field-grid">
+
+            {% for field in fields %}
+
+            <div class="field-card">
+
+                <small>
+                    {{ field.label }}
+                </small>
+
+                {% if field.url %}
+
+                <a
+                    class="entity-link"
+                    href="{{ field.url }}"
+                >
+                    {{ field.value }}
+                </a>
+
+                {% else %}
+
+                <strong>
+                    {{ field.value }}
+                </strong>
+
+                {% endif %}
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+    <section class="mock-panel">
+
+        <div class="panel-title">
+            Relaciones e historial
+        </div>
+
+        <div class="relations-list">
+
+            {% for block in relations %}
+
+            <details
+                class="relation-block"
+                {% if forloop.first %}open{% endif %}
+            >
+
+                <summary>
+                    <b>
+                        {{ block.title }}
+                    </b>
+
+                    <span>
+                        {{ block.count }}
+                    </span>
+                </summary>
+
+                <div>
+
+                    {% for row in block.rows %}
+
+                    {% if row.url %}
+
+                    <a
+                        class="relation-row"
+                        href="{{ row.url }}"
+                    >
+                        {{ row.label }}
+                        <span>→</span>
+                    </a>
+
+                    {% else %}
+
+                    <div class="relation-row">
+                        {{ row.label }}
+                    </div>
+
+                    {% endif %}
+
+                    {% endfor %}
+
+                </div>
+
+            </details>
+
+            {% empty %}
+
+            <div class="empty-cell">
+                Todavía no hay relaciones
+                visibles para este registro.
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

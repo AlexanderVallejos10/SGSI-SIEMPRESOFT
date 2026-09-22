@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}
+Asignar usuario | Organización
+{% endblock %}
+
+{% block content %}
+
+<div class="breadcrumb">
+    ⌂ /
+    <a href="{% url 'organization:chart' %}">
+        Organización
+    </a>
+    / Asignar usuario
+</div>
+
+<div class="page-head">
+
+    <div>
+        <h1>
+            Asignar usuario
+        </h1>
+
+        <p>
+            Puesto:
+            <b>
+                {{ position.title }}
+            </b>
+        </p>
+    </div>
+
+    <a
+        class="outline-btn"
+        href="{% url 'organization:quick_user_create' position.pk %}"
+    >
+        Crear usuario nuevo
+    </a>
+
+</div>
+
+<section class="mock-panel organization-form">
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        {{ form.non_field_errors }}
+
+        <div class="form-grid">
+
+            {% for field in form %}
+
+            <div class="form-field">
+
+                <label>
+                    {{ field.label }}
+                </label>
+
+                {{ field }}
+
+                {% for error in field.errors %}
+
+                <div class="field-error">
+                    {{ error }}
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        <div class="form-actions">
+
+            <a
+                class="outline-btn"
+                href="{% url 'organization:chart' %}"
+            >
+                Cancelar
+            </a>
+
+            <button
+                class="primary-btn"
+                type="submit"
+            >
+                Asignar
+            </button>
+
+        </div>
+
+    </form>
+
+</section>
+
+{% endblock %}

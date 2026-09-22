@@ -1,0 +1,116 @@
+{% extends "dashboard/mockup_shell.html" %}
+{% block title %}Dashboard SGSI | SIEMPRESOFT{% endblock %}
+{% block content %}
+<div class="breadcrumb">⌂ / Dashboard</div>
+<div class="page-head">
+    <div>
+        <h1>Dashboard de Siempresoft E.I.R.L. - aValue</h1>
+        <p>Estado general del Sistema de Gestión de Seguridad de la Información</p>
+    </div>
+    <button class="primary-btn" onclick="window.print()">⬇ Exportar PDF</button>
+</div>
+
+<div class="kpi-row five">
+    <article class="mock-kpi">
+        <div class="kpi-icon blue">▧</div>
+        <div><strong>{{ kpis.documents }}</strong><span>Documentos</span><small>registros actuales</small></div>
+    </article>
+    <article class="mock-kpi">
+        <div class="kpi-icon red">▲</div>
+        <div><strong>{{ kpis.risks }}</strong><span>Riesgos</span><small>registros actuales</small></div>
+    </article>
+    <article class="mock-kpi">
+        <div class="kpi-icon green">◉</div>
+        <div><strong>{{ kpis.incidents }}</strong><span>Incidentes</span><small>registros actuales</small></div>
+    </article>
+    <article class="mock-kpi">
+        <div class="kpi-icon purple">♙</div>
+        <div><strong>{{ kpis.active_users }}</strong><span>Usuarios activos</span><small>desde cuentas reales</small></div>
+    </article>
+    <article class="mock-kpi">
+        <div class="kpi-icon slate">▣</div>
+        <div><strong>{{ kpis.assets }}</strong><span>Activos y equipos</span><small>inventario actual</small></div>
+    </article>
+</div>
+
+<div class="dashboard-grid charts">
+    <section class="mock-panel">
+        <div class="panel-title">Radar de riesgos <button>⋮</button></div>
+        <div class="radar-wrap">
+            {% if kpis.risks %}
+            <svg class="risk-radar" viewBox="0 0 300 240">
+                <polygon points="150,25 255,85 215,200 85,200 45,85" class="radar-grid"/>
+                <polygon points="150,60 220,100 190,170 110,170 80,100" class="radar-grid inner"/>
+                <polygon points="150,105 165,115 158,135 142,135 135,115" class="radar-data"/>
+                <text x="145" y="15">Muy alto</text><text x="260" y="90">Alto</text>
+                <text x="205" y="220">Medio</text><text x="55" y="220">Bajo</text>
+                <text x="10" y="90">Muy bajo</text>
+            </svg>
+            {% else %}
+            <div class="empty-visual">
+                <div class="radar-empty"></div>
+                <strong>Sin riesgos cargados</strong>
+                <span>El radar se poblará con los registros reales del módulo Riesgos.</span>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="mock-panel">
+        <div class="panel-title">Mapa de calor de riesgos <button>⋮</button></div>
+        <div class="heatmap-wrap">
+            <div class="heatmap-y">Impacto</div>
+            <div class="heatmap-grid">
+                {% for r in "12345" %}
+                    {% for c in "12345" %}
+                    <div class="heat h{{ forloop.parentloop.counter }}-{{ forloop.counter }}">0</div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            <div class="heatmap-x">Probabilidad</div>
+            {% if not kpis.risks %}
+            <small class="heat-note">Sin riesgos registrados: se muestra la matriz vacía, no datos simulados.</small>
+            {% endif %}
+        </div>
+    </section>
+</div>
+
+<div class="dashboard-grid lower">
+    <section class="mock-panel">
+        <div class="panel-title">Actividades recientes <button>Ver todas</button></div>
+        <table class="mini-table">
+            <thead><tr><th>Fecha</th><th>Actividad</th><th>Módulo</th><th>Estado</th></tr></thead>
+            <tbody>
+            {% for row in recent %}
+            <tr>
+                <td>{{ row.date|date:"d/m/Y H:i" }}</td>
+                <td>{{ row.activity }}</td>
+                <td><span class="tag blue-tag">{{ row.module }}</span></td>
+                <td><span class="status-pill">{{ row.status }}</span></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="empty-cell">Sin actividad reciente.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <section class="mock-panel">
+        <div class="panel-title">Alertas y pendientes <button>Ver todas</button></div>
+        <table class="mini-table alerts">
+            <thead><tr><th>Tipo</th><th>Descripción</th><th>Nivel</th></tr></thead>
+            <tbody>
+            {% for row in alerts %}
+            <tr>
+                <td><span class="alert-dot {{ row.level }}"></span>{{ row.type }}</td>
+                <td>{{ row.description }}</td>
+                <td><span class="tag warning-tag">{{ row.level }}</span></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="empty-cell">Sin alertas calculadas.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </section>
+</div>
+{% endblock %}

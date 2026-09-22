@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Nueva versión | Procesos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/processes_v71.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    Inicio /
+    <a href="{% url 'processes:map' %}">Procesos</a> /
+    {{ document.title }} / Nueva versión
+</div>
+
+<div class="page-head">
+    <div>
+        <h1>Subir nueva versión</h1>
+        <p>{{ document.title }}</p>
+    </div>
+</div>
+
+<section class="mock-panel process-form-card">
+    <div class="version-policy">
+        <strong>Versionamiento conservado</strong>
+        <p>
+            El nuevo PDF se convierte en la versión vigente.
+            La versión anterior permanece en el historial.
+            La estructura interactiva no se reemplaza automáticamente
+            por el PDF para evitar cambios no validados.
+        </p>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-grid">
+            {% for field in form %}
+            <div class="form-field">
+                <label>{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                {% for error in field.errors %}
+                <div class="field-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="form-actions">
+            <a class="outline-btn" href="{% url 'processes:map' %}">
+                Cancelar
+            </a>
+            <button class="primary-btn" type="submit">
+                Registrar nueva versión
+            </button>
+        </div>
+    </form>
+</section>
+{% endblock %}

@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ entity.title }} | SGSI
+{% endblock %}
+
+{% block content %}
+
+<div class="breadcrumb">
+    ⌂ / Gestión /
+    {{ entity.title }}
+</div>
+
+<div class="page-head entity-head">
+
+    <div>
+        <h1>
+            {{ entity.icon }}
+            {{ entity.title }}
+        </h1>
+
+        <p>
+            Datos reales administrados desde
+            PostgreSQL. Los cambios quedan
+            en el modelo del SGSI.
+        </p>
+    </div>
+
+    {% if can_add %}
+
+    <a
+        class="primary-btn"
+        href="{% url 'dashboard:entity_add' entity_key %}"
+    >
+        + Nuevo registro
+    </a>
+
+    {% endif %}
+
+</div>
+
+<div class="module-tabs">
+
+    {% for tab in group_links %}
+
+    <a
+        class="{% if tab.active %}active{% endif %}"
+        href="{% url 'dashboard:entity_list' tab.entity %}"
+    >
+        {{ tab.icon }}
+        {{ tab.title }}
+    </a>
+
+    {% endfor %}
+
+</div>
+
+<section class="mock-panel">
+
+    <form
+        class="table-toolbar"
+        method="get"
+    >
+
+        <input
+            class="search-input"
+            type="search"
+            name="q"
+            value="{{ search }}"
+            placeholder="Buscar en {{ entity.title|lower }}..."
+        >
+
+        <button
+            class="outline-btn"
+            type="submit"
+        >
+            Buscar
+        </button>
+
+    </form>
+
+    <div class="table-scroll">
+
+        <table class="controls-table entity-table">
+
+            <thead>
+            <tr>
+                {% for column in columns %}
+                <th>
+                    {{ column.label }}
+                </th>
+                {% endfor %}
+                <th>
+                    Acciones
+                </th>
+            </tr>
+            </thead>
+
+            <tbody>
+
+            {% for row in rows %}
+
+            <tr>
+
+                {% for cell in row.cells %}
+
+                <td>
+
+                    {% if cell.url %}
+
+                    <a
+                        class="entity-link"
+                        href="{{ cell.url }}"
+                    >
+                        {{ cell.value }}
+                    </a>
+
+                    {% else %}
+
+                    {{ cell.value }}
+
+                    {% endif %}
+
+                </td>
+
+                {% endfor %}
+
+                <td class="row-actions">
+
+                    <a
+                        class="btn-light"
+                        href="{{ row.url }}"
+                    >
+                        Ver ficha
+                    </a>
+
+                    <a
+                        class="primary-small"
+                        href="{% url 'dashboard:entity_edit' entity_key row.obj.pk %}"
+                    >
+                        Editar
+                    </a>
+
+                </td>
+
+            </tr>
+
+            {% empty %}
+
+            <tr>
+                <td
+                    class="empty-cell"
+                    colspan="20"
+                >
+                    No hay registros para mostrar.
+                </td>
+            </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+{% endblock %}

@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ artifact.original_name }} |
+Vista de datos
+{% endblock %}
+
+{% block content %}
+
+<div class="breadcrumb">
+    ⌂ / Documentos /
+    Vista de datos
+</div>
+
+<div class="page-head">
+
+    <div>
+        <h1>
+            {{ artifact.original_name }}
+        </h1>
+
+        <p>
+            Vista interna del archivo.
+            El original permanece disponible
+            para descarga.
+        </p>
+    </div>
+
+    <div class="head-actions">
+
+        <a
+            class="outline-btn"
+            href="{% url 'dashboard:artifact_download' artifact.id %}"
+        >
+            Descargar archivo original
+        </a>
+
+    </div>
+
+</div>
+
+<div class="workbook-tabs">
+
+    <div class="tab-buttons">
+
+        {% for sheet in sheets %}
+
+        <button
+            type="button"
+            class="workbook-tab {% if forloop.first %}active{% endif %}"
+            data-sheet="{{ forloop.counter0 }}"
+        >
+            {{ sheet.name }}
+        </button>
+
+        {% endfor %}
+
+    </div>
+
+    {% for sheet in sheets %}
+
+    <section
+        class="workbook-sheet {% if forloop.first %}active{% endif %}"
+        data-sheet-panel="{{ forloop.counter0 }}"
+    >
+
+        <div class="mock-panel spreadsheet-panel">
+
+            <div class="panel-title">
+
+                <span>
+                    {{ sheet.name }}
+                </span>
+
+                <span>
+                    {{ sheet.rows|length }}
+                    filas visibles
+                </span>
+
+            </div>
+
+            <div
+                class="table-scroll spreadsheet-scroll"
+            >
+
+                <table class="spreadsheet-table">
+
+                    <tbody>
+
+                    {% for row in sheet.rows %}
+
+                    <tr>
+
+                        {% for cell in row %}
+
+                        <td>
+                            {{ cell }}
+                        </td>
+
+                        {% endfor %}
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td class="empty-cell">
+                            La hoja no contiene
+                            celdas visibles.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+
+<script>
+
+document
+    .querySelectorAll(
+        ".workbook-tab"
+    )
+    .forEach(
+        (button) => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const id =
+                        button.dataset.sheet;
+
+                    document
+                        .querySelectorAll(
+                            ".workbook-tab"
+                        )
+                        .forEach(
+                            (item) => {
+
+                                item.classList.toggle(
+                                    "active",
+                                    item === button
+                                );
+
+                            }
+                        );
+
+                    document
+                        .querySelectorAll(
+                            ".workbook-sheet"
+                        )
+                        .forEach(
+                            (panel) => {
+
+                                panel.classList.toggle(
+                                    "active",
+                                    panel.dataset.sheetPanel === id
+                                );
+
+                            }
+                        );
+
+                }
+            );
+
+        }
+    );
+
+</script>
+
+{% endblock %}

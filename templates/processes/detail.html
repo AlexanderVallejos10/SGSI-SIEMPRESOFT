@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ process.name }} | Proceso{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/processes_v71.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    Inicio / <a href="{% url 'processes:map' %}">Procesos</a> / {{ process.name }}
+</div>
+
+<div class="page-head">
+    <div>
+        <h1>{{ process.name }}</h1>
+        <p>{{ process.code }} · {{ process.category.name }}</p>
+    </div>
+
+    {% if can_change %}
+    <div class="head-actions">
+        <a
+            class="primary-btn"
+            href="{% url 'processes:process_edit' process.pk %}"
+        >
+            Editar proceso
+        </a>
+
+        <form
+            method="post"
+            action="{% url 'processes:process_archive' process.pk %}"
+            onsubmit="return confirm('¿Retirar este proceso del mapa? El historial no se eliminará.');"
+        >
+            {% csrf_token %}
+            <button class="outline-btn danger-btn" type="submit">
+                Eliminar del mapa
+            </button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+
+<div class="process-detail-grid">
+    <section class="mock-panel">
+        <div class="panel-title">Información del proceso</div>
+
+        <dl class="process-description-list">
+            <div>
+                <dt>Tipo</dt>
+                <dd>{{ process.category.name }}</dd>
+            </div>
+            <div>
+                <dt>Responsable</dt>
+                <dd>{{ process.owner_position|default:"Pendiente" }}</dd>
+            </div>
+            <div>
+                <dt>Área responsable</dt>
+                <dd>{{ process.responsible_area|default:"Pendiente" }}</dd>
+            </div>
+            <div>
+                <dt>Dentro del alcance</dt>
+                <dd>{% if process.is_in_scope %}Sí{% else %}No{% endif %}</dd>
+            </div>
+            <div class="span-2">
+                <dt>Descripción</dt>
+                <dd>{{ process.description|default:"Sin descripción." }}</dd>
+            </div>
+        </dl>
+    </section>
+
+    <section class="mock-panel">
+        <div class="panel-title">Organización involucrada</div>
+
+        <div class="process-chip-block">
+            <h3>Áreas</h3>
+            <div>
+                {% for area in process.involved_areas.all %}
+                <span>{{ area.name }}</span>
+                {% empty %}
+                <small>Sin áreas adicionales.</small>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="process-chip-block">
+            <h3>Puestos</h3>
+            <div>
+                {% for position in process.involved_positions.all %}
+                <span>{{ position.title }}</span>
+                {% empty %}
+                <small>Sin puestos adicionales.</small>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="process-chip-block">
+            <h3>Usuarios</h3>
+            <div>
+                {% for user in process.participants.all %}
+                <a href="{% url 'dashboard:user_profile' user.pk %}">
+                    {{ user.get_full_name|default:user.username }}
+                </a>
+                {% empty %}
+                <small>Sin participantes directos.</small>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+</div>
+
+<div class="process-detail-grid">
+    <section class="mock-panel">
+        <div class="panel-title">Documentos vinculados</div>
+        <div class="process-related-list">
+            {% for document in process.documents.all %}
+            <a href="{% url 'dashboard:document_detail' document.pk %}">
+                <b>{{ document.code }}</b>
+                <span>{{ document.title }}</span>
+            </a>
+            {% empty %}
+            <div>No hay documentos vinculados.</div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="mock-panel">
+        <div class="panel-title">Relaciones SGSI</div>
+
+        <div class="process-related-counts">
+            <div>
+                <strong>{{ process.controls.count }}</strong>
+                <span>controles</span>
+            </div>
+            <div>
+                <strong>{{ process.risks.count }}</strong>
+                <span>riesgos</span>
+            </div>
+            <div>
+                <strong>{{ process.assets.count }}</strong>
+                <span>activos</span>
+            </div>
+        </div>
+    </section>
+</div>
+
+<section class="mock-panel">
+    <div class="panel-title">Relaciones entre procesos</div>
+
+    <div class="process-related-list">
+        {% for relation in process.outgoing_relations.all %}
+        {% if relation.is_active %}
+        <div>
+            <b>Saliente hacia</b>
+            <a href="{% url 'processes:process_detail' relation.target.pk %}">
+                {{ relation.target.name }}
+            </a>
+            <span>{{ relation.get_relation_type_display }}</span>
+
+            {% if can_change %}
+            <form
+                method="post"
+                action="{% url 'processes:relation_archive' relation.pk %}"
+            >
+                {% csrf_token %}
+                <button type="submit" class="text-action danger-text">
+                    Retirar
+                </button>
+            </form>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% endfor %}
+
+        {% for relation in process.incoming_relations.all %}
+        {% if relation.is_active %}
+        <div>
+            <b>Entrante desde</b>
+            <a href="{% url 'processes:process_detail' relation.source.pk %}">
+                {{ relation.source.name }}
+            </a>
+            <span>{{ relation.get_relation_type_display }}</span>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

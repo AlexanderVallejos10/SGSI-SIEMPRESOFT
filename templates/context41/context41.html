@@ -1,0 +1,467 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+4.1 Conocimiento de la organización | SGSI
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'css/context41_v69.css' %}"
+>
+<link
+    rel="stylesheet"
+    href="{% static 'css/organization.css' %}"
+>
+{% endblock %}
+
+{% block content %}
+
+<div class="breadcrumb">
+    Inicio / SGSI /
+    4. Contexto de la organización /
+    4.1
+</div>
+
+<div class="page-head context41-head">
+    <div>
+        <h1>
+            4.1. Conocimiento de la organización y su contexto
+        </h1>
+        <p>
+            Documentos que sustentan el conocimiento interno
+            y externo necesario para el SGSI.
+        </p>
+    </div>
+</div>
+
+<div class="context41-overview">
+    <span>3 fuentes documentales</span>
+    <span>Versionamiento conservado</span>
+    <span>Consulta dentro del sistema</span>
+</div>
+
+<div class="context41-auto-note">
+    <strong>Actualización de versiones</strong>
+    <span>
+        Cuando se registra una nueva versión desde esta pantalla,
+        el módulo utiliza inmediatamente el archivo vigente.
+        Las versiones anteriores permanecen disponibles en el historial.
+    </span>
+</div>
+
+<div class="context41-accordion">
+
+    <details class="context41-card" open data-context-card data-document-slug="mision-vision-foda">
+        <summary>
+            <div>
+                <span class="card-index">01</span>
+                <div>
+                    <strong>Misión y Visión – FODA</strong>
+                    <small>
+                        PDF corporativo
+                        {% if mission.current_version %}
+                        · versión {{ mission.current_version.version_label }}
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+            <span class="summary-action">Ver contenido</span>
+        </summary>
+
+        <div class="context41-content">
+            {% if mission.current_version %}
+            <div class="document-toolbar">
+                <div>
+                    <b>Archivo vigente</b>
+                    <span>{{ mission.current_version.original_name }}</span>
+                </div>
+
+                <div class="toolbar-actions">
+                    <a
+                        target="_blank"
+                        class="outline-btn"
+                        href="{% url 'dashboard:artifact_view' mission.current_version.source_artifact.pk %}"
+                    >
+                        Abrir PDF
+                    </a>
+
+                    <a
+                        class="outline-btn"
+                        href="{% url 'dashboard:artifact_download' mission.current_version.source_artifact.pk %}"
+                    >
+                        Descargar
+                    </a>
+
+                    {% if can_change %}
+                    <a
+                        class="primary-btn"
+                        href="{% url 'context41:upload_version' mission.slug %}"
+                    >
+                        Subir nueva versión
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="pdf-frame">
+                <iframe
+                    title="Misión y Visión - FODA"
+                    src="{% url 'dashboard:artifact_view' mission.current_version.source_artifact.pk %}"
+                ></iframe>
+            </div>
+
+            <details class="version-history">
+                <summary>
+                    Historial de versiones
+                    ({{ mission.history|length }})
+                </summary>
+
+                <div>
+                    {% for version in mission.history %}
+                    <div class="version-row">
+                        <span>
+                            <b>{{ version.version_label }}</b>
+                            {{ version.original_name }}
+                        </span>
+
+                        <span>
+                            {% if version.is_current %}
+                            Vigente
+                            {% else %}
+                            Histórica
+                            {% endif %}
+                        </span>
+
+                        <a
+                            target="_blank"
+                            href="{% url 'dashboard:artifact_view' version.source_artifact.pk %}"
+                        >
+                            Ver
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </details>
+            {% else %}
+            <div class="context-empty">
+                No existe una versión cargada.
+            </div>
+            {% endif %}
+        </div>
+    </details>
+
+    <details class="context41-card" data-context-card data-document-slug="organigrama">
+        <summary>
+            <div>
+                <span class="card-index">02</span>
+                <div>
+                    <strong>Organigrama</strong>
+                    <small>
+                        Estructura interactiva + PDF de respaldo
+                        {% if organization_doc.current_version %}
+                        · versión {{ organization_doc.current_version.version_label }}
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+            <span class="summary-action">Ver organización</span>
+        </summary>
+
+        <div class="context41-content">
+
+            <div class="document-toolbar">
+                <div>
+                    <b>Vista principal</b>
+                    <span>
+                        Organigrama jerárquico administrado por el sistema.
+                    </span>
+                    <small class="org-source-note">
+                        El PDF funciona como evidencia documental vigente.
+                        La jerarquía interactiva se mantiene separada para
+                        no modificar puestos automáticamente sin validación.
+                    </small>
+                </div>
+
+                <div class="toolbar-actions">
+                    <a
+                        class="primary-btn"
+                        href="{% url 'organization:chart' %}"
+                    >
+                        Abrir organigrama
+                    </a>
+
+                    {% if organization_doc.current_version %}
+                    <a
+                        target="_blank"
+                        class="outline-btn"
+                        href="{% url 'dashboard:artifact_view' organization_doc.current_version.source_artifact.pk %}"
+                    >
+                        Ver PDF fuente
+                    </a>
+
+                    <a
+                        class="outline-btn"
+                        href="{% url 'dashboard:artifact_download' organization_doc.current_version.source_artifact.pk %}"
+                    >
+                        Descargar PDF
+                    </a>
+                    {% endif %}
+
+                    {% if can_change %}
+                    <a
+                        class="outline-btn"
+                        href="{% url 'context41:upload_version' organization_doc.slug %}"
+                    >
+                        Subir nueva versión
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if organization_roots %}
+            <div class="embedded-organization">
+                <div class="org-tree">
+                    <ul>
+                        {% for node in organization_roots %}
+                        {% include "organization/_node.html" with node=node %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% else %}
+            <div class="context-empty">
+                El organigrama interactivo todavía no tiene puestos cargados.
+            </div>
+            {% endif %}
+
+            {% if organization_doc.current_version %}
+            <details class="version-history">
+                <summary>
+                    Historial documental
+                    ({{ organization_doc.history|length }})
+                </summary>
+
+                <div>
+                    {% for version in organization_doc.history %}
+                    <div class="version-row">
+                        <span>
+                            <b>{{ version.version_label }}</b>
+                            {{ version.original_name }}
+                        </span>
+                        <span>
+                            {% if version.is_current %}
+                            Vigente
+                            {% else %}
+                            Histórica
+                            {% endif %}
+                        </span>
+                        <a
+                            target="_blank"
+                            href="{% url 'dashboard:artifact_view' version.source_artifact.pk %}"
+                        >
+                            Ver PDF
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </details>
+            {% endif %}
+        </div>
+    </details>
+
+    <details class="context41-card" data-context-card data-document-slug="requisitos-legales">
+        <summary>
+            <div>
+                <span class="card-index">03</span>
+                <div>
+                    <strong>
+                        Lista de requisitos legales, normativos,
+                        contractuales y de otra índole
+                    </strong>
+                    <small>
+                        Registro estructurado
+                        {% if legal_doc.current_version %}
+                        · versión {{ legal_doc.current_version.version_label }}
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+            <span class="summary-action">Ver registro</span>
+        </summary>
+
+        <div class="context41-content">
+
+            {% if legal_doc.current_version %}
+            <div class="document-toolbar">
+                <div>
+                    <b>
+                        {{ legal_rows|length }} requisitos vigentes
+                        en la versión cargada
+                    </b>
+                    <span>
+                        {{ legal_doc.current_version.original_name }}
+                    </span>
+                </div>
+
+                <div class="toolbar-actions">
+                    <a
+                        class="outline-btn"
+                        href="{% url 'dashboard:artifact_download' legal_doc.current_version.source_artifact.pk %}"
+                    >
+                        Descargar original
+                    </a>
+
+                    {% if can_change %}
+                    <a
+                        class="primary-btn"
+                        href="{% url 'context41:upload_version' legal_doc.slug %}"
+                    >
+                        Subir nueva versión
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="legal-filterbar">
+                <input
+                    type="search"
+                    placeholder="Buscar requisito, entidad o parte interesada..."
+                    data-legal-search
+                >
+
+                <select data-legal-promulgator>
+                    <option value="">Todas las entidades</option>
+                    {% for value in promulgators %}
+                    <option value="{{ value|lower }}">
+                        {{ value }}
+                    </option>
+                    {% endfor %}
+                </select>
+
+                <select data-legal-responsible>
+                    <option value="">Todos los responsables</option>
+                    {% for value in responsibles %}
+                    <option value="{{ value|lower }}">
+                        {{ value }}
+                    </option>
+                    {% endfor %}
+                </select>
+
+                <select data-legal-status>
+                    <option value="">Todos los estados</option>
+                    {% for value in statuses %}
+                    <option value="{{ value|lower }}">
+                        {{ value }}
+                    </option>
+                    {% endfor %}
+                </select>
+
+                <span class="legal-visible-count" data-legal-count>
+                    {{ legal_rows|length }} registros
+                </span>
+            </div>
+
+            <div class="legal-table-wrap">
+                <table class="legal-table">
+                    <thead>
+                    <tr>
+                        <th>N°</th>
+                        <th>Requisito</th>
+                        <th>Promulgada por</th>
+                        <th>Ubicación / fuente</th>
+                        <th>Responsable</th>
+                        <th>Partes interesadas</th>
+                        <th>Estado</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in legal_rows %}
+                    <tr
+                        data-legal-row
+                        data-search="{{ row.requirement|lower }} {{ row.promulgated_by|lower }} {{ row.interested_parties|lower }}"
+                        data-promulgator="{{ row.promulgated_by|lower }}"
+                        data-responsible="{{ row.responsible|lower }}"
+                        data-status="{{ row.status|lower }}"
+                    >
+                        <td class="legal-number">
+                            {{ row.number }}
+                        </td>
+                        <td class="legal-requirement">
+                            {{ row.requirement|linebreaksbr }}
+                        </td>
+                        <td>
+                            {{ row.promulgated_by }}
+                        </td>
+                        <td class="legal-location">
+                            {{ row.location|linebreaksbr }}
+                        </td>
+                        <td>
+                            {{ row.responsible|linebreaksbr }}
+                        </td>
+                        <td class="legal-parties">
+                            {{ row.interested_parties }}
+                        </td>
+                        <td>
+                            <span class="legal-status">
+                                {{ row.status|default:"Sin estado" }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="context-empty">
+                            La versión actual no contiene requisitos importados.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <details class="version-history">
+                <summary>
+                    Historial de versiones
+                    ({{ legal_doc.history|length }})
+                </summary>
+
+                <div>
+                    {% for version in legal_doc.history %}
+                    <div class="version-row">
+                        <span>
+                            <b>{{ version.version_label }}</b>
+                            {{ version.original_name }}
+                        </span>
+                        <span>
+                            {% if version.is_current %}
+                            Vigente
+                            {% else %}
+                            Histórica
+                            {% endif %}
+                        </span>
+                        <a
+                            href="{% url 'dashboard:artifact_download' version.source_artifact.pk %}"
+                        >
+                            Descargar
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </details>
+            {% else %}
+            <div class="context-empty">
+                No existe una versión cargada.
+            </div>
+            {% endif %}
+        </div>
+    </details>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/context41_v69.js' %}"></script>
+<script src="{% static 'js/organization.js' %}"></script>
+{% endblock %}

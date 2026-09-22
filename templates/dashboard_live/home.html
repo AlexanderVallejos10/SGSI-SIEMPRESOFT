@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard SGSI | SIEMPRESOFT{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard_live_v72.css' %}">
+{% endblock %}
+
+{% block content %}
+{% if not dataset %}
+<div class="page-head">
+  <div><h1>Dashboard SGSI</h1><p>Todavía no existe un Dashboard importado.</p></div>
+</div>
+<div class="dashboard-empty">
+  <strong>Carga inicial pendiente</strong>
+  <p>Ejecuta la importación inicial o sube una versión del Dashboard.</p>
+  {% if can_change %}<a class="primary-btn" href="{% url 'dashboard_live:upload' %}">Subir Dashboard</a>{% endif %}
+</div>
+{% else %}
+
+<div class="page-head dashboard-live-head">
+  <div>
+    <h1>Dashboard SGSI de SIEMPRESOFT</h1>
+    <p>Información estructurada, editable y trazable desde {{ dataset.original_name }}.</p>
+  </div>
+  <div class="head-actions">
+    <a class="outline-btn" href="{% url 'dashboard_live:download' %}">Descargar Excel actualizado</a>
+    {% if can_change %}<a class="primary-btn" href="{% url 'dashboard_live:upload' %}">Subir nueva versión</a>{% endif %}
+  </div>
+</div>
+
+<div class="dataset-bar">
+  <span>Fuente: <b>{{ dataset.original_name }}</b></span>
+  <span>Versión / periodo: <b>{{ dataset.version_label|default:"Sin especificar" }}</b></span>
+  <span>Última actualización: <b>{{ dataset.updated_at|date:"d/m/Y H:i" }}</b></span>
+</div>
+
+<div class="dashboard-summary-grid">
+  <button class="summary-card" type="button" data-open-tab="sgsi">
+    <span>Cumplimiento SGSI</span><strong>{{ sgsi_pct|floatformat:0 }}%</strong><small>{{ sgsi_yes }}/{{ sgsi_total }} indicadores cumplen</small>
+  </button>
+  <button class="summary-card" type="button" data-open-tab="oesi">
+    <span>Objetivos OESI</span><strong>{{ oesi_pct|floatformat:0 }}%</strong><small>{{ oesi_yes }}/{{ oesi_total }} objetivos cumplen</small>
+  </button>
+  <button class="summary-card" type="button" data-open-tab="oee">
+    <span>OEE vs OSI</span><strong>{{ oee_pct|floatformat:2 }}%</strong><small>{{ oee_obtained }}/{{ oee_expected }} puntos</small>
+  </button>
+  <button class="summary-card" type="button" data-open-tab="req">
+    <span>RyEPI vs OSI</span><strong>{{ req_pct|floatformat:2 }}%</strong><small>{{ req_obtained }}/{{ req_expected }} puntos</small>
+  </button>
+  <button class="summary-card" type="button" data-open-tab="mefi">
+    <span>MEFI</span><strong>{{ mefi.score_sum|floatformat:2 }}</strong><small>Peso {{ mefi.weight_sum|floatformat:2 }}</small>
+  </button>
+  <button class="summary-card" type="button" data-open-tab="mefe">
+    <span>MEFE</span><strong>{{ mefe.score_sum|floatformat:2 }}</strong><small>Peso {{ mefe.weight_sum|floatformat:2 }}</small>
+  </button>
+</div>
+
+{% if warnings %}
+<div class="quality-panel">
+  <div><strong>Alertas de calidad del dato</strong><span>{{ warnings|length }}</span></div>
+  <div class="quality-list">
+    {% for warning in warnings %}
+    <div><b>{{ warning.title }}</b><span>{{ warning.detail }}</span><small>{{ warning.sheet }}</small></div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<nav class="dashboard-tabs">
+  <button type="button" data-dashboard-tab="resumen" class="{% if active_tab == 'resumen' %}active{% endif %}">Resumen</button>
+  <button type="button" data-dashboard-tab="sgsi" class="{% if active_tab == 'sgsi' %}active{% endif %}">Indicadores SGSI</button>
+  <button type="button" data-dashboard-tab="oesi" class="{% if active_tab == 'oesi' %}active{% endif %}">Objetivos OESI</button>
+  <button type="button" data-dashboard-tab="oee" class="{% if active_tab == 'oee' %}active{% endif %}">OEE vs OSI</button>
+  <button type="button" data-dashboard-tab="req" class="{% if active_tab == 'req' %}active{% endif %}">RyEPI vs OSI</button>
+  <button type="button" data-dashboard-tab="mefi" class="{% if active_tab == 'mefi' %}active{% endif %}">MEFI</button>
+  <button type="button" data-dashboard-tab="mefe" class="{% if active_tab == 'mefe' %}active{% endif %}">MEFE</button>
+  <button type="button" data-dashboard-tab="efiefe" class="{% if active_tab == 'efiefe' %}active{% endif %}">EFI / EFE</button>
+  <button type="button" data-dashboard-tab="trace" class="{% if active_tab == 'trace' %}active{% endif %}">Trazabilidad</button>
+</nav>
+
+<section class="dashboard-panel {% if active_tab == 'resumen' %}active{% endif %}" data-dashboard-panel="resumen">
+  <div class="overview-grid">
+    <article class="overview-card">
+      <header><strong>Estado del SGSI</strong></header>
+      <div class="compliance-donut">
+        <div class="donut" style="--value: {{ sgsi_pct|floatformat:0 }};"><span>{{ sgsi_pct|floatformat:0 }}%</span></div>
+        <div><b>{{ sgsi_yes }} indicadores cumplen</b><small>Origen: Dashboard SGSI!K2:K11</small></div>
+      </div>
+    </article>
+    <article class="overview-card">
+      <header><strong>Objetivos de seguridad</strong></header>
+      <div class="summary-lines">
+        <div><span>OESI cumplidos</span><b>{{ oesi_yes }}/{{ oesi_total }}</b></div>
+        <div><span>Alineamiento OEE / OSI</span><b>{{ oee_pct|floatformat:2 }}%</b></div>
+        <div><span>Cobertura partes interesadas</span><b>{{ req_pct|floatformat:2 }}%</b></div>
+      </div>
+    </article>
+    <article class="overview-card">
+      <header><strong>Evaluación estratégica</strong></header>
+      <div class="summary-lines">
+        <div><span>MEFI</span><b>{{ mefi.score_sum|floatformat:2 }}</b></div>
+        <div><span>MEFE</span><b>{{ mefe.score_sum|floatformat:2 }}</b></div>
+        <div><span>Posición EFI / EFE</span><b>Ver matriz</b></div>
+      </div>
+    </article>
+  </div>
+
+  <article class="dashboard-table-card">
+    <header><div><strong>Indicadores principales</strong><span>Los valores conservan su origen en el Excel.</span></div></header>
+    <div class="table-wrap">
+      <table class="dashboard-table">
+        <thead><tr><th>ID</th><th>Medición</th><th>Indicador</th><th>Actual</th><th>Estado</th><th>Responsable</th></tr></thead>
+        <tbody>
+          {% for row in sgsi_rows %}
+          <tr>
+            <td>{{ row.obj.metric_id }}</td><td>{{ row.obj.description }}</td><td>{{ row.obj.indicator }}</td><td>{{ row.display }}</td>
+            <td><span class="state-pill {% if row.compliance == 'SI' %}ok{% else %}bad{% endif %}">{{ row.compliance|default:"—" }}</span></td>
+            <td>{{ row.obj.responsible_text }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </article>
+</section>
+
+<section class="dashboard-panel {% if active_tab == 'sgsi' %}active{% endif %}" data-dashboard-panel="sgsi">
+  <article class="dashboard-table-card">
+    <header><div><strong>Dashboard SGSI</strong><span>Fuente: Dashboard SGSI!A1:L11</span></div></header>
+    <div class="table-wrap">
+      <table class="dashboard-table metric-table">
+        <thead><tr><th>ID</th><th>Descripción</th><th>PDCA</th><th>Responsable</th><th>Indicador</th><th>Actual</th><th>¿Cumple?</th><th>Origen</th>{% if can_change %}<th></th>{% endif %}</tr></thead>
+        <tbody>
+          {% for row in sgsi_rows %}
+          <tr>
+            <td>{{ row.obj.metric_id }}</td>
+            <td><b>{{ row.obj.description }}</b><small>{{ row.obj.sgsi_process }}</small></td>
+            <td>{{ row.obj.pdca_cycle }}</td><td>{{ row.obj.responsible_text }}</td><td>{{ row.obj.indicator }}</td><td>{{ row.display }}</td>
+            <td><span class="state-pill {% if row.compliance == 'SI' %}ok{% else %}bad{% endif %}">{{ row.compliance|default:"—" }}</span>{% if row.source_mismatch %}<small class="data-warning">Excel fuente: {{ row.obj.source_compliance }}</small>{% endif %}</td>
+            <td class="source-cell">Dashboard SGSI!J{{ row.obj.source_row }}</td>
+            {% if can_change %}<td><a class="table-action" href="{{ row.edit_url }}">Editar</a></td>{% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </article>
+</section>
+
+<section class="dashboard-panel {% if active_tab == 'oesi' %}active{% endif %}" data-dashboard-panel="oesi">
+  <div class="oesi-grid">
+    {% for row in oesi_rows %}
+    <article class="oesi-card">
+      <header><span>OESI {{ row.obj.metric_id }}</span><span class="state-pill {% if row.compliance == 'SI' %}ok{% else %}bad{% endif %}">{{ row.compliance }}</span></header>
+      <h3>{{ row.obj.description }}</h3>
+      <dl>
+        <div><dt>Indicador</dt><dd>{{ row.obj.indicator }}</dd></div>
+        <div><dt>Cálculo actual</dt><dd>{{ row.display }}</dd></div>
+        <div><dt>Responsable</dt><dd>{{ row.obj.responsible_text }}</dd></div>
+        <div><dt>Registro</dt><dd>{{ row.obj.record_label|default:"Sin registro vinculado" }}</dd></div>
+      </dl>
+      <footer><span>Origen: Dashboard OESI!G{{ row.obj.source_row }}</span>{% if can_change %}<a href="{{ row.edit_url }}">Editar</a>{% endif %}</footer>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="dashboard-panel {% if active_tab == 'oee' %}active{% endif %}" data-dashboard-panel="oee">
+  <div class="matrix-header">
+    <div><h2>Matriz OEE vs OSI</h2><p>P = Primario (3 puntos), S = Secundario (1 punto). En esta matriz el sistema conserva como máximo un Primario por OESI.</p></div>
+    <div><strong>{{ oee_obtained }}/{{ oee_expected }}</strong><span>{{ oee_pct|floatformat:2 }}%</span></div>
+  </div>
+  <div class="matrix-wrap">
+    <table class="alignment-matrix">
+      <thead><tr><th class="matrix-description">OEE \ OSI</th>{% for objective in security %}<th><b>{{ objective.code }}</b><span>{{ objective.description }}</span></th>{% endfor %}</tr></thead>
+      <tbody>
+        {% for objective in strategic %}
+        <tr>
+          <th class="matrix-description"><b>{{ objective.code }}</b><span>{{ objective.description }}</span></th>
+          {% for alignment in oee_alignments %}{% if alignment.strategic_objective_id == objective.id %}
+          <td>{% if can_change %}<button type="button" class="matrix-cell value-{{ alignment.relation|lower }}" data-toggle-url="{% url 'dashboard_live:toggle_oee_alignment' alignment.pk %}">{{ alignment.relation|default:"·" }}</button>{% else %}<span class="matrix-cell value-{{ alignment.relation|lower }}">{{ alignment.relation|default:"·" }}</span>{% endif %}</td>
+          {% endif %}{% endfor %}
+        </tr>
+        {% endfor %}
+        <tr class="score-row"><th>Puntaje</th>{% for objective in security %}<td>{% for key, value in oee_scores.items %}{% if key == objective.code %}<b>{{ value }}</b>{% endif %}{% endfor %}</td>{% endfor %}</tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="matrix-source">Fuente: {{ dataset.original_name }} → Matriz OEE vs OSI (ISO 27001 6.)!A1:F20</div>
+</section>
+
+<section class="dashboard-panel {% if active_tab == 'req' %}active{% endif %}" data-dashboard-panel="req">
+  <div class="matrix-header">
+    <div><h2>Requisitos y expectativas de partes interesadas vs OSI</h2><p>Vincula las necesidades y expectativas con los objetivos de seguridad.</p></div>
+    <div><strong>{{ req_obtained }}/{{ req_expected }}</strong><span>{{ req_pct|floatformat:2 }}%</span></div>
+  </div>
+  <div class="matrix-wrap">
+    <table class="alignment-matrix requirements-matrix">
+      <thead><tr><th class="stakeholder-column">Parte interesada</th><th class="matrix-description">Requisito / expectativa</th>{% for objective in security %}<th><b>{{ objective.code }}</b><span>{{ objective.description }}</span></th>{% endfor %}</tr></thead>
+      <tbody>
+        {% for requirement in requirements %}
+        <tr>
+          <th class="stakeholder-column">{{ requirement.stakeholder }}</th><th class="matrix-description">{{ requirement.requirement }}</th>
+          {% for alignment in req_alignments %}{% if alignment.requirement_id == requirement.id %}
+          <td>{% if can_change %}<button type="button" class="matrix-cell value-{{ alignment.relation|lower }}" data-toggle-url="{% url 'dashboard_live:toggle_req_alignment' alignment.pk %}">{{ alignment.relation|default:"·" }}</button>{% else %}<span class="matrix-cell value-{{ alignment.relation|lower }}">{{ alignment.relation|default:"·" }}</span>{% endif %}</td>
+          {% endif %}{% endfor %}
+        </tr>
+        {% endfor %}
+        <tr class="score-row"><th colspan="2">Puntaje</th>{% for objective in security %}<td>{% for key, value in req_scores.items %}{% if key == objective.code %}<b>{{ value }}</b>{% endif %}{% endfor %}</td>{% endfor %}</tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="matrix-source">Fuente: {{ dataset.original_name }} → Matriz RyEPI vs OSI!A1:F26</div>
+</section>
+
+<section class="dashboard-panel {% if active_tab == 'mefi' %}active{% endif %}" data-dashboard-panel="mefi">
+  <div class="factor-layout">
+    <article class="factor-summary-card"><span>Puntaje MEFI</span><strong>{{ mefi.score_sum|floatformat:2 }}</strong><small>Peso acumulado: {{ mefi.weight_sum|floatformat:2 }}</small>{% if mefi.weight_warning %}<p class="data-warning-block">La suma de pesos no es 1.00. Se conserva el dato del Excel como alerta de calidad.</p>{% endif %}</article>
+    <article class="dashboard-table-card"><div class="table-wrap"><table class="dashboard-table factor-table"><thead><tr><th>Grupo</th><th>Factor crítico</th><th>Peso</th><th>Clasificación</th><th>Puntuación</th><th>Origen</th>{% if can_change %}<th></th>{% endif %}</tr></thead><tbody>
+    {% for factor in mefi.rows %}<tr><td>{{ factor.get_group_display }}</td><td>{{ factor.description }}</td><td>{{ factor.weight }}</td><td>{{ factor.classification }}</td><td><b>{{ factor.score|floatformat:2 }}</b></td><td class="source-cell">MEFI!A{{ factor.source_row }}:D{{ factor.source_row }}</td>{% if can_change %}<td><a class="table-action" href="{% url 'dashboard_live:edit_factor' factor.pk %}">Editar</a></td>{% endif %}</tr>{% endfor %}
+    </tbody></table></div></article>
+  </div>
+</section>
+
+<section class="dashboard-panel {% if active_tab == 'mefe' %}active{% endif %}" data-dashboard-panel="mefe">
+  <div class="factor-layout">
+    <article class="factor-summary-card"><span>Puntaje MEFE</span><strong>{{ mefe.score_sum|floatformat:2 }}</strong><small>Peso acumulado: {{ mefe.weight_sum|floatformat:2 }}</small>{% if mefe.weight_warning %}<p class="data-warning-block">La suma de pesos no es 1.00. Se conserva el dato del Excel como alerta de calidad.</p>{% endif %}</article>
+    <article class="dashboard-table-card"><div class="table-wrap"><table class="dashboard-table factor-table"><thead><tr><th>Grupo</th><th>Factor crítico</th><th>Peso</th><th>Clasificación</th><th>Puntuación</th><th>Origen</th>{% if can_change %}<th></th>{% endif %}</tr></thead><tbody>
+    {% for factor in mefe.rows %}<tr><td>{{ factor.get_group_display }}</td><td>{{ factor.description }}</td><td>{{ factor.weight }}</td><td>{{ factor.classification }}</td><td><b>{{ factor.score|floatformat:2 }}</b></td><td class="source-cell">MEFE!A{{ factor.source_row }}:D{{ factor.source_row }}</td>{% if can_change %}<td><a class="table-action" href="{% url 'dashboard_live:edit_factor' factor.pk %}">Editar</a></td>{% endif %}</tr>{% endfor %}
+    </tbody></table></div></article>
+  </div>
+</section>
+
+<section class="dashboard-panel {% if active_tab == 'efiefe' %}active{% endif %}" data-dashboard-panel="efiefe">
+  <div class="efi-layout">
+    <article class="efi-matrix-card">
+      <header><strong>Matriz EFI / EFE</strong><span>Posición calculada desde MEFI y MEFE</span></header>
+      <div class="efi-chart">
+        <div class="efi-grid">
+          <div class="efi-cell good">Crecer y construir</div><div class="efi-cell good">Crecer y construir</div><div class="efi-cell average">Mantenerse</div>
+          <div class="efi-cell good">Crecer y construir</div><div class="efi-cell average">Mantenerse</div><div class="efi-cell weak">Cosechar / desinvertir</div>
+          <div class="efi-cell average">Mantenerse</div><div class="efi-cell weak">Cosechar / desinvertir</div><div class="efi-cell weak">Cosechar / desinvertir</div>
+        </div>
+        <div class="efi-point" style="left: {{ efi_x|floatformat:2 }}%; top: {{ efe_y|floatformat:2 }}%;">X</div>
+        <span class="efi-axis y-axis">EFE</span><span class="efi-axis x-axis">EFI</span>
+      </div>
+    </article>
+    <article class="efi-side-card">
+      <div><span>Total ponderado EFI</span><strong>{{ mefi.score_sum|floatformat:2 }}</strong></div>
+      <div><span>Total ponderado EFE</span><strong>{{ mefe.score_sum|floatformat:2 }}</strong></div>
+      <p>La posición X se recalcula automáticamente al cambiar factores, pesos o clasificación.</p>
+      <small>El Excel descargado también recibe la posición actualizada.</small>
+    </article>
+  </div>
+</section>
+
+<section class="dashboard-panel {% if active_tab == 'trace' %}active{% endif %}" data-dashboard-panel="trace">
+  <div class="trace-layout">
+    <article class="dashboard-table-card">
+      <header><div><strong>Origen de los datos</strong><span>Cada campo conserva hoja, celda y fórmula del Excel importado.</span></div></header>
+      <div class="table-wrap trace-table-wrap"><table class="dashboard-table"><thead><tr><th>Entidad</th><th>Campo</th><th>Hoja</th><th>Celda</th><th>Fórmula original</th><th>Valor original</th></tr></thead><tbody>
+      {% for trace in traces %}<tr><td>{{ trace.entity_type }}/{{ trace.entity_key }}</td><td>{{ trace.field_name }}</td><td>{{ trace.source_sheet }}</td><td>{{ trace.source_cell }}</td><td class="formula-cell">{{ trace.source_formula|default:"—" }}</td><td>{{ trace.source_value|default:"—" }}</td></tr>{% endfor %}
+      </tbody></table></div>
+    </article>
+    <article class="dashboard-table-card">
+      <header><div><strong>Historial de cambios</strong><span>Cambios realizados desde el sistema.</span></div></header>
+      <div class="change-list">
+        {% for change in changes %}<div><time>{{ change.created_at|date:"d/m/Y H:i" }}</time><b>{{ change.entity_type }}/{{ change.entity_key }}</b><span>{{ change.field_name }}: “{{ change.old_value }}” → “{{ change.new_value }}”</span><small>{% if change.source_sheet %}{{ change.source_sheet }}!{{ change.source_cell }}{% endif %}{% if change.created_by %} · {{ change.created_by.username }}{% endif %}</small></div>{% empty %}<div class="dashboard-empty-row">Todavía no existen cambios realizados desde el sistema.</div>{% endfor %}
+      </div>
+    </article>
+  </div>
+</section>
+
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/dashboard_live_v72.js' %}"></script>
+{% endblock %}

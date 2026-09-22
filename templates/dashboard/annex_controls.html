@@ -1,0 +1,393 @@
+{% extends "base.html" %}
+
+{% block title %}
+Anexo A |
+ISO/IEC 27001:2022
+{% endblock %}
+
+{% block content %}
+
+<div class="breadcrumb">
+    ⌂ / SGSI /
+    Anexos / Anexo A
+</div>
+
+<div class="page-head">
+
+    <div>
+        <h1>
+            Anexo A -
+            Controles ISO/IEC 27001:2022
+        </h1>
+
+        <p>
+            Matriz relacional de controles,
+            documentos, evidencias y estado.
+        </p>
+    </div>
+
+    <div class="head-actions">
+
+        <a
+            class="outline-btn"
+            href="{% url 'dashboard:entity_list' 'documentos' %}"
+        >
+            Documentación
+        </a>
+
+        <a
+            class="outline-btn"
+            href="{% url 'dashboard:entity_list' 'evidencias' %}"
+        >
+            Evidencias
+        </a>
+
+        <a
+            class="primary-btn"
+            href="{% url 'dashboard:entity_list' 'controles' %}"
+        >
+            Editar controles
+        </a>
+
+    </div>
+
+</div>
+
+<div class="kpi-row five">
+
+    <article class="mock-kpi">
+        <div class="kpi-icon blue">
+            ▧
+        </div>
+        <div>
+            <strong>
+                {{ annex.total }}
+            </strong>
+            <span>
+                Controles totales
+            </span>
+        </div>
+    </article>
+
+    <article class="mock-kpi">
+        <div class="kpi-icon green">
+            ◉
+        </div>
+        <div>
+            <strong>
+                {{ annex.implemented }}
+            </strong>
+            <span>
+                Implementados
+            </span>
+        </div>
+    </article>
+
+    <article class="mock-kpi">
+        <div class="kpi-icon amber">
+            ◐
+        </div>
+        <div>
+            <strong>
+                {{ annex.in_progress }}
+            </strong>
+            <span>
+                En proceso
+            </span>
+        </div>
+    </article>
+
+    <article class="mock-kpi">
+        <div class="kpi-icon red">
+            ▲
+        </div>
+        <div>
+            <strong>
+                {{ annex.pending }}
+            </strong>
+            <span>
+                Pendientes
+            </span>
+        </div>
+    </article>
+
+    <article class="mock-kpi">
+        <div class="kpi-icon slate">
+            ◌
+        </div>
+        <div>
+            <strong>
+                {{ annex.not_applicable }}
+            </strong>
+            <span>
+                No aplicables
+            </span>
+        </div>
+    </article>
+
+</div>
+
+<div class="annex-top">
+
+    <section class="mock-panel">
+
+        <div class="panel-title">
+            Controles por dominio
+        </div>
+
+        <div class="domain-cards">
+
+            {% for domain in annex.domains %}
+
+            <div>
+                <b>
+                    {{ domain.label }}
+                </b>
+
+                <strong>
+                    {{ domain.count }}
+                </strong>
+
+                <small>
+                    controles
+                </small>
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+    <section class="mock-panel">
+
+        <div class="panel-title">
+            Estado de implementación
+        </div>
+
+        <div class="annex-explain">
+
+            <p>
+                Los valores de estado son datos
+                reales del modelo Control.
+                Actualmente varios están pendientes
+                de evaluación formal.
+            </p>
+
+            <a
+                class="primary-small"
+                href="{% url 'dashboard:entity_list' 'controles' %}"
+            >
+                Gestionar matriz
+            </a>
+
+        </div>
+
+    </section>
+
+</div>
+
+<section class="mock-panel controls-panel">
+
+    <div class="table-toolbar">
+
+        <input
+            id="controlSearch"
+            class="search-input"
+            placeholder="Buscar por código o descripción..."
+        >
+
+        <select id="domainFilter">
+            <option value="">
+                Todos los dominios
+            </option>
+            <option value="5.">
+                A.5 Organizacionales
+            </option>
+            <option value="6.">
+                A.6 Personas
+            </option>
+            <option value="7.">
+                A.7 Físicos
+            </option>
+            <option value="8.">
+                A.8 Tecnológicos
+            </option>
+        </select>
+
+    </div>
+
+    <div class="table-scroll">
+
+        <table
+            class="controls-table"
+            id="controlsTable"
+        >
+
+            <thead>
+            <tr>
+                <th>Control</th>
+                <th>Descripción</th>
+                <th>Dominio</th>
+                <th>Aplicabilidad</th>
+                <th>Responsable</th>
+                <th>Estado</th>
+                <th>Evidencias</th>
+                <th>Documentos</th>
+                <th>Acciones</th>
+            </tr>
+            </thead>
+
+            <tbody>
+
+            {% for control in annex.controls %}
+
+            <tr
+                data-code="{{ control.code }}"
+                data-name="{{ control.name|lower }}"
+            >
+
+                <td>
+                    <a
+                        class="entity-link"
+                        href="{% url 'dashboard:entity_detail' 'controles' control.pk %}"
+                    >
+                        <b>
+                            {{ control.code }}
+                        </b>
+                    </a>
+                </td>
+
+                <td>
+                    {{ control.name }}
+                </td>
+
+                <td>
+                    {{ control.domain }}
+                </td>
+
+                <td>
+                    <span class="status-pill">
+                        {{ control.get_applicability_display }}
+                    </span>
+                </td>
+
+                <td>
+                    {% if control.owner %}
+                    <a
+                        class="entity-link"
+                        href="{% url 'dashboard:entity_detail' 'usuarios' control.owner.pk %}"
+                    >
+                        {{ control.owner }}
+                    </a>
+                    {% else %}
+                    Pendiente
+                    {% endif %}
+                </td>
+
+                <td>
+                    <span class="status-pill">
+                        {{ control.get_implementation_status_display }}
+                    </span>
+                </td>
+
+                <td>
+                    {{ control.evidence_count }}
+                </td>
+
+                <td>
+                    {{ control.document_count }}
+                </td>
+
+                <td>
+                    <a
+                        class="primary-small"
+                        href="{% url 'dashboard:entity_edit' 'controles' control.pk %}"
+                    >
+                        Editar
+                    </a>
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+
+<script>
+
+const search =
+    document.getElementById(
+        "controlSearch"
+    );
+
+const domain =
+    document.getElementById(
+        "domainFilter"
+    );
+
+function filterControls() {
+
+    const query =
+        search.value
+            .toLowerCase()
+            .trim();
+
+    const selected =
+        domain.value;
+
+    document
+        .querySelectorAll(
+            "#controlsTable tbody tr"
+        )
+        .forEach(
+            (row) => {
+
+                const byText =
+                    !query
+                    || row.dataset.code.includes(
+                        query
+                    )
+                    || row.dataset.name.includes(
+                        query
+                    );
+
+                const byDomain =
+                    !selected
+                    || row.dataset.code.startsWith(
+                        selected
+                    );
+
+                row.style.display =
+                    byText && byDomain
+                    ? ""
+                    : "none";
+
+            }
+        );
+
+}
+
+search.addEventListener(
+    "input",
+    filterControls
+);
+
+domain.addEventListener(
+    "change",
+    filterControls
+);
+
+</script>
+
+{% endblock %}

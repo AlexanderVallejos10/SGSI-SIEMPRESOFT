@@ -1,0 +1,583 @@
+{% extends "base.html" %}
+
+{% block title %}
+Dashboard SGSI 2026 | SIEMPRESOFT
+{% endblock %}
+
+{% block content %}
+
+<div class="breadcrumb">
+    ⌂ / Reportes y métricas /
+    Dashboard 2026
+</div>
+
+<div class="page-head">
+
+    <div>
+        <h1>
+            Dashboard SGSI de SIEMPRESOFT
+        </h1>
+
+        <p>
+            Vista estructurada y editable.
+            El Excel original se conserva
+            como evidencia de origen.
+        </p>
+    </div>
+
+    <div class="head-actions">
+
+        <a
+            class="outline-btn"
+            href="{% url 'dashboard:artifact_download' artifact.id %}"
+        >
+            Descargar original
+        </a>
+
+        <a
+            class="primary-btn"
+            href="{% url 'dashboard:entity_list' 'metricas-sgsi' %}"
+        >
+            Editar datos
+        </a>
+
+    </div>
+
+</div>
+
+<div class="smart-tabs">
+
+    <button
+        class="smart-tab active"
+        data-smart-tab="oesi"
+    >
+        Dashboard OESI
+    </button>
+
+    <button
+        class="smart-tab"
+        data-smart-tab="sgsi"
+    >
+        Dashboard SGSI
+    </button>
+
+    <button
+        class="smart-tab"
+        data-smart-tab="oee"
+    >
+        Matriz OEE vs OSI
+    </button>
+
+    <button
+        class="smart-tab"
+        data-smart-tab="epi"
+    >
+        Matriz RyEPI vs OSI
+    </button>
+
+    <button
+        class="smart-tab"
+        data-smart-tab="mefi"
+    >
+        MEFI
+    </button>
+
+    <button
+        class="smart-tab"
+        data-smart-tab="mefe"
+    >
+        MEFE
+    </button>
+
+</div>
+
+<section
+    class="smart-panel active"
+    data-smart-panel="oesi"
+>
+
+    <div class="excel-title">
+        Dashboard OESI
+    </div>
+
+    <div class="excel-cards">
+
+        {% for row in objectives %}
+
+        <article
+            class="oesi-card
+            {% if row.compliance|lower == 'si' %}
+            comply
+            {% else %}
+            no-comply
+            {% endif %}
+            "
+        >
+
+            <div class="oesi-number">
+                {{ row.obj.measurement_id }}
+            </div>
+
+            <h3>
+                {{ row.obj.description }}
+            </h3>
+
+            <dl>
+                <div>
+                    <dt>Responsable</dt>
+                    <dd>{{ row.obj.responsible }}</dd>
+                </div>
+                <div>
+                    <dt>Periodo</dt>
+                    <dd>{{ row.obj.calculation_period }}</dd>
+                </div>
+                <div>
+                    <dt>Indicador</dt>
+                    <dd>{{ row.obj.indicator }}</dd>
+                </div>
+                <div>
+                    <dt>Cálculo actual</dt>
+                    <dd class="big-value">{{ row.value }}</dd>
+                </div>
+            </dl>
+
+            <div class="oesi-footer">
+                <span>
+                    ¿Cumple?
+                    <b>
+                        {{ row.compliance|default:"Pendiente" }}
+                    </b>
+                </span>
+
+                <a
+                    href="{% url 'dashboard:entity_edit' 'objetivos-oesi' row.obj.pk %}"
+                >
+                    Editar
+                </a>
+            </div>
+
+        </article>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+<section
+    class="smart-panel"
+    data-smart-panel="sgsi"
+>
+
+    <div class="excel-title">
+        Rendimiento SGSI
+    </div>
+
+    <div class="beautiful-table-wrap">
+
+        <table class="beautiful-excel">
+
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Descripción de medición</th>
+                <th>Método y/o recursos</th>
+                <th>Responsable</th>
+                <th>Periodo</th>
+                <th>Indicador</th>
+                <th>Cálculo actual</th>
+                <th>¿Cumple?</th>
+                <th></th>
+            </tr>
+            </thead>
+
+            <tbody>
+
+            {% for row in metrics %}
+
+            <tr>
+                <td>
+                    {{ row.obj.measurement_id }}
+                </td>
+                <td class="wide-cell">
+                    {{ row.obj.description }}
+                </td>
+                <td>
+                    {{ row.obj.method_resources }}
+                </td>
+                <td>
+                    {{ row.obj.responsible }}
+                </td>
+                <td>
+                    {{ row.obj.update_period }}
+                </td>
+                <td>
+                    {{ row.obj.indicator }}
+                </td>
+                <td class="big-value">
+                    {{ row.value }}
+                </td>
+                <td
+                    class="
+                    {% if row.compliance|lower == 'si' %}
+                    excel-yes
+                    {% else %}
+                    excel-no
+                    {% endif %}
+                    "
+                >
+                    {{ row.compliance }}
+                </td>
+                <td>
+                    <a
+                        class="btn-light"
+                        href="{% url 'dashboard:entity_edit' 'metricas-sgsi' row.obj.pk %}"
+                    >
+                        Editar
+                    </a>
+                </td>
+            </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+<section
+    class="smart-panel"
+    data-smart-panel="oee"
+>
+
+    <div class="excel-title">
+        Matriz de los Objetivos Estratégicos
+        de la Empresa vs Objetivos Estratégicos
+        de Seguridad de la Información
+    </div>
+
+    <div class="matrix-toolbar">
+        <a
+            class="primary-small"
+            href="{% url 'dashboard:entity_list' 'alineamientos' %}"
+        >
+            Editar relaciones
+        </a>
+    </div>
+
+    <div class="matrix-scroll">
+
+        <table class="alignment-matrix">
+
+            <thead>
+            <tr>
+                <th>OEE</th>
+                <th>Descripción</th>
+
+                {% for objective in oee.objective_codes %}
+
+                <th>
+                    {{ objective }}
+                </th>
+
+                {% endfor %}
+            </tr>
+            </thead>
+
+            <tbody>
+
+            {% for row in oee.rows %}
+
+            <tr>
+                <th class="oee-code">
+                    {{ row.source_code }}
+                </th>
+
+                <td class="oee-description">
+                    {{ row.description }}
+                </td>
+
+                {% for objective in oee.objective_codes %}
+
+                <td class="matrix-cell">
+                    {% for key, value in row.cells.items %}
+                        {% if key == objective %}
+                            <b class="relation-{{ value|lower }}">
+                                {{ value }}
+                            </b>
+                        {% endif %}
+                    {% endfor %}
+                </td>
+
+                {% endfor %}
+
+            </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <div class="matrix-legend">
+        <span>
+            <b>P</b>
+            Primario · 3 puntos
+        </span>
+
+        <span>
+            <b>S</b>
+            Secundario · 1 punto
+        </span>
+    </div>
+
+</section>
+
+<section
+    class="smart-panel"
+    data-smart-panel="epi"
+>
+
+    <div class="excel-title">
+        Matriz RyEPI vs OSI
+    </div>
+
+    <div class="matrix-toolbar">
+        <a
+            class="primary-small"
+            href="{% url 'dashboard:entity_list' 'alineamientos' %}"
+        >
+            Editar relaciones
+        </a>
+    </div>
+
+    <div class="matrix-scroll">
+
+        <table class="alignment-matrix">
+
+            <thead>
+            <tr>
+                <th>Grupo</th>
+                <th>Descripción</th>
+
+                {% for objective in epi.objective_codes %}
+
+                <th>
+                    {{ objective }}
+                </th>
+
+                {% endfor %}
+            </tr>
+            </thead>
+
+            <tbody>
+
+            {% for row in epi.rows %}
+
+            <tr>
+                <th class="oee-code">
+                    {{ row.source_group }}
+                </th>
+
+                <td class="oee-description">
+                    {{ row.description }}
+                </td>
+
+                {% for objective in epi.objective_codes %}
+
+                <td class="matrix-cell">
+                    {% for key, value in row.cells.items %}
+                        {% if key == objective %}
+                            <b class="relation-{{ value|lower }}">
+                                {{ value }}
+                            </b>
+                        {% endif %}
+                    {% endfor %}
+                </td>
+
+                {% endfor %}
+
+            </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+<section
+    class="smart-panel"
+    data-smart-panel="mefi"
+>
+
+    <div class="excel-title">
+        Matriz de evaluación
+        de factores internos · MEFI
+    </div>
+
+    <div class="beautiful-table-wrap">
+
+        <table class="beautiful-excel">
+
+            <thead>
+            <tr>
+                <th>Categoría</th>
+                <th>Factor</th>
+                <th>Clasificación</th>
+                <th></th>
+            </tr>
+            </thead>
+
+            <tbody>
+
+            {% for item in mefi %}
+
+            <tr>
+                <td>
+                    {{ item.category }}
+                </td>
+                <td class="wide-cell">
+                    {{ item.factor }}
+                </td>
+                <td class="big-value">
+                    {{ item.classification }}
+                </td>
+                <td>
+                    <a
+                        class="btn-light"
+                        href="{% url 'dashboard:entity_edit' 'factores-estrategicos' item.pk %}"
+                    >
+                        Editar
+                    </a>
+                </td>
+            </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+<section
+    class="smart-panel"
+    data-smart-panel="mefe"
+>
+
+    <div class="excel-title">
+        Matriz de evaluación
+        de factores externos · MEFE
+    </div>
+
+    <div class="beautiful-table-wrap">
+
+        <table class="beautiful-excel">
+
+            <thead>
+            <tr>
+                <th>Categoría</th>
+                <th>Factor</th>
+                <th>Clasificación</th>
+                <th></th>
+            </tr>
+            </thead>
+
+            <tbody>
+
+            {% for item in mefe %}
+
+            <tr>
+                <td>
+                    {{ item.category }}
+                </td>
+                <td class="wide-cell">
+                    {{ item.factor }}
+                </td>
+                <td class="big-value">
+                    {{ item.classification }}
+                </td>
+                <td>
+                    <a
+                        class="btn-light"
+                        href="{% url 'dashboard:entity_edit' 'factores-estrategicos' item.pk %}"
+                    >
+                        Editar
+                    </a>
+                </td>
+            </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+
+<script>
+document
+    .querySelectorAll(
+        ".smart-tab"
+    )
+    .forEach(
+        (button) => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const target =
+                        button.dataset.smartTab;
+
+                    document
+                        .querySelectorAll(
+                            ".smart-tab"
+                        )
+                        .forEach(
+                            (item) => {
+                                item.classList.toggle(
+                                    "active",
+                                    item === button
+                                );
+                            }
+                        );
+
+                    document
+                        .querySelectorAll(
+                            ".smart-panel"
+                        )
+                        .forEach(
+                            (panel) => {
+                                panel.classList.toggle(
+                                    "active",
+                                    panel.dataset.smartPanel === target
+                                );
+                            }
+                        );
+
+                }
+            );
+
+        }
+    );
+</script>
+
+{% endblock %}

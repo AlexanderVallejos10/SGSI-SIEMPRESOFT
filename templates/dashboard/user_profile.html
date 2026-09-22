@@ -1,0 +1,529 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+{{ profile_user.get_full_name|default:profile_user.username }} | Usuario
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'css/user_profile_v67.css' %}"
+>
+{% endblock %}
+
+{% block content %}
+
+<div class="breadcrumb">
+    Inicio /
+    Usuarios y accesos /
+    {{ profile_user.get_full_name|default:profile_user.username }}
+</div>
+
+<section class="user-profile-header">
+
+    <div class="user-profile-identity">
+
+        <div class="user-initials">
+            {{ profile_user.first_name|first|default:profile_user.username|first }}
+            {{ profile_user.last_name|first }}
+        </div>
+
+        <div>
+            <div class="profile-title-row">
+                <h1>
+                    {{ profile_user.get_full_name|default:profile_user.username }}
+                </h1>
+
+                <span
+                    class="profile-status status-{{ status_class }}"
+                >
+                    {{ status_label }}
+                </span>
+            </div>
+
+            <p class="profile-subtitle">
+                {{ position_name }}
+                {% if area_name != "—" %}
+                · {{ area_name }}
+                {% endif %}
+            </p>
+
+            <div class="profile-reference">
+                <span>
+                    {{ profile_user.business_code|default:"Sin código interno" }}
+                </span>
+                <span>
+                    {{ profile_user.email|default:"Sin correo registrado" }}
+                </span>
+                <span>
+                    Usuario: {{ profile_user.username }}
+                </span>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="profile-actions">
+        <a class="outline-btn" href="/organizacion/">
+            Ver en organigrama
+        </a>
+
+        <a class="outline-btn" href="{{ new_access_url }}">
+            Registrar acceso
+        </a>
+
+        <a
+            class="primary-btn"
+            href="{% url 'dashboard:entity_edit' 'usuarios' profile_user.pk %}"
+        >
+            Editar usuario
+        </a>
+    </div>
+
+</section>
+
+<section class="user-summary-strip">
+
+    <a href="#accesos">
+        <strong>{{ summary.accesses }}</strong>
+        <span>accesos registrados</span>
+    </a>
+
+    <a href="#activos">
+        <strong>{{ summary.assets }}</strong>
+        <span>activos vinculados</span>
+    </a>
+
+    <a href="#documentos">
+        <strong>{{ summary.documents }}</strong>
+        <span>documentos relacionados</span>
+    </a>
+
+    <a href="#historial">
+        <strong>{{ summary.review_due }}</strong>
+        <span>revisiones pendientes</span>
+    </a>
+
+</section>
+
+<nav class="profile-tabs">
+    <button type="button" class="active" data-profile-tab="resumen">
+        Resumen
+    </button>
+    <button type="button" data-profile-tab="accesos">
+        Accesos
+    </button>
+    <button type="button" data-profile-tab="activos">
+        Activos
+    </button>
+    <button type="button" data-profile-tab="documentos">
+        Documentos
+    </button>
+    <button type="button" data-profile-tab="historial">
+        Historial
+    </button>
+</nav>
+
+<section
+    class="profile-panel active"
+    data-profile-panel="resumen"
+>
+
+    <div class="profile-grid">
+
+        <article class="profile-section">
+
+            <header>
+                <h2>Datos de la persona</h2>
+            </header>
+
+            <dl class="profile-details">
+
+                <div>
+                    <dt>Código interno</dt>
+                    <dd>{{ profile_user.business_code|default:"—" }}</dd>
+                </div>
+
+                <div>
+                    <dt>Correo</dt>
+                    <dd>{{ profile_user.email|default:"—" }}</dd>
+                </div>
+
+                <div>
+                    <dt>Cargo actual</dt>
+                    <dd>{{ position_name }}</dd>
+                </div>
+
+                <div>
+                    <dt>Área</dt>
+                    <dd>{{ area_name }}</dd>
+                </div>
+
+                <div>
+                    <dt>Superior inmediato</dt>
+                    <dd>{{ manager_name }}</dd>
+                </div>
+
+                <div>
+                    <dt>Estado de cuenta</dt>
+                    <dd>
+                        {% if profile_user.is_active %}
+                        Activa
+                        {% else %}
+                        Inactiva
+                        {% endif %}
+                    </dd>
+                </div>
+
+                <div>
+                    <dt>Último acceso al sistema</dt>
+                    <dd>
+                        {{ profile_user.last_login|date:"d/m/Y H:i"|default:"Sin registro" }}
+                    </dd>
+                </div>
+
+                <div>
+                    <dt>Roles internos</dt>
+                    <dd>
+                        {% if groups %}
+                        {{ groups|join:", " }}
+                        {% else %}
+                        Sin grupos asignados
+                        {% endif %}
+                    </dd>
+                </div>
+
+            </dl>
+
+        </article>
+
+        <article class="profile-section">
+
+            <header>
+                <h2>Situación de accesos</h2>
+            </header>
+
+            <div class="security-summary">
+
+                <div>
+                    <span>Activos</span>
+                    <strong>{{ access.active_count }}</strong>
+                </div>
+
+                <div>
+                    <span>Por verificar</span>
+                    <strong>{{ access.unknown_count }}</strong>
+                </div>
+
+                <div>
+                    <span>Privilegiados</span>
+                    <strong>{{ access.privileged_count }}</strong>
+                </div>
+
+                <div>
+                    <span>Con MFA</span>
+                    <strong>{{ access.mfa_count }}</strong>
+                </div>
+
+            </div>
+
+            {% if summary.review_due %}
+
+            <div class="profile-notice warning">
+                Hay <b>{{ summary.review_due }}</b>
+                acceso(s) cuya fecha de revisión llegó o venció.
+            </div>
+
+            {% else %}
+
+            <div class="profile-notice">
+                No se detectaron revisiones vencidas con la información
+                actualmente registrada.
+            </div>
+
+            {% endif %}
+
+            <div class="profile-source">
+                <b>Procedencia del dato</b>
+                <p>
+                    {{ profile_user.source_document|default:"Sin documento fuente registrado" }}
+                </p>
+
+                {% if profile_user.source_reference %}
+                <small>
+                    {{ profile_user.source_reference }}
+                </small>
+                {% endif %}
+            </div>
+
+        </article>
+
+    </div>
+
+</section>
+
+<section
+    class="profile-panel"
+    data-profile-panel="accesos"
+    id="accesos"
+>
+    <div class="profile-section full">
+
+        <header class="section-heading">
+            <div>
+                <h2>Accesos a sistemas</h2>
+                <p>
+                    Sistemas, perfiles, estado y próximas revisiones.
+                </p>
+            </div>
+
+            <a class="primary-small" href="{{ new_access_url }}">
+                Registrar acceso
+            </a>
+        </header>
+
+        <div class="profile-table-wrap">
+            <table class="profile-table">
+                <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Sistema</th>
+                    <th>Perfil / rol</th>
+                    <th>Nivel</th>
+                    <th>Estado</th>
+                    <th>MFA</th>
+                    <th>Autorización</th>
+                    <th>Próxima revisión</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in access.rows %}
+                <tr>
+                    <td>{{ item.code }}</td>
+                    <td><b>{{ item.system }}</b></td>
+                    <td>{{ item.role }}</td>
+                    <td>{{ item.level }}</td>
+                    <td>{{ item.status }}</td>
+                    <td>{{ item.mfa }}</td>
+                    <td>{{ item.authorized|date:"d/m/Y"|default:"—" }}</td>
+                    <td>{{ item.next_review|date:"d/m/Y"|default:"—" }}</td>
+                    <td><a href="{{ item.url }}">Ver</a></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="profile-empty">
+                        No existen accesos registrados para esta persona.
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</section>
+
+<section
+    class="profile-panel"
+    data-profile-panel="activos"
+    id="activos"
+>
+    <div class="profile-section full">
+
+        <header class="section-heading">
+            <div>
+                <h2>Activos vinculados</h2>
+                <p>
+                    Equipos o activos que el modelo relaciona directamente
+                    con esta persona.
+                </p>
+            </div>
+
+            <a
+                class="outline-btn small"
+                href="{% url 'dashboard:entity_list' 'activos' %}"
+            >
+                Ir a activos
+            </a>
+        </header>
+
+        <div class="profile-table-wrap">
+            <table class="profile-table">
+                <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Activo</th>
+                    <th>Serie</th>
+                    <th>Estado</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in assets %}
+                <tr>
+                    <td>{{ item.code }}</td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.serial }}</td>
+                    <td>{{ item.status }}</td>
+                    <td><a href="{{ item.url }}">Ver ficha</a></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="profile-empty">
+                        No hay activos vinculados directamente a este usuario.
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</section>
+
+<section
+    class="profile-panel"
+    data-profile-panel="documentos"
+    id="documentos"
+>
+    <div class="profile-section full">
+
+        <header class="section-heading">
+            <div>
+                <h2>Documentos relacionados</h2>
+                <p>
+                    Documentos donde figura como responsable, autor,
+                    revisor o aprobador.
+                </p>
+            </div>
+        </header>
+
+        <div class="profile-table-wrap">
+            <table class="profile-table">
+                <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Documento</th>
+                    <th>Participación</th>
+                    <th>Estado</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in documents %}
+                <tr>
+                    <td>{{ item.code }}</td>
+                    <td>{{ item.title }}</td>
+                    <td>{{ item.roles }}</td>
+                    <td>{{ item.status }}</td>
+                    <td><a href="{{ item.url }}">Ver documento</a></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="profile-empty">
+                        No hay documentos vinculados por responsabilidad,
+                        autoría, revisión o aprobación.
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if incidents %}
+        <div class="related-user-block">
+            <h3>Incidentes relacionados</h3>
+            {% for item in incidents %}
+            <a href="{{ item.url }}">
+                <b>{{ item.code }}</b>
+                {{ item.title }}
+                <span>{{ item.status }}</span>
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+
+<section
+    class="profile-panel"
+    data-profile-panel="historial"
+    id="historial"
+>
+    <div class="profile-grid">
+
+        <article class="profile-section">
+            <header>
+                <h2>Historial</h2>
+            </header>
+
+            <div class="simple-timeline">
+                {% for item in timeline %}
+                <div class="timeline-row">
+                    <time>{{ item.date|date:"d/m/Y" }}</time>
+                    <div>
+                        <small>{{ item.category }}</small>
+                        <b>{{ item.title }}</b>
+                        {% if item.detail %}
+                        <p>{{ item.detail }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="profile-empty">
+                    No hay eventos históricos para mostrar.
+                </div>
+                {% endfor %}
+            </div>
+        </article>
+
+        <article class="profile-section">
+            <header>
+                <h2>Revisiones de acceso</h2>
+            </header>
+
+            <div class="review-list">
+                {% for review in access.reviews %}
+                <div>
+                    <span>{{ review.reviewed_at|date:"d/m/Y" }}</span>
+                    <b>{{ review.access.system }}</b>
+                    <small>
+                        {{ review.get_decision_display|default:review.decision }}
+                    </small>
+                </div>
+                {% empty %}
+                <div class="profile-empty">
+                    No hay revisiones de acceso registradas.
+                </div>
+                {% endfor %}
+            </div>
+        </article>
+
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll("[data-profile-tab]").forEach((button) => {
+    button.addEventListener("click", () => {
+        const name = button.dataset.profileTab;
+
+        document.querySelectorAll("[data-profile-tab]").forEach((item) => {
+            item.classList.toggle("active", item === button);
+        });
+
+        document.querySelectorAll("[data-profile-panel]").forEach((panel) => {
+            panel.classList.toggle(
+                "active",
+                panel.dataset.profilePanel === name
+            );
+        });
+    });
+});
+</script>
+{% endblock %}

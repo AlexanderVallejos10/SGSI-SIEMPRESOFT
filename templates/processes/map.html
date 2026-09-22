@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}4.3 Alcance del SGSI | Procesos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/processes_v71.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="breadcrumb">
+    Inicio / Gestión del SGSI / Procesos / 4.3 Alcance del SGSI
+</div>
+
+<div class="page-head process-page-head">
+    <div>
+        <h1>4.3 Alcance del SGSI</h1>
+        <p>Mapa interactivo de procesos y documento de alcance.</p>
+    </div>
+
+    {% if can_change %}
+    <div class="head-actions">
+        <a class="outline-btn" href="{% url 'processes:process_create' %}">
+            Nuevo proceso
+        </a>
+        <button class="outline-btn" type="button" data-open-relation-dialog>
+            Nueva relación
+        </button>
+        <button class="primary-btn" type="button" data-save-layout>
+            Guardar cambios
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<div class="process-reference-grid">
+    {% for document in reference_documents %}
+    <details
+        class="process-reference-card"
+        {% if document.kind == "map" %}open{% endif %}
+    >
+        <summary>
+            <div>
+                <strong>{{ document.title }}</strong>
+                {% if document.current_version %}
+                <small>
+                    Versión {{ document.current_version.version_label }}
+                    · {{ document.current_version.original_name }}
+                </small>
+                {% endif %}
+            </div>
+            <span>Ver documento</span>
+        </summary>
+
+        <div class="reference-body">
+            {% if document.current_version %}
+            <div class="reference-actions">
+                <a
+                    class="outline-btn"
+                    target="_blank"
+                    href="{% url 'processes:reference_view' document.current_version.pk %}"
+                >
+                    Ver PDF
+                </a>
+                <a
+                    class="outline-btn"
+                    href="{% url 'processes:reference_download' document.current_version.pk %}"
+                >
+                    Descargar
+                </a>
+                {% if can_change %}
+                <a
+                    class="primary-btn"
+                    href="{% url 'processes:reference_upload' document.slug %}"
+                >
+                    Subir nueva versión
+                </a>
+                {% endif %}
+            </div>
+
+            {% if document.kind == "scope" %}
+            <div class="reference-preview">
+                <iframe
+                    title="{{ document.title }}"
+                    src="{% url 'processes:reference_view' document.current_version.pk %}"
+                ></iframe>
+            </div>
+            {% else %}
+            <div class="reference-note">
+                El PDF es el respaldo documental. El mapa editable de abajo
+                conserva su propia trazabilidad para evitar cambios automáticos
+                no validados.
+            </div>
+            {% endif %}
+
+            <details class="process-version-history">
+                <summary>
+                    Historial de versiones ({{ document.history|length }})
+                </summary>
+                <div>
+                    {% for version in document.history %}
+                    <div>
+                        <span>
+                            <b>{{ version.version_label }}</b>
+                            {{ version.original_name }}
+                        </span>
+                        <span>
+                            {% if version.is_current %}Vigente{% else %}Histórica{% endif %}
+                        </span>
+                        <a
+                            target="_blank"
+                            href="{% url 'processes:reference_view' version.pk %}"
+                        >
+                            Ver
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </details>
+            {% endif %}
+        </div>
+    </details>
+    {% endfor %}
+</div>
+
+<div class="map-help">
+    El mapa es editable: puedes mover procesos entre Estratégicos,
+    Operativos y Apoyo, crear o retirar procesos y definir relaciones.
+    Los responsables, áreas y puestos provienen del módulo Organización.
+</div>
+
+<div class="process-workspace">
+    <section class="process-map-panel">
+        <div class="process-map-toolbar">
+            <div>
+                <strong>Mapa de procesos de SIEMPRESOFT</strong>
+                <span class="map-save-state" data-map-save-state>
+                    Sin cambios pendientes
+                </span>
+            </div>
+
+            <div class="map-tools">
+                <button type="button" data-zoom-out>−</button>
+                <span data-zoom-label>100%</span>
+                <button type="button" data-zoom-in>+</button>
+                <button type="button" data-fullscreen>Pantalla completa</button>
+            </div>
+        </div>
+
+        <div class="process-canvas" data-process-canvas>
+            <div class="process-stage" data-process-stage>
+
+                <div class="map-title">MAPA DE PROCESOS SIEMPRESOFT</div>
+
+                <div class="external-label external-left">
+                    CLIENTE / PSE
+                </div>
+
+                <div class="external-label external-right">
+                    CLIENTE / PSE / SUNAT
+                </div>
+
+                <div class="process-lane lane-strategic" data-lane="strategic">
+                    <span>PROCESOS ESTRATÉGICOS</span>
+                </div>
+
+                <div class="process-lane lane-operational" data-lane="operational">
+                    <span>PROCESOS OPERATIVOS</span>
+                </div>
+
+                <div class="process-lane lane-support" data-lane="support">
+                    <span>PROCESOS DE APOYO</span>
+                </div>
+
+                <div class="scope-frame">
+                    <strong>
+                        FACTURACIÓN ELECTRÓNICA PSE Y
+                        VALIDACIÓN DE COMPROBANTES OSE
+                    </strong>
+                </div>
+
+                <div class="scope-legend">
+                    <i></i>
+                    Alcance del SGSI
+                </div>
+
+                <div class="category-arrow strategic-arrow">↓</div>
+                <div class="category-arrow support-arrow">↑</div>
+
+                <svg
+                    class="process-lines"
+                    data-process-lines
+                    viewBox="0 0 1200 690"
+                    preserveAspectRatio="none"
+                    aria-hidden="true"
+                >
+                    <defs>
+                        <marker
+                            id="process-arrow"
+                            viewBox="0 0 10 10"
+                            refX="9"
+                            refY="5"
+                            markerWidth="7"
+                            markerHeight="7"
+                            orient="auto-start-reverse"
+                        >
+                            <path d="M 0 0 L 10 5 L 0 10 z"></path>
+                        </marker>
+                        <marker
+                            id="process-arrow-support"
+                            viewBox="0 0 10 10"
+                            refX="9"
+                            refY="5"
+                            markerWidth="7"
+                            markerHeight="7"
+                            orient="auto-start-reverse"
+                        >
+                            <path d="M 0 0 L 10 5 L 0 10 z"></path>
+                        </marker>
+                    </defs>
+
+                    <line class="reference-flow" x1="50" y1="250" x2="1150" y2="250"></line>
+                    <line class="reference-flow" x1="50" y1="350" x2="1150" y2="350"></line>
+                    <line class="reference-flow" x1="50" y1="440" x2="1150" y2="440"></line>
+                </svg>
+
+                {% for process in processes %}
+                <button
+                    type="button"
+                    class="
+                        process-node
+                        category-{{ process.category.kind }}
+                        {% if not process.is_in_scope %}outside-scope{% endif %}
+                    "
+                    data-process-id="{{ process.pk }}"
+                    data-category="{{ process.category.kind }}"
+                    data-x="{{ process.x }}"
+                    data-y="{{ process.y }}"
+                    style="left: {{ process.x }}px; top: {{ process.y }}px;"
+                >
+                    {% if can_change %}
+                    <span class="drag-handle">::</span>
+                    {% endif %}
+                    <span class="process-node-title">{{ process.name }}</span>
+                    <span class="process-node-menu">···</span>
+                </button>
+                {% endfor %}
+
+            </div>
+        </div>
+    </section>
+
+    <aside class="process-detail-panel" data-process-detail>
+        <div class="detail-empty">
+            <strong>Detalle del proceso</strong>
+            <p>
+                Selecciona un proceso del mapa para consultar responsable,
+                involucrados, documentos y relaciones.
+            </p>
+        </div>
+    </aside>
+</div>
+
+{{ process_payload|json_script:"process-data" }}
+{{ relation_payload|json_script:"relation-data" }}
+
+{% if can_change %}
+<dialog class="process-dialog" data-relation-dialog>
+    <form method="post" action="{% url 'processes:relation_create' %}">
+        {% csrf_token %}
+        <header>
+            <strong>Nueva relación entre procesos</strong>
+            <button type="button" data-close-relation-dialog>×</button>
+        </header>
+
+        <div class="dialog-body">
+            {% for field in relation_form %}
+            <div class="form-field">
+                <label>{{ field.label }}</label>
+                {{ field }}
+                {% for error in field.errors %}
+                <div class="field-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <footer>
+            <button
+                type="button"
+                class="outline-btn"
+                data-close-relation-dialog
+            >
+                Cancelar
+            </button>
+            <button type="submit" class="primary-btn">
+                Crear relación
+            </button>
+        </footer>
+    </form>
+</dialog>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/processes_v71.js' %}"></script>
+{% endblock %}

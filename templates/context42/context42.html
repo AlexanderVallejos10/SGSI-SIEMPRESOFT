@@ -1,0 +1,489 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+4.2 Necesidades y expectativas | SGSI
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'css/context42_v70_3.css' %}"
+>
+{% endblock %}
+
+{% block content %}
+
+<div class="breadcrumb">
+    Inicio / SGSI /
+    4. Contexto de la organización /
+    4.2
+</div>
+
+<div class="page-head context42-head">
+    <div>
+        <h1>
+            4.2. Comprender las necesidades y expectativas
+            de las partes interesadas
+        </h1>
+
+        <p>
+            Seguimiento de las partes interesadas y de los requisitos
+            legales que pueden afectar o ser afectados por el SGSI.
+        </p>
+    </div>
+</div>
+
+<div class="context42-overview">
+    <span>2 fuentes documentales</span>
+    <span>Versionamiento conservado</span>
+    <span>Actualización automática al cargar una nueva versión</span>
+</div>
+
+<div class="context42-accordion">
+
+    <details
+        class="context42-card"
+        {% if request.GET.open == "partes-interesadas" or not request.GET.open %}
+        open
+        {% endif %}
+        data-context42-card
+        data-document-slug="partes-interesadas"
+    >
+        <summary>
+            <div>
+                <span class="card-index">01</span>
+
+                <div>
+                    <strong>
+                        Partes interesadas
+                    </strong>
+
+                    <small>
+                        Excel estructurado
+                        {% if parties_doc.current_version %}
+                        · versión
+                        {{ parties_doc.current_version.version_label|default:"SIN-VERSIÓN" }}
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+
+            <span class="summary-action">
+                Ver contenido
+            </span>
+        </summary>
+
+        <div class="context42-content">
+
+            <div class="document-toolbar">
+                <div>
+                    {% if parties_doc.current_version %}
+                    <b>
+                        Archivo vigente
+                    </b>
+
+                    <span>
+                        {{ parties_doc.current_version.original_name }}
+                    </span>
+                    {% else %}
+                    <b>
+                        Sin archivo vigente
+                    </b>
+                    {% endif %}
+                </div>
+
+                <div class="toolbar-actions">
+                    {% if parties_doc.current_version %}
+                    <a
+                        class="outline-btn"
+                        href="{% url 'context42:download_current' parties_doc.slug %}"
+                    >
+                        Descargar original
+                    </a>
+                    {% endif %}
+
+                    {% if can_change %}
+                    <a
+                        class="primary-btn"
+                        href="{% url 'context42:upload_version' parties_doc.slug %}"
+                    >
+                        Subir nueva versión
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if party_groups %}
+
+            <div class="context42-mini-summary">
+                <div>
+                    <strong>
+                        {{ party_count }}
+                    </strong>
+                    <span>
+                        partes interesadas
+                    </span>
+                </div>
+
+                <div>
+                    <strong>
+                        {{ party_rows_count }}
+                    </strong>
+                    <span>
+                        necesidades / expectativas
+                    </span>
+                </div>
+
+                <div class="summary-search">
+                    <input
+                        type="search"
+                        placeholder="Buscar parte interesada o contenido..."
+                        data-party-search
+                    >
+                </div>
+            </div>
+
+            <div class="party-list">
+                {% for group in party_groups %}
+
+                <details
+                    class="party-block"
+                    data-party-block
+                    data-party-search="{{ group.name|lower }} {% for row in group.rows %}{{ row.need|lower }} {{ row.expectation|lower }} {% endfor %}"
+                >
+                    <summary>
+                        <strong>
+                            {{ group.name }}
+                        </strong>
+
+                        <span>
+                            {{ group.rows|length }}
+                            registro{{ group.rows|length|pluralize }}
+                        </span>
+                    </summary>
+
+                    <div class="party-table-wrap">
+                        <table class="party-table">
+                            <thead>
+                            <tr>
+                                <th>
+                                    Necesidad
+                                </th>
+                                <th>
+                                    Expectativa
+                                </th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            {% for row in group.rows %}
+                            <tr>
+                                <td>
+                                    {{ row.need }}
+                                </td>
+
+                                <td>
+                                    {{ row.expectation }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </details>
+
+                {% endfor %}
+            </div>
+
+            {% else %}
+            <div class="context42-empty">
+                Todavía no existen datos importados
+                para Partes interesadas.
+            </div>
+            {% endif %}
+
+            {% if parties_doc.history %}
+            <details class="version-history">
+                <summary>
+                    Historial de versiones
+                    ({{ parties_doc.history|length }})
+                </summary>
+
+                <div>
+                    {% for version in parties_doc.history %}
+                    <div class="version-row">
+                        <span>
+                            <b>
+                                {{ version.version_label|default:"SIN-VERSIÓN" }}
+                            </b>
+                            {{ version.original_name }}
+                        </span>
+
+                        <span>
+                            {% if version.is_current %}
+                            Vigente
+                            {% else %}
+                            Histórica
+                            {% endif %}
+                        </span>
+
+                        <span>
+                            {{ version.created_at|date:"d/m/Y H:i" }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </details>
+            {% endif %}
+        </div>
+    </details>
+
+    <details
+        class="context42-card"
+        {% if request.GET.open == "requisitos-legales" %}
+        open
+        {% endif %}
+        data-context42-card
+        data-document-slug="requisitos-legales"
+    >
+        <summary>
+            <div>
+                <span class="card-index">02</span>
+
+                <div>
+                    <strong>
+                        Lista de requisitos legales,
+                        normativos y contractuales
+                    </strong>
+
+                    <small>
+                        Excel estructurado
+                        {% if legal_doc.current_version %}
+                        · versión
+                        {{ legal_doc.current_version.version_label|default:"SIN-VERSIÓN" }}
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+
+            <span class="summary-action">
+                Ver registro
+            </span>
+        </summary>
+
+        <div class="context42-content">
+
+            <div class="document-toolbar">
+                <div>
+                    {% if legal_doc.current_version %}
+                    <b>
+                        Archivo vigente
+                    </b>
+
+                    <span>
+                        {{ legal_doc.current_version.original_name }}
+                    </span>
+                    {% else %}
+                    <b>
+                        Sin archivo vigente
+                    </b>
+                    {% endif %}
+                </div>
+
+                <div class="toolbar-actions">
+                    {% if legal_doc.current_version %}
+                    <a
+                        class="outline-btn"
+                        href="{% url 'context42:download_current' legal_doc.slug %}"
+                    >
+                        Descargar original
+                    </a>
+                    {% endif %}
+
+                    {% if can_change %}
+                    <a
+                        class="primary-btn"
+                        href="{% url 'context42:upload_version' legal_doc.slug %}"
+                    >
+                        Subir nueva versión
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if legal_rows %}
+
+            <div class="legal-filterbar">
+                <input
+                    type="search"
+                    placeholder="Buscar requisito, entidad o parte interesada..."
+                    data-legal-search
+                >
+
+                <select
+                    data-legal-promulgator
+                >
+                    <option value="">
+                        Todas las entidades
+                    </option>
+
+                    {% for value in legal_summary.promulgated %}
+                    <option
+                        value="{{ value|lower }}"
+                    >
+                        {{ value }}
+                    </option>
+                    {% endfor %}
+                </select>
+
+                <select
+                    data-legal-responsible
+                >
+                    <option value="">
+                        Todos los responsables
+                    </option>
+
+                    {% for value in legal_summary.responsibles %}
+                    <option
+                        value="{{ value|lower }}"
+                    >
+                        {{ value }}
+                    </option>
+                    {% endfor %}
+                </select>
+
+                <select
+                    data-legal-status
+                >
+                    <option value="">
+                        Todos los estados
+                    </option>
+
+                    {% for value in legal_summary.statuses %}
+                    <option
+                        value="{{ value|lower }}"
+                    >
+                        {{ value }}
+                    </option>
+                    {% endfor %}
+                </select>
+
+                <span
+                    class="legal-visible-count"
+                    data-legal-count
+                >
+                    {{ legal_summary.count }}
+                    registros
+                </span>
+            </div>
+
+            <div class="legal-table-wrap">
+                <table class="legal-table">
+                    <thead>
+                    <tr>
+                        <th>N°</th>
+                        <th>Requisito</th>
+                        <th>Promulgada por</th>
+                        <th>Ubicación</th>
+                        <th>Responsable</th>
+                        <th>Partes interesadas</th>
+                        <th>Estado</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    {% for row in legal_rows %}
+                    <tr
+                        data-legal-row
+                        data-search="{{ row.requirement|lower }} {{ row.promulgated_by|lower }} {{ row.stakeholders|lower }}"
+                        data-promulgator="{{ row.promulgated_by|lower }}"
+                        data-responsible="{{ row.responsible|lower }}"
+                        data-status="{{ row.status|lower }}"
+                    >
+                        <td class="legal-number">
+                            {{ row.item_no }}
+                        </td>
+
+                        <td class="legal-requirement">
+                            {{ row.requirement }}
+                        </td>
+
+                        <td>
+                            {{ row.promulgated_by }}
+                        </td>
+
+                        <td class="legal-location">
+                            {{ row.location }}
+                        </td>
+
+                        <td>
+                            {{ row.responsible }}
+                        </td>
+
+                        <td class="legal-parties">
+                            {{ row.stakeholders }}
+                        </td>
+
+                        <td>
+                            <span class="legal-status">
+                                {{ row.status|default:"Sin estado" }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% else %}
+            <div class="context42-empty">
+                Todavía no existen requisitos legales importados.
+            </div>
+            {% endif %}
+
+            {% if legal_doc.history %}
+            <details class="version-history">
+                <summary>
+                    Historial de versiones
+                    ({{ legal_doc.history|length }})
+                </summary>
+
+                <div>
+                    {% for version in legal_doc.history %}
+                    <div class="version-row">
+                        <span>
+                            <b>
+                                {{ version.version_label|default:"SIN-VERSIÓN" }}
+                            </b>
+                            {{ version.original_name }}
+                        </span>
+
+                        <span>
+                            {% if version.is_current %}
+                            Vigente
+                            {% else %}
+                            Histórica
+                            {% endif %}
+                        </span>
+
+                        <span>
+                            {{ version.created_at|date:"d/m/Y H:i" }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </details>
+            {% endif %}
+        </div>
+    </details>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script
+    src="{% static 'js/context42_v70_3.js' %}"
+></script>
+{% endblock %}

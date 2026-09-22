@@ -1,0 +1,92 @@
+# ============================================
+# Python
+# ============================================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.python-version
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+ENV/
+
+# ============================================
+# Variables de entorno / secretos
+# ============================================
+.env
+.env.*
+!.env.example
+
+*.pem
+*.key
+*.crt
+*.pfx
+*.p12
+
+secrets/
+credentials/
+
+# ============================================
+# Django
+# ============================================
+db.sqlite3
+db.sqlite3-journal
+
+media/
+staticfiles/
+
+*.log
+logs/
+
+# ============================================
+# IMPORTACIONES DOCUMENTALES
+# MUY IMPORTANTE PARA ESTE PROYECTO
+# ============================================
+imports/
+
+*.zip
+*.7z
+*.rar
+
+# ============================================
+# Backups
+# ============================================
+*.bak
+*.backup
+*.tmp
+*.temp
+
+# ============================================
+# PostgreSQL / Docker
+# ============================================
+postgres_data/
+pgdata/
+docker-data/
+data/postgres/
+
+# ============================================
+# Python caches / tests
+# ============================================
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# ============================================
+# IDE
+# ============================================
+.idea/
+.vscode/
+*.code-workspace
+
+# ============================================
+# Sistema operativo
+# ============================================
+Thumbs.db
+Desktop.ini
+.DS_Store
