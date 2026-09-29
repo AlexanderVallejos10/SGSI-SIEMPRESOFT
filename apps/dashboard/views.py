@@ -72,6 +72,9 @@ def annex_controls(request):
 
 @login_required
 def document_detail(request, document_id):
+    from apps.documents.models import Document
+    from apps.traceability.access import require_document
+    require_document(request.user, get_object_or_404(Document, pk=document_id))
     payload = document_preview_context(document_id)
     if payload is None:
         raise Http404("Documento no encontrado.")
@@ -89,10 +92,17 @@ def control_detail(request, pk):
 
 @login_required
 def user_profile(request, pk):
+    from django.core.exceptions import PermissionDenied
+    if request.user.pk != pk and not request.user.has_perm("accounts.view_user"):
+        raise PermissionDenied
     context = _base_context()
     context.update(
         get_user_profile_context(pk)
     )
+    from apps.traceability.selectors import user_links
+    person = context["profile_user"]
+    context["handovers"] = person.handovers.order_by("-occurred_on", "-created_at") if request.user == person or request.user.has_perm("traceability.view_handover") else []
+    context["person_document_links"] = user_links(person) if request.user == person or request.user.has_perm("traceability.view_documentlink") else []
     return render(
         request,
         "dashboard/user_profile.html",
@@ -104,6 +114,9 @@ def user_profile(request, pk):
 @xframe_options_sameorigin
 def artifact_view(request, artifact_id):
     artifact = get_artifact_file(artifact_id)
+    if artifact is not None:
+        from apps.traceability.access import require_artifact
+        require_artifact(request.user, artifact)
     if artifact is None:
         raise Http404("Archivo no encontrado.")
     content_type = artifact.mime_type or mimetypes.guess_type(artifact.original_name)[0] or "application/octet-stream"
@@ -117,6 +130,9 @@ def artifact_view(request, artifact_id):
 @login_required
 def artifact_download(request, artifact_id):
     artifact = get_artifact_file(artifact_id)
+    if artifact is not None:
+        from apps.traceability.access import require_artifact
+        require_artifact(request.user, artifact)
     if artifact is None:
         raise Http404("Archivo no encontrado.")
     handle = artifact.file.open("rb")
@@ -126,6 +142,9 @@ def artifact_download(request, artifact_id):
 @login_required
 def artifact_table(request, artifact_id):
     artifact = get_artifact_file(artifact_id)
+    if artifact is not None:
+        from apps.traceability.access import require_artifact
+        require_artifact(request.user, artifact)
     if artifact is None:
         raise Http404("Archivo no encontrado.")
     smart = get_smart_dashboard_context(artifact)

@@ -34,6 +34,8 @@ Editar `.env`: definir una clave secreta propia y credenciales coherentes en
 docker compose up --build -d
 docker compose exec web python manage.py check
 docker compose exec web python manage.py createsuperuser
+docker compose exec web python manage.py seed_organization_chart --apply
+docker compose exec web python manage.py configure_sgsi_structure --apply --map
 ```
 
 El script de arranque ejecuta las migraciones existentes cuando `RUN_MIGRATIONS=True`.
@@ -74,6 +76,16 @@ las pantallas de carga. Los archivos subidos se almacenan en `media/`.
 Las dos carpetas están excluidas del repositorio; no sustituirlas al actualizar código.
 Los antiguos instaladores incluían algunos documentos incrustados: esta copia limpia
 no los distribuye dentro del código. Consultar `docs/CLEANUP.md` para su procedencia.
+
+La pantalla **Trazabilidad > Importar fuentes** recibe la matriz de riesgos, la
+lista de propietarios y la lista de autorizaciones. Primero muestra una simulación;
+la carga solo se confirma con **Aplicar importación**. Las coincidencias ambiguas
+quedan pendientes para revisión y no conceden acceso automáticamente.
+
+Las áreas son unidades organizativas. Los procesos se vinculan a un área
+responsable y pueden involucrar otras áreas, cargos y personas. No se crean áreas
+a partir del nombre de un proceso. Las actas de asignación y devolución se generan
+desde la ficha del usuario y conservan una copia inmutable al emitirse.
 
 ## Documentación
 

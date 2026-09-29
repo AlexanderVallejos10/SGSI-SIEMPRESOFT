@@ -96,7 +96,7 @@ FIELD_PRIORITY = [
 
 EXCLUDED_FORM_FIELDS = {
     "id", "created_at", "updated_at", "created_by", "updated_by", "password",
-    "last_login", "date_joined", "is_superuser", "user_permissions",
+    "last_login", "date_joined", "is_superuser", "user_permissions", "groups",
 }
 
 def get_entity_config(entity):

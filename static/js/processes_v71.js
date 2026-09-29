@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const detail = document.querySelector("[data-process-detail]");
     const saveButton = document.querySelector("[data-save-layout]");
     const saveState = document.querySelector("[data-map-save-state]");
+    const loader = document.querySelector("[data-map-loader]");
 
     const processDataElement = document.getElementById("process-data");
     const relationDataElement = document.getElementById("relation-data");
@@ -207,7 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <h3>Relaciones SGSI</h3>
                     <div class="detail-counts">
                         <div><strong>${data.control_count}</strong><span>controles</span></div>
-                        <div><strong>${data.risk_count}</strong><span>riesgos</span></div>
+                        <div><a href="${data.risk_url}"><strong>${data.risk_count}</strong><span>Abrir matriz de riesgos</span></a></div>
                         <div><strong>${data.asset_count}</strong><span>activos</span></div>
                     </div>
                 </section>
@@ -381,25 +382,25 @@ document.addEventListener("DOMContentLoaded", () => {
             : "";
     }
 
-    document.querySelector("[data-zoom-in]")?.addEventListener(
-        "click",
-        () => {
-            zoom = Math.min(1.4, zoom + 0.1);
-            stage.style.transform = `scale(${zoom})`;
-            document.querySelector("[data-zoom-label]").textContent =
-                `${Math.round(zoom * 100)}%`;
-        }
-    );
-
-    document.querySelector("[data-zoom-out]")?.addEventListener(
-        "click",
-        () => {
-            zoom = Math.max(0.65, zoom - 0.1);
-            stage.style.transform = `scale(${zoom})`;
-            document.querySelector("[data-zoom-label]").textContent =
-                `${Math.round(zoom * 100)}%`;
-        }
-    );
+    function applyZoom() {
+        if (!stage || !canvas) return;
+        stage.style.transform = "none";
+        stage.style.zoom = zoom;
+        document.querySelector("[data-zoom-label]").textContent = `${Math.round(zoom*100)}%`;
+        canvas.style.height = `${Math.min(780, 760*zoom+30)}px`;
+    }
+    function fitMap() {
+        if (!canvas) return;
+        zoom = Math.min(1, Math.max(.25, (canvas.clientWidth-24)/1320));
+        applyZoom();
+    }
+    document.querySelector("[data-fit-map]")?.addEventListener("click", fitMap);
+    document.querySelector("[data-zoom-in]")?.addEventListener("click",()=>{zoom=Math.min(1.5,zoom+.1);applyZoom();});
+    document.querySelector("[data-zoom-out]")?.addEventListener("click",()=>{zoom=Math.max(.25,zoom-.1);applyZoom();});
+    if(canvas) new ResizeObserver(fitMap).observe(canvas);
+    fitMap();
+    window.requestAnimationFrame(() => loader?.classList.add("is-ready"));
+    window.addEventListener("beforeunload",event=>{if(pendingMoves.size){event.preventDefault();event.returnValue="";}});
 
     document.querySelector("[data-fullscreen]")?.addEventListener(
         "click",

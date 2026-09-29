@@ -45,6 +45,15 @@ class ProcessCategory(TraceableModel):
 
 
 class ProcessNode(TraceableModel):
+    primary_area = models.ForeignKey(
+        "organization.OrganizationalArea",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="owned_processes",
+        verbose_name="Área responsable",
+    )
+    is_external = models.BooleanField(default=False, verbose_name="Proceso externo")
     code = models.CharField(max_length=50, unique=True, db_index=True)
     name = models.CharField(max_length=180, db_index=True)
     category = models.ForeignKey(
@@ -127,6 +136,8 @@ class ProcessNode(TraceableModel):
 
     @property
     def responsible_area(self):
+        if self.primary_area_id:
+            return self.primary_area
         if self.owner_position_id and self.owner_position.area_id:
             return self.owner_position.area
         return None
@@ -136,9 +147,9 @@ class ProcessNode(TraceableModel):
         if not self.owner_position_id:
             return None
         assignment = (
-            self.owner_position.assignments
-            .filter(end_date__isnull=True, is_primary=True)
+            self.owner_position.assignments.filter(end_date__isnull=True)
             .select_related("user")
+            .order_by("-is_primary", "-start_date")
             .first()
         )
         return assignment.user if assignment else None
@@ -179,9 +190,7 @@ class ProcessRelation(TraceableModel):
     def clean(self):
         super().clean()
         if self.source_id and self.source_id == self.target_id:
-            raise ValidationError(
-                "Un proceso no puede relacionarse consigo mismo."
-            )
+            raise ValidationError("Un proceso no puede relacionarse consigo mismo.")
 
     def __str__(self):
         return f"{self.source.name} → {self.target.name}"

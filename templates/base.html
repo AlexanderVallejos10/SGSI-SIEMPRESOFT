@@ -50,13 +50,15 @@
         <a class="management-link" href="{% url 'organization:chart' %}"><span>⌘</span>Organización</a>
         <a class="management-link" href="{% url 'processes:map' %}"><span>⇄</span>Procesos</a>
         <a class="management-link" href="{% url 'dashboard:entity_list' 'activos' %}"><span>▣</span>Activos y equipos</a>
-        <a class="management-link" href="{% url 'dashboard:entity_list' 'riesgos' %}"><span>▲</span>Riesgos</a>
+        <a class="management-link" href="{% url 'traceability:risks' %}"><span>▲</span>Riesgos</a>
         <a class="management-link" href="{% url 'dashboard:entity_list' 'incidentes' %}"><span>▲</span>Incidentes</a>
         <a class="management-link" href="{% url 'dashboard:entity_list' 'vulnerabilidades' %}"><span>◉</span>Vulnerabilidades</a>
         <a class="management-link" href="{% url 'dashboard:entity_list' 'documentos' %}"><span>▧</span>Documentos y evidencias</a>
         <a class="management-link" href="{% url 'dashboard:entity_list' 'auditorias' %}"><span>▣</span>Auditorías</a>
         <a class="management-link" href="{% url 'dashboard:report_center' %}"><span>▥</span>Reportes y métricas</a>
         <a class="management-link" href="{% url 'dashboard:entity_list' 'controles' %}"><span>✓</span>Controles ISO</a>
+        {% if perms.traceability.view_documentlink %}<a class="management-link" href="{% url 'traceability:links' %}"><span>▧</span>Responsabilidades documentales</a>{% endif %}
+        {% if perms.traceability.add_importbatch %}<a class="management-link" href="{% url 'traceability:import' %}"><span>↑</span>Importar fuentes</a>{% endif %}
     </aside>
 
     <section class="page-column">

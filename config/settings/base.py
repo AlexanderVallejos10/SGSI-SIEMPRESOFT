@@ -41,6 +41,7 @@ LOCAL_APPS = [
     "apps.risks",
     "apps.incidents",
     "apps.assurance",
+    "apps.traceability",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS

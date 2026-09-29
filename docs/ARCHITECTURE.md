@@ -23,6 +23,7 @@ los modelos representan datos y relaciones; las plantillas presentan el contenid
 | context42 | Partes interesadas y registros del contexto 4.2 |
 | dashboard | Consultas, reportes y gestión genérica de entidades |
 | dashboard_live | Tablero principal y datos importados de su Excel |
+| traceability | Importación controlada, permisos documentales, matriz de riesgos y actas |
 
 ## Convenciones de mantenimiento
 
@@ -53,3 +54,12 @@ uno de los directorios. Lo mismo aplica a los requisitos legales de context41 y 
 
 Los nombres versionados de algunos CSS y JS siguen referenciados por las plantillas.
 Son archivos activos, no instaladores; se conservan hasta una refactorización coordinada.
+
+## Relaciones operativas
+
+- Un área agrupa cargos; una asignación vincula temporalmente una persona con un cargo.
+- Un proceso tiene un área responsable y puede vincular áreas, cargos y participantes adicionales.
+- Los riesgos se vinculan a uno o varios procesos sin perder el texto de la fuente original.
+- La propiedad y la autorización documental conservan persona, cargo, fecha y fila de origen.
+- Una autorización importada no entra en vigor hasta que un gestor la verifica.
+- Las actas de ingreso y salida reúnen equipos y accesos y congelan sus datos al emitirse.

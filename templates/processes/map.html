@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}4.3 Alcance del SGSI | Procesos{% endblock %}
+{% block title %}Mapa de procesos | SIEMPRESOFT{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/processes_v71.css' %}">
@@ -10,15 +10,19 @@
 {% block content %}
 
 <div class="breadcrumb">
-    Inicio / Gestión del SGSI / Procesos / 4.3 Alcance del SGSI
+    Inicio / Gestión del SGSI / Procesos
 </div>
 
 <div class="page-head process-page-head">
     <div>
-        <h1>4.3 Alcance del SGSI</h1>
-        <p>Mapa interactivo de procesos y documento de alcance.</p>
+        <h1>{% if show_scope %}4.3 Alcance del SGSI{% else %}Mapa de procesos{% endif %}</h1>
+        <p>Seleccione un proceso para consultar responsables, documentos y riesgos.</p>
     </div>
 
+    <div class="head-actions">
+        {% if map_document.current_version %}<a class="outline-btn" href="{% url 'processes:reference_view' map_document.current_version.pk %}" target="_blank" rel="noopener">PDF de referencia</a>{% endif %}
+        {% if can_change and map_document %}<a class="outline-btn" href="{% url 'processes:reference_upload' map_document.slug %}">Actualizar PDF</a>{% endif %}
+    </div>
     {% if can_change %}
     <div class="head-actions">
         <a class="outline-btn" href="{% url 'processes:process_create' %}">
@@ -34,6 +38,7 @@
     {% endif %}
 </div>
 
+{% if show_scope %}
 <div class="process-reference-grid">
     {% for document in reference_documents %}
     <details
@@ -130,6 +135,7 @@
     Los responsables, áreas y puestos provienen del módulo Organización.
 </div>
 
+{% endif %}
 <div class="process-workspace">
     <section class="process-map-panel">
         <div class="process-map-toolbar">
@@ -142,13 +148,17 @@
 
             <div class="map-tools">
                 <button type="button" data-zoom-out>−</button>
-                <span data-zoom-label>100%</span>
+                <span data-zoom-label>100%</span><button type="button" data-fit-map>Ajustar</button>
                 <button type="button" data-zoom-in>+</button>
                 <button type="button" data-fullscreen>Pantalla completa</button>
             </div>
         </div>
 
-        <div class="process-canvas" data-process-canvas>
+        <div class="process-canvas" data-process-canvas tabindex="0" aria-label="Mapa interactivo de procesos">
+            <div class="map-loader" data-map-loader role="status" aria-live="polite">
+                <span class="map-loader-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+                <span>Organizando procesos</span>
+            </div>
             <div class="process-stage" data-process-stage>
 
                 <div class="map-title">MAPA DE PROCESOS SIEMPRESOFT</div>
@@ -231,7 +241,7 @@
                     class="
                         process-node
                         category-{{ process.category.kind }}
-                        {% if not process.is_in_scope %}outside-scope{% endif %}
+                        {% if process.is_external %}outside-scope{% endif %}
                     "
                     data-process-id="{{ process.pk }}"
                     data-category="{{ process.category.kind }}"

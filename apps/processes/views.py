@@ -38,6 +38,7 @@ def _can_change(request):
 @login_required
 def process_map(request):
     context = map_context()
+    context["show_scope"] = request.resolver_match.url_name == "context43"
     context["can_change"] = _can_change(request)
     context["quick_form"] = QuickProcessForm()
     context["relation_form"] = ProcessRelationForm()

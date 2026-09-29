@@ -1,0 +1,6 @@
+{% extends "base.html" %}{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/traceability.css' %}">{% endblock %}
+{% block content %}<div class="trace">
+<nav class="trace-nav" aria-label="Trazabilidad"><a href="{% url 'organization:chart' %}">Organización</a><a href="{% url 'processes:map' %}">Procesos</a>{% if perms.risks.view_risk %}<a href="{% url 'traceability:risks' %}">Matriz de riesgos</a>{% endif %}{% if perms.traceability.view_documentlink %}<a href="{% url 'traceability:links' %}">Responsabilidades documentales</a>{% endif %}{% if perms.traceability.add_importbatch %}<a href="{% url 'traceability:import' %}">Importar Excel</a>{% endif %}{% if perms.traceability.view_sourcerow %}<a href="{% url 'traceability:sources' %}">Revisión de fuentes</a>{% endif %}</nav>
+{% block trace_content %}{% endblock %}</div>{% endblock %}
+{% block extra_js %}<script src="{% static 'js/traceability.js' %}"></script>{% endblock %}

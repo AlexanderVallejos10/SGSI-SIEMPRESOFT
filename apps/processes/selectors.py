@@ -93,7 +93,8 @@ def process_payload(process):
         ],
         "documents": documents,
         "control_count": process.controls.count(),
-        "risk_count": process.risks.count(),
+        "risk_count": process.risks.filter(is_active=True).count(),
+        "risk_url": reverse("traceability:risks") + f"?process={process.pk}",
         "asset_count": process.assets.count(),
         "incoming": incoming,
         "outgoing": outgoing,
@@ -118,6 +119,7 @@ def map_context():
         .filter(is_active=True)
         .select_related(
             "category",
+            "primary_area",
             "owner_position",
             "owner_position__area",
         )

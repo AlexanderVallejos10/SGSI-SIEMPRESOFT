@@ -13,6 +13,7 @@ class ProcessNodeForm(forms.ModelForm):
             "name",
             "category",
             "description",
+            "primary_area",
             "owner_position",
             "involved_areas",
             "involved_positions",
@@ -22,6 +23,7 @@ class ProcessNodeForm(forms.ModelForm):
             "risks",
             "assets",
             "is_in_scope",
+            "is_external",
             "is_active",
         )
         widgets = {
@@ -48,9 +50,11 @@ class QuickProcessForm(forms.ModelForm):
             "code",
             "name",
             "category",
+            "primary_area",
             "owner_position",
             "description",
             "is_in_scope",
+            "is_external",
         )
         widgets = {
             "description": forms.Textarea(attrs={"rows": 3}),
