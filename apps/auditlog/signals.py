@@ -26,6 +26,7 @@ from .services import register_audit_event
 # ============================================================
 
 AUDITED_APP_LABELS = {
+    "organization",
     "accounts",
     "documents",
     "controls",

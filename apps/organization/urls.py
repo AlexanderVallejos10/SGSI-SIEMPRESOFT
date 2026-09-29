@@ -60,4 +60,5 @@ urlpatterns = [
         views.area_edit,
         name="area_edit",
     ),
+    path("areas/<uuid:pk>/", views.area_detail, name="area_detail"),
 ]

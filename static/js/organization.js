@@ -5,7 +5,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function applyZoom() {
         if (!stage) return;
-        stage.style.transform = `scale(${zoom})`;
+        stage.style.transform = "none";
+        stage.style.zoom = zoom;
         if (label) {
             label.textContent = `${Math.round(zoom * 100)}%`;
         }
@@ -17,12 +18,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.querySelector("[data-zoom-out]")?.addEventListener("click", () => {
-        zoom = Math.max(0.55, zoom - 0.1);
+        zoom = Math.max(0.25, zoom - 0.1);
         applyZoom();
     });
 
     document.querySelector("[data-zoom-reset]")?.addEventListener("click", () => {
-        zoom = 1;
+        zoom = Math.min(1, document.querySelector(".org-canvas").clientWidth / stage.scrollWidth);
         applyZoom();
 
         const canvas = document.querySelector(".org-canvas");
@@ -71,7 +72,26 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    function search() {
+        const q = document.querySelector('[data-org-search]').value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const area = document.querySelector('[data-org-area]').value;
+        let count = 0, first = null;
+        document.querySelectorAll('.org-node').forEach(node=>{
+            const match = (!q || node.innerText.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().includes(q)) && (!area || node.dataset.area===area);
+            node.classList.toggle('org-muted', !match);node.classList.toggle('org-match', match && Boolean(q||area));
+            if(match){count++;first ||= node;}
+        });
+        document.querySelector('[data-org-result]').textContent = `${count} puestos`;
+        if(first && (q||area)){
+            let parent=first.parentElement;
+            while(parent){parent.classList.remove('branch-collapsed');const toggle=parent.querySelector(':scope > article > [data-collapse-branch]');if(toggle){toggle.textContent='−';toggle.setAttribute('aria-expanded','true');}parent=parent.parentElement.closest('.org-node-item');}
+            first.scrollIntoView({block:'nearest',inline:'center'});
+        }
+    }
+    document.querySelector('[data-org-search]')?.addEventListener('input',search);
+    document.querySelector('[data-org-area]')?.addEventListener('change',search);
     window.setTimeout(() => {
+        if(stage){zoom=Math.min(.85,Math.max(.25,document.querySelector('.org-canvas').clientWidth/stage.scrollWidth));applyZoom();}
         const canvas = document.querySelector(".org-canvas");
         if (canvas) {
             canvas.scrollLeft = Math.max(

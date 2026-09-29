@@ -454,3 +454,49 @@
         flex-direction: column;
     }
 }
+
+/* Area configuration uses the existing product styles. */
+.org-area-notice {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px 16px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    border: 1px solid #d4e0eb;
+    border-radius: 5px;
+    background: #f2f7fb;
+    color: #304e66;
+    font-size: 13px;
+}
+.org-area-notice a, .node-title a { color: #215c88; }
+.area-table-wrap { overflow-x: auto; }
+.area-code, .area-member small {
+    display: block;
+    color: #586b7c;
+    font-size: 12px;
+    margin-top: 4px;
+}
+.area-member + .area-member { margin-top: 10px; }
+.area-count-note { color: #586b7c; font-size: 12px; line-height: 1.6; }
+.area-pending { padding: 16px; margin-top: 20px; }
+.area-pending h2 { font-size: 18px; margin-top: 0; }
+.area-vacant { color: #805815; background: #fff7e8; padding: 4px 8px; border-radius: 4px; }
+.area-description { max-width: 75ch; line-height: 1.6; }
+.area-position-picker { grid-column: 1 / -1; }
+.area-position-picker > div {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 8px;
+    max-height: 340px;
+    overflow-y: auto;
+    margin: 8px 0;
+    padding: 12px;
+    background: #f7f9fb;
+    border: 1px solid #dce4ec;
+}
+.area-position-picker label { display: flex; gap: 8px; align-items: baseline; }
+.area-position-picker input[type="checkbox"] { width: auto; min-width: 16px; height: 16px; }
+.organization-form .errorlist { color: #a32d2d; }
+.organization-form input[type="checkbox"] { width: auto; }
+.organization-form small { display: block; color: #586b7c; line-height: 1.5; }

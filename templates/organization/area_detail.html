@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ area.name }} | Organización{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/organization.css' %}">{% endblock %}
+{% block content %}
+<div class="breadcrumb"><a href="{% url 'organization:chart' %}">Organización</a> / <a href="{% url 'organization:areas' %}">Áreas</a> / {{ area.name }}</div>
+<div class="page-head organization-head">
+    <div><h1>{{ area.name }}</h1><p>{{ area.code }} · {% if area.is_active %}Activa{% else %}Inactiva{% endif %}{% if area.parent %} · Área superior: <a href="{% url 'organization:area_detail' area.parent.pk %}">{{ area.parent.name }}</a>{% endif %}</p></div>
+    <div class="head-actions">
+        <a class="outline-btn" href="{% url 'organization:chart' %}">Ver organigrama</a>
+        {% if can_change %}<a class="outline-btn" href="{% url 'organization:area_edit' area.pk %}">Editar área y vincular puestos</a>
+        {% if area.is_active %}<a class="primary-btn" href="{% url 'organization:position_create' %}?area={{ area.pk }}">Nuevo puesto</a>{% endif %}{% endif %}
+    </div>
+</div>
+{% if area.description %}<p class="area-description">{{ area.description|linebreaksbr }}</p>{% endif %}
+<div class="org-kpis">
+    <div><strong>{{ position_count }}</strong><span>puestos activos</span></div>
+    <div><strong>{{ member_count }}</strong><span>trabajadores distintos</span></div>
+    <div><strong>{{ vacant_count }}</strong><span>puestos sin asignación</span></div>
+</div>
+<section class="mock-panel area-table-wrap" aria-label="Puestos y trabajadores del área">
+<table class="controls-table">
+    <thead><tr><th>Puesto</th><th>Depende de</th><th>Trabajadores asignados</th><th>Estado</th>{% if can_change %}<th>Acciones</th>{% endif %}</tr></thead>
+    <tbody>{% for position in positions %}
+    <tr>
+        <td><strong>{{ position.title }}</strong><small class="area-code">{{ position.code }}</small></td>
+        <td>{{ position.parent.title|default:"Puesto raíz" }}</td>
+        <td>{% for assignment in position.active_assignments %}
+            <div class="area-member"><a href="{% url 'dashboard:user_profile' assignment.user.pk %}">{{ assignment.user.get_full_name|default:assignment.user.username }}</a>
+                <small>{% if assignment.is_primary %}Principal{% else %}Adicional{% endif %} · Desde {{ assignment.start_date|date:"d/m/Y" }}</small>
+            </div>
+            {% empty %}{% if position.is_active %}<span class="area-vacant">Vacante</span>{% else %}Sin asignación abierta{% endif %}{% endfor %}
+        </td>
+        <td>{% if position.is_active %}Activo{% else %}Inactivo{% endif %}</td>
+        {% if can_change %}<td><a href="{% url 'organization:position_edit' position.pk %}">Editar puesto</a>
+            {% if position.is_active %}<div><a href="{% url 'organization:assign_user' position.pk %}">Asignar trabajador</a></div><div><a href="{% url 'organization:quick_user_create' position.pk %}">Crear trabajador</a></div>{% endif %}
+        </td>{% endif %}
+    </tr>
+    {% empty %}<tr><td colspan="5" class="empty-cell">Esta área todavía no tiene puestos. {% if can_change %}<a href="{% url 'organization:area_edit' area.pk %}">Vincular puestos existentes</a>{% endif %}</td></tr>{% endfor %}</tbody>
+</table>
+</section>
+<p class="area-count-note">Los conteos incluyen únicamente puestos activos propios y asignaciones sin fecha de cierre. Los puestos de las subáreas se consultan por separado.</p>
+{% if subareas %}<section class="mock-panel area-pending"><h2>Subáreas</h2><ul>{% for child in subareas %}<li><a href="{% url 'organization:area_detail' child.pk %}">{{ child.name }}</a>{% if not child.is_active %} · Inactiva{% endif %}</li>{% endfor %}</ul></section>{% endif %}
+{% endblock %}

@@ -51,6 +51,23 @@ class OrganizationalArea(TraceableModel):
     class Meta:
         ordering = ("sort_order", "name")
 
+    def clean(self):
+        super().clean()
+        current = self.parent
+        visited = {self.pk}
+        while current is not None:
+            if current.pk in visited:
+                raise ValidationError({"parent": "La jerarquía de áreas generaría un ciclo."})
+            visited.add(current.pk)
+            current = current.parent
+        if self.parent_id and self.is_active and not self.parent.is_active:
+            raise ValidationError({"parent": "Seleccione un área superior activa."})
+        if not self.is_active and not self._state.adding:
+            if self.positions.filter(is_active=True).exists() or self.children.filter(is_active=True).exists():
+                raise ValidationError({
+                    "is_active": "Reasigne o desactive primero los puestos y subáreas activos."
+                })
+
     def __str__(self):
         return f"{self.code} - {self.name}"
 

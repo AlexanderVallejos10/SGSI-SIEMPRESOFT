@@ -88,6 +88,14 @@ Organización | SIEMPRESOFT
 
 </div>
 
+{% if unassigned_count %}
+<div class="org-area-notice" role="status">
+    <span><strong>{{ unassigned_count }} puestos sin área.</strong>
+    Cree un área y seleccione los puestos que le corresponden.</span>
+    <a href="{% url 'organization:areas' %}">Ver áreas y puestos pendientes</a>
+</div>
+{% endif %}
+
 <section class="org-toolbar">
 
     <div class="org-legend">

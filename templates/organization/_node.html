@@ -33,7 +33,9 @@
                     {{ node.position.code }}
                     {% if node.position.area %}
                     ·
-                    {{ node.position.area.name }}
+                    <a href="{% url 'organization:area_detail' node.position.area.pk %}">{{ node.position.area.name }}</a>
+                    {% else %}
+                    · Sin área
                     {% endif %}
                 </small>
 

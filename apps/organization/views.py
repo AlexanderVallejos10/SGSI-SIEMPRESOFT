@@ -1,8 +1,9 @@
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
+from django.db.models import Count, Prefetch, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -23,6 +24,7 @@ from .models import (
 from .services import (
     assign_user_to_position,
     close_assignment,
+    save_area,
 )
 
 
@@ -105,6 +107,7 @@ def chart(request):
             .filter(is_active=True)
             .count()
         ),
+        "unassigned_count": Position.objects.filter(is_active=True, area__isnull=True).count(),
         "can_change": _can_change(request),
     }
 
@@ -116,6 +119,7 @@ def chart(request):
 
 
 @login_required
+@transaction.atomic
 def position_create(request):
     if not _can_change(request):
         raise PermissionDenied
@@ -144,6 +148,13 @@ def position_create(request):
         "max_occupants": 1,
         "is_active": True,
     }
+
+    area_id = request.GET.get("area")
+    if area_id:
+        try:
+            initial["area"] = OrganizationalArea.objects.get(pk=area_id, is_active=True)
+        except (ValidationError, OrganizationalArea.DoesNotExist):
+            pass
 
     if relative is not None:
         if mode == "child":
@@ -216,6 +227,7 @@ def position_create(request):
 
 
 @login_required
+@transaction.atomic
 def position_edit(
     request,
     pk,
@@ -267,6 +279,7 @@ def position_edit(
 
 
 @login_required
+@transaction.atomic
 def position_move(
     request,
     pk,
@@ -344,19 +357,13 @@ def assign_user(
             assignment.created_by = request.user
             assignment.updated_by = request.user
 
-            assign_user_to_position(
-                assignment=assignment,
-                actor=request.user,
-            )
-
-            messages.success(
-                request,
-                "Usuario asignado al puesto.",
-            )
-
-            return redirect(
-                "organization:chart"
-            )
+            try:
+                assign_user_to_position(assignment=assignment, actor=request.user)
+            except ValidationError as exc:
+                form.add_error(None, " ".join(exc.messages))
+            else:
+                messages.success(request, "Usuario asignado al puesto.")
+                return redirect("organization:chart")
     else:
         form = PositionAssignmentForm(
             position=position,
@@ -397,96 +404,87 @@ def quick_user_create(
         )
 
         if form.is_valid():
-            with transaction.atomic():
-                values = {
-                    "username":
-                        form.cleaned_data["username"],
-                    "first_name":
-                        form.cleaned_data["first_name"],
-                    "last_name":
-                        form.cleaned_data["last_name"],
-                    "email":
-                        form.cleaned_data["email"],
-                }
+            try:
+                with transaction.atomic():
+                    values = {
+                        "username":
+                            form.cleaned_data["username"],
+                        "first_name":
+                            form.cleaned_data["first_name"],
+                        "last_name":
+                            form.cleaned_data["last_name"],
+                        "email":
+                            form.cleaned_data["email"],
+                    }
 
-                try:
-                    User._meta.get_field(
-                        "business_code"
-                    )
-                    values["business_code"] = (
-                        form.cleaned_data[
+                    try:
+                        User._meta.get_field(
                             "business_code"
-                        ]
-                    )
-                except Exception:
-                    pass
+                        )
+                        values["business_code"] = (
+                            form.cleaned_data[
+                                "business_code"
+                            ]
+                        )
+                    except Exception:
+                        pass
 
-                user = User(
-                    **values
-                )
-
-                if hasattr(user, "position"):
-                    user.position = (
-                        position.title
-                    )
-
-                if (
-                    hasattr(user, "area")
-                    and position.area_id
-                ):
-                    user.area = (
-                        position.area.name
+                    user = User(
+                        **values
                     )
 
-                if hasattr(user, "status"):
-                    status_field = (
-                        user._meta.get_field(
-                            "status"
+                    if hasattr(user, "status"):
+                        status_field = (
+                            user._meta.get_field(
+                                "status"
+                            )
+                        )
+
+                        default = (
+                            status_field.get_default()
+                        )
+
+                        if default not in (
+                            None,
+                            "",
+                        ):
+                            user.status = default
+
+                    user.is_active = True
+                    user.set_unusable_password()
+                    user.save()
+
+                    assignment = (
+                        PositionAssignment(
+                            position=position,
+                            user=user,
+                            start_date=(
+                                form.cleaned_data[
+                                    "start_date"
+                                ]
+                            ),
+                            is_primary=True,
+                            created_by=request.user,
+                            updated_by=request.user,
                         )
                     )
 
-                    default = (
-                        status_field.get_default()
+                    assign_user_to_position(
+                        assignment=assignment,
+                        actor=request.user,
                     )
+            except ValidationError as exc:
+                form.add_error(None, " ".join(exc.messages))
+            else:
 
-                    if default not in (
-                        None,
-                        "",
-                    ):
-                        user.status = default
-
-                user.is_active = True
-                user.set_unusable_password()
-                user.save()
-
-                assignment = (
-                    PositionAssignment(
-                        position=position,
-                        user=user,
-                        start_date=(
-                            form.cleaned_data[
-                                "start_date"
-                            ]
-                        ),
-                        is_primary=True,
-                        created_by=request.user,
-                        updated_by=request.user,
-                    )
+                messages.success(
+                    request,
+                    "Usuario creado y asignado al puesto.",
                 )
 
-                assign_user_to_position(
-                    assignment=assignment,
-                    actor=request.user,
+                return redirect(
+                    "organization:chart"
                 )
-
-            messages.success(
-                request,
-                "Usuario creado y asignado al puesto.",
-            )
-
-            return redirect(
-                "organization:chart"
-            )
     else:
         form = QuickUserForm(
             position=position,
@@ -539,6 +537,7 @@ def assignment_close(
 
 
 @login_required
+@transaction.atomic
 def position_archive(
     request,
     pk,
@@ -596,11 +595,15 @@ def position_archive(
 
 @login_required
 def areas(request):
-    if not _can_change(request):
-        raise PermissionDenied
-
     area_list = (
         OrganizationalArea.objects
+        .select_related("parent")
+        .annotate(
+            position_count=Count("positions", filter=Q(positions__is_active=True), distinct=True),
+            member_count=Count("positions__assignments__user", filter=Q(
+                positions__is_active=True, positions__assignments__end_date__isnull=True
+            ), distinct=True),
+        )
         .order_by(
             "sort_order",
             "name",
@@ -612,6 +615,10 @@ def areas(request):
         "organization/areas.html",
         {
             "areas": area_list,
+            "can_change": _can_change(request),
+            "unassigned_positions": Position.objects.filter(
+                is_active=True, area__isnull=True
+            ).select_related("parent").order_by("title"),
         },
     )
 
@@ -627,21 +634,13 @@ def area_create(request):
         )
 
         if form.is_valid():
-            area = form.save(
-                commit=False
-            )
-            area.created_by = request.user
-            area.updated_by = request.user
-            area.save()
-
-            messages.success(
-                request,
-                "Área creada.",
-            )
-
-            return redirect(
-                "organization:areas"
-            )
+            try:
+                area = save_area(form=form, actor=request.user)
+            except ValidationError as exc:
+                form.add_error(None, " ".join(exc.messages))
+            else:
+                messages.success(request, "Área creada y puestos vinculados.")
+                return redirect("organization:area_detail", pk=area.pk)
     else:
         form = AreaForm()
 
@@ -675,20 +674,13 @@ def area_edit(
         )
 
         if form.is_valid():
-            area = form.save(
-                commit=False
-            )
-            area.updated_by = request.user
-            area.save()
-
-            messages.success(
-                request,
-                "Área actualizada.",
-            )
-
-            return redirect(
-                "organization:areas"
-            )
+            try:
+                area = save_area(form=form, actor=request.user)
+            except ValidationError as exc:
+                form.add_error(None, " ".join(exc.messages))
+            else:
+                messages.success(request, "Área actualizada y puestos vinculados.")
+                return redirect("organization:area_detail", pk=area.pk)
     else:
         form = AreaForm(
             instance=area
@@ -700,5 +692,27 @@ def area_edit(
         {
             "form": form,
             "title": f"Editar área: {area.name}",
+            "area": area,
         },
     )
+
+
+@login_required
+def area_detail(request, pk):
+    area = get_object_or_404(OrganizationalArea.objects.select_related("parent"), pk=pk)
+    positions = list(area.positions.select_related("parent").prefetch_related(Prefetch(
+        "assignments",
+        queryset=PositionAssignment.objects.filter(end_date__isnull=True).select_related("user"),
+        to_attr="active_assignments",
+    )).order_by("-is_active", "sort_order", "title"))
+    active = [position for position in positions if position.is_active]
+    members = {assignment.user_id for position in active for assignment in position.active_assignments}
+    return render(request, "organization/area_detail.html", {
+        "area": area,
+        "positions": positions,
+        "position_count": len(active),
+        "member_count": len(members),
+        "vacant_count": sum(not position.active_assignments for position in active),
+        "subareas": area.children.order_by("sort_order", "name"),
+        "can_change": _can_change(request),
+    })

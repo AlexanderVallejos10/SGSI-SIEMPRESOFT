@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 from django.utils.text import slugify
 
 from .models import (
@@ -28,6 +29,17 @@ def _next_code(model, prefix, text):
 
 
 class AreaForm(forms.ModelForm):
+    positions = forms.ModelMultipleChoiceField(
+        label="Puestos del área",
+        queryset=Position.objects.none(),
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+        help_text=(
+            "Seleccione puestos existentes sin área. Los trabajadores se vinculan a través de sus puestos. "
+            "Desmarcar un puesto lo deja sin área; para trasladarlo desde otra área, use Editar puesto."
+        ),
+    )
+
     class Meta:
         model = OrganizationalArea
         fields = (
@@ -38,30 +50,42 @@ class AreaForm(forms.ModelForm):
             "color",
             "sort_order",
             "is_active",
+            "positions",
         )
+        labels = {
+            "code": "Código", "name": "Nombre", "description": "Descripción",
+            "parent": "Área superior", "color": "Color", "sort_order": "Orden",
+            "is_active": "Área activa",
+        }
+        widgets = {"color": forms.TextInput(attrs={"type": "color"})}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.fields["code"].required = False
+        available = Q(area__isnull=True, is_active=True)
+        if not self.instance._state.adding:
+            available |= Q(area=self.instance)
+            self.initial["positions"] = self.instance.positions.values_list("pk", flat=True)
+        self.fields["positions"].queryset = Position.objects.filter(available).order_by("title")
+        self.fields["parent"].queryset = OrganizationalArea.objects.exclude(pk=self.instance.pk)
 
-        for field in self.fields.values():
+        for name, field in self.fields.items():
+            if name in {"positions", "is_active"}:
+                continue
             field.widget.attrs.setdefault(
                 "class",
                 "form-control",
             )
 
-    def clean_code(self):
-        code = self.cleaned_data.get("code", "").strip()
-
-        if not code:
-            code = _next_code(
-                OrganizationalArea,
-                "AREA",
-                self.cleaned_data.get("name"),
-            )
-
-        return code
+    def clean(self):
+        cleaned = super().clean()
+        if not cleaned.get("code"):
+            cleaned["code"] = _next_code(OrganizationalArea, "AREA", cleaned.get("name"))
+        positions = cleaned.get("positions")
+        if not cleaned.get("is_active") and positions is not None and positions.filter(is_active=True).exists():
+            self.add_error("is_active", "Un área con puestos activos debe permanecer activa.")
+        return cleaned
 
 
 class PositionForm(forms.ModelForm):

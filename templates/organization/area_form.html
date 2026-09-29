@@ -1,4 +1,7 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/organization.css' %}">{% endblock %}
 
 {% block title %}
 {{ title }} | Organización
@@ -23,6 +26,7 @@
         <h1>
             {{ title }}
         </h1>
+        <p>Agrupe puestos y consulte sus trabajadores. La dependencia de cada puesto se conserva.</p>
     </div>
 </div>
 
@@ -31,18 +35,23 @@
     <form method="post">
 
         {% csrf_token %}
+        {{ form.non_field_errors }}
 
         <div class="form-grid">
 
             {% for field in form %}
 
-            <div class="form-field">
+            <div class="form-field{% if field.name == 'positions' %} area-position-picker{% endif %}">
 
-                <label>
+                <label for="{{ field.id_for_label }}">
                     {{ field.label }}
                 </label>
 
                 {{ field }}
+                {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                {% if field.name == 'positions' and not field.field.queryset.exists %}
+                <p>No hay puestos disponibles sin área. Puede crear el área y agregar puestos después.</p>
+                {% endif %}
 
                 {% for error in field.errors %}
 

@@ -1,129 +1,50 @@
 {% extends "base.html" %}
-
-{% block title %}
-Áreas | Organización
-{% endblock %}
-
+{% load static %}
+{% block title %}Áreas | Organización{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/organization.css' %}">{% endblock %}
 {% block content %}
-
-<div class="breadcrumb">
-    ⌂ /
-    <a href="{% url 'organization:chart' %}">
-        Organización
-    </a>
-    / Áreas
-</div>
-
-<div class="page-head">
-
-    <div>
-        <h1>
-            Áreas organizacionales
-        </h1>
-
-        <p>
-            Las áreas permiten colorear
-            y agrupar puestos sin alterar
-            la jerarquía de mando.
-        </p>
+<div class="breadcrumb"><a href="{% url 'organization:chart' %}">Organización</a> / Áreas</div>
+<div class="page-head organization-head">
+    <div><h1>Áreas organizacionales</h1><p>Consulte los puestos y trabajadores de cada área.</p></div>
+    <div class="head-actions">
+        <a class="outline-btn" href="{% url 'organization:chart' %}">Ver organigrama</a>
+        {% if can_change %}<a class="primary-btn" href="{% url 'organization:area_create' %}">Nueva área</a>{% endif %}
     </div>
-
-    <a
-        class="primary-btn"
-        href="{% url 'organization:area_create' %}"
-    >
-        + Nueva área
-    </a>
-
 </div>
-
-<section class="mock-panel">
-
-    <table class="controls-table">
-
-        <thead>
-        <tr>
-            <th>Color</th>
-            <th>Código</th>
-            <th>Área</th>
-            <th>Área superior</th>
-            <th>Orden</th>
-            <th>Estado</th>
-            <th></th>
-        </tr>
-        </thead>
-
-        <tbody>
-
-        {% for area in areas %}
-
-        <tr>
-
-            <td>
-                <span
-                    class="area-color-dot"
-                    style="
-                    background:
-                    {{ area.color }};
-                    "
-                >
-                </span>
-            </td>
-
-            <td>
-                {{ area.code }}
-            </td>
-
-            <td>
-                <b>
-                    {{ area.name }}
-                </b>
-            </td>
-
-            <td>
-                {{ area.parent|default:"—" }}
-            </td>
-
-            <td>
-                {{ area.sort_order }}
-            </td>
-
-            <td>
-                {% if area.is_active %}
-                Activa
-                {% else %}
-                Inactiva
-                {% endif %}
-            </td>
-
-            <td>
-                <a
-                    class="primary-small"
-                    href="{% url 'organization:area_edit' area.pk %}"
-                >
-                    Editar
-                </a>
-            </td>
-
-        </tr>
-
-        {% empty %}
-
-        <tr>
-            <td
-                colspan="7"
-                class="empty-cell"
-            >
-                Todavía no hay áreas.
-            </td>
-        </tr>
-
-        {% endfor %}
-
-        </tbody>
-
-    </table>
-
+<section class="mock-panel area-table-wrap" aria-label="Áreas configuradas">
+<table class="controls-table">
+    <thead><tr><th>Área</th><th>Área superior</th><th>Puestos activos</th><th>Trabajadores</th><th>Estado</th><th>Acciones</th></tr></thead>
+    <tbody>
+    {% for area in areas %}
+    <tr>
+        <td><a href="{% url 'organization:area_detail' area.pk %}"><strong>{{ area.name }}</strong></a><small class="area-code">{{ area.code }}</small></td>
+        <td>{% if area.parent %}<a href="{% url 'organization:area_detail' area.parent.pk %}">{{ area.parent.name }}</a>{% else %}—{% endif %}</td>
+        <td>{{ area.position_count }}</td><td>{{ area.member_count }}</td>
+        <td>{% if area.is_active %}Activa{% else %}Inactiva{% endif %}</td>
+        <td><a href="{% url 'organization:area_detail' area.pk %}">Ver detalle</a>{% if can_change %} · <a href="{% url 'organization:area_edit' area.pk %}">Editar</a>{% endif %}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="6" class="empty-cell">
+        <strong>Configure las áreas de la empresa</strong>
+        <p>Los puestos del organigrama todavía no están agrupados por áreas. Cree un área y seleccione sus puestos existentes.</p>
+        {% if can_change %}<a class="primary-btn" href="{% url 'organization:area_create' %}">Crear primera área</a>{% else %}<p>Solicite la configuración al responsable de Organización.</p>{% endif %}
+    </td></tr>
+    {% endfor %}
+    </tbody>
+</table>
 </section>
-
+<p class="area-count-note">Los conteos corresponden a los puestos propios de cada área; no incluyen subáreas. Una persona con varios puestos en la misma área se cuenta una sola vez.</p>
+{% if unassigned_positions %}
+<section class="mock-panel area-pending">
+    <h2>Puestos sin área <span>({{ unassigned_positions|length }})</span></h2>
+    <p>Vincúlelos al crear o editar un área. Los puestos conservan sus trabajadores y su dependencia jerárquica.</p>
+    <div class="area-table-wrap"><table class="controls-table">
+        <thead><tr><th>Puesto</th><th>Depende de</th>{% if can_change %}<th>Acción</th>{% endif %}</tr></thead>
+        <tbody>{% for position in unassigned_positions %}<tr>
+            <td>{{ position.title }}</td><td>{{ position.parent.title|default:"Puesto raíz" }}</td>
+            {% if can_change %}<td><a href="{% url 'organization:position_edit' position.pk %}">Vincular a un área</a></td>{% endif %}
+        </tr>{% endfor %}</tbody>
+    </table></div>
+</section>
+{% endif %}
 {% endblock %}
