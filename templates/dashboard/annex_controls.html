@@ -219,6 +219,13 @@ ISO/IEC 27001:2022
 
     <div class="table-scroll">
 
+        {% if annex.soa_conflicts %}
+        <div class="soa-alert" role="status">
+            <b>{{ annex.soa_conflicts|length }} control{{ annex.soa_conflicts|length|pluralize:"es" }} figura{{ annex.soa_conflicts|length|pluralize:"n" }} como no aplicable{{ annex.soa_conflicts|length|pluralize:"s" }} en la Declaración de Aplicabilidad, pero hay tratamientos de riesgo que los eligen:</b>
+            {% for c in annex.soa_conflicts %}<a href="{% url 'dashboard:control_detail' c.pk %}#riesgos">{{ c.code }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}.
+        </div>
+        {% endif %}
+        <p class="soa-note">{{ annex.with_treatments }} de {{ annex.total }} controles se usan en al menos un tratamiento de riesgo.</p>
         <table
             class="controls-table"
             id="controlsTable"
@@ -234,6 +241,7 @@ ISO/IEC 27001:2022
                 <th>Estado</th>
                 <th>Evidencias</th>
                 <th>Documentos</th>
+                <th>Riesgos que lo usan</th>
                 <th>Acciones</th>
             </tr>
             </thead>
@@ -300,6 +308,13 @@ ISO/IEC 27001:2022
                 </td>
 
                 <td>
+                    {% if control.treated_risk_count %}
+                    <a class="entity-link" href="{% url 'dashboard:control_detail' control.pk %}#riesgos">{{ control.treated_risk_count }}</a>
+                    {% if control.soa_conflict %}<span class="soa-conflict" title="Figura como no aplicable, pero hay tratamientos que lo eligen">Revisar aplicabilidad</span>{% endif %}
+                    {% else %}—{% endif %}
+                </td>
+
+                <td>
                     <a
                         class="primary-small"
                         href="{% url 'dashboard:entity_edit' 'controles' control.pk %}"
@@ -320,6 +335,12 @@ ISO/IEC 27001:2022
 
 </section>
 
+<style>
+.soa-alert{margin:0 0 10px;padding:10px 12px;border-left:3px solid #c0702b;background:#fdf4ec;color:#6d3a12;font-size:12.5px;line-height:1.5}
+.soa-alert a{color:#6d3a12;font-weight:600}
+.soa-note{margin:0 0 10px;font-size:12.5px;color:#5f7285}
+.soa-conflict{display:block;margin-top:3px;font-size:11px;color:#a8551a;font-weight:600}
+</style>
 {% endblock %}
 
 {% block extra_js %}

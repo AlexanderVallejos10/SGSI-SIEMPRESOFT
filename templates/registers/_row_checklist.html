@@ -1,0 +1,23 @@
+{% load registers_tags %}
+{% if e.data.tipo == "grupo" %}
+<tr class="rg-row rg-group-row" data-row="{{ e.pk }}" data-update="{% url 'registers:update_row' e.pk %}" data-delete="{% url 'registers:delete_row' e.pk %}">
+    <td class="rg-num">{{ e.data.numeral }}</td>
+    <td colspan="4"><span class="rg-cell" data-edit="obligacion" data-type="longtext" {% if can_edit %}tabindex="0"{% endif %}>{{ e.data.obligacion }}</span></td>
+    <td class="rg-act"></td>
+</tr>
+{% else %}
+<tr class="rg-row" data-row="{{ e.pk }}" data-update="{% url 'registers:update_row' e.pk %}" data-delete="{% url 'registers:delete_row' e.pk %}" data-state="{{ e.data.cumple }}">
+    <td class="rg-num">{{ e.data.numeral }}</td>
+    <td><span class="rg-cell" data-edit="obligacion" data-type="longtext" {% if can_edit %}tabindex="0"{% endif %}>{{ e.data.obligacion|default:"Sin texto" }}</span></td>
+    <td>
+        <div class="rg-seg" role="group" aria-label="¿Cumple?">
+            <button type="button" data-set="cumple" data-value="Sí" class="{% if e.data.cumple == 'Sí' %}is-ok{% endif %}" {% if not can_edit %}disabled{% endif %}>Sí</button>
+            <button type="button" data-set="cumple" data-value="No" class="{% if e.data.cumple == 'No' %}is-bad{% endif %}" {% if not can_edit %}disabled{% endif %}>No</button>
+            <button type="button" data-set="cumple" data-value="Por revisar" class="{% if e.data.cumple == 'Por revisar' %}is-plan{% endif %}" {% if not can_edit %}disabled{% endif %}>?</button>
+        </div>
+    </td>
+    <td><span class="rg-cell" data-edit="control" data-type="text" {% if can_edit %}tabindex="0"{% endif %}>{{ e.data.control|default:"—" }}</span></td>
+    <td><span class="rg-cell" data-edit="responsable" data-type="text" {% if can_edit %}tabindex="0"{% endif %}>{{ e.data.responsable|default:"—" }}</span></td>
+    <td class="rg-act">{% if can_edit %}<button type="button" class="rg-del" data-del title="Quitar fila"><svg class="ico"><use href="#i-close"></use></svg></button>{% endif %}</td>
+</tr>
+{% endif %}

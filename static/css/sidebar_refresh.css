@@ -1,0 +1,10 @@
+/* Menú de cláusulas: número de cláusula en columna, sin iconos de relleno. */
+.clause-menu summary{grid-template-columns:24px 1fr 12px;padding:8px 10px;font-size:13px;line-height:1.3}
+.clause-menu .clause-num{font-size:12px;font-weight:700;color:light-dark(#7a8ea3, #7a8692);text-align:right;font-variant-numeric:tabular-nums}
+.clause-menu[open]>summary .clause-num,.clause-menu summary:hover .clause-num{color:light-dark(var(--accent), color-mix(in srgb,var(--accent) 62%,#fff))}
+.clause-menu summary i{width:7px;height:7px;border-right:1.5px solid light-dark(#9aabbd, #6a737d);border-bottom:1.5px solid light-dark(#9aabbd, #6a737d);transform:rotate(45deg) translateY(-2px);transition:transform .15s}
+.clause-menu[open]>summary i{transform:rotate(225deg) translate(-2px,0)}
+.submenu{margin:2px 0 6px 30px}
+.submenu a{font-size:12px;line-height:1.35;padding:6px 8px}
+.submenu a:first-child{font-weight:600;color:light-dark(#425872, #a7b2be)}
+@media (prefers-reduced-motion:reduce){.clause-menu summary i{transition:none}}

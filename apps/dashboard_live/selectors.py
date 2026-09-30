@@ -1,3 +1,4 @@
+import json
 from decimal import Decimal
 
 from django.urls import reverse
@@ -8,6 +9,17 @@ from .models import DashboardDataset, MatrixType
 
 def current_dataset():
     return DashboardDataset.objects.filter(is_current=True).first()
+
+
+def dataset_meta(dataset):
+    """Datos del formato guardados por el importador (mínimos esperados, tipo de ponderación)."""
+    for line in (dataset.notes or "").splitlines():
+        if line.startswith("META:"):
+            try:
+                return json.loads(line[5:])
+            except ValueError:
+                return {}
+    return {}
 
 
 def metric_display(metric):
@@ -33,16 +45,27 @@ def build_dashboard_context():
     req_alignments = list(dataset.requirement_osi_alignments.select_related("requirement", "security_objective"))
     factors = list(dataset.strategic_factors.all())
 
+    meta = dataset_meta(dataset)
+    averaged = meta.get("ponderacion") == "promedio por grupo"
     mefi = factor_summary(factors, MatrixType.MEFI)
     mefe = factor_summary(factors, MatrixType.MEFE)
+    if averaged:  # 2026: cada grupo se promedia; la suma de pesos no tiene que ser 1
+        for summary in (mefi, mefe):
+            summary["weight_warning"] = False
+            # Promedio exacto de cada grupo, como el subtotal del Excel (los pesos guardados van redondeados).
+            by_group = {}
+            for factor in summary["rows"]:
+                by_group.setdefault(factor.group, []).append(Decimal(factor.classification))
+            summary["groups"] = {g: sum(v) / Decimal(len(v)) for g, v in by_group.items()}
+            summary["score_sum"] = sum(summary["groups"].values(), Decimal("0"))
 
     oee_scores = {obj.code: relation_score(oee_alignments, obj) for obj in security}
     req_scores = {obj.code: relation_score(req_alignments, obj) for obj in security}
 
     oee_obtained = sum(oee_scores.values())
-    oee_expected = len(security) * 7
+    oee_expected = meta.get("oee_minimo") or len(security) * 7
     req_obtained = sum(req_scores.values())
-    req_expected = len(security) * 17
+    req_expected = meta.get("req_minimo") or len(security) * 17
 
     oee_pct = Decimal(oee_obtained) * Decimal("100") / Decimal(oee_expected or 1)
     req_pct = Decimal(req_obtained) * Decimal("100") / Decimal(req_expected or 1)
@@ -108,8 +131,15 @@ def build_dashboard_context():
 
     efi = mefi["score_sum"]
     efe = mefe["score_sum"]
-    efi_x = max(Decimal("0"), min(Decimal("100"), (Decimal("4") - efi) / Decimal("3") * Decimal("100")))
-    efe_y = max(Decimal("0"), min(Decimal("100"), (Decimal("4") - efe) / Decimal("3") * Decimal("100")))
+    if averaged:
+        # Escala del Excel 2026 (hoja EFIEFE): ejes de 6 a 1, el 6 arriba a la izquierda.
+        clip = lambda v: max(Decimal("1"), min(Decimal("6"), v))
+        inset = lambda v: max(Decimal("4"), min(Decimal("96"), v))  # el punto no se pega al borde
+        efi_x = inset((Decimal("6") - clip(efi)) / Decimal("5") * Decimal("100"))
+        efe_y = inset((Decimal("6") - clip(efe)) / Decimal("5") * Decimal("100"))
+    else:
+        efi_x = max(Decimal("0"), min(Decimal("100"), (Decimal("4") - efi) / Decimal("3") * Decimal("100")))
+        efe_y = max(Decimal("0"), min(Decimal("100"), (Decimal("4") - efe) / Decimal("3") * Decimal("100")))
 
     return {
         "dataset": dataset,
@@ -136,6 +166,10 @@ def build_dashboard_context():
         "req_pct": req_pct,
         "mefi": mefi,
         "mefe": mefe,
+        "meta": meta,
+        "averaged": averaged,
+        "efi": efi,
+        "efe": efe,
         "efi_x": efi_x,
         "efe_y": efe_y,
         "warnings": warnings,

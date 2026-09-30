@@ -1,0 +1,15 @@
+{# Cargador con los tres discos de SiempreSoft. Sin la librería Lottie queda el mismo dibujo en SVG. #}
+<div class="sgsi-loader{% if overlay %} sgsi-loader--overlay{% endif %}{% if small %} sgsi-loader--small{% endif %}{% if extra_class %} {{ extra_class }}{% endif %}"
+     data-sgsi-loader{% if overlay %} data-sgsi-page-loader hidden{% endif %}
+     role="status" aria-live="polite">
+    <div class="sgsi-loader__art" aria-hidden="true">
+        <div class="sgsi-loader__lottie" data-lottie-player></div>
+        <svg class="sgsi-loader__fallback" viewBox="0 0 120 80" focusable="false">
+            <path class="sl-line" pathLength="100" d="M47 37 C51 29 51 23 51 22 M73 22 C80 23 86 28 88 34 M58 51 C64 53 70 51 72 46"/>
+            <g class="sl-disc sl-orange"><ellipse cx="36" cy="56" rx="24" ry="8" fill="#D9731F"/><rect x="12" y="44" width="48" height="12" fill="#D9731F"/><ellipse cx="36" cy="44" rx="24" ry="8" fill="#F29A4A"/></g>
+            <g class="sl-disc sl-yellow"><ellipse cx="62" cy="28" rx="12" ry="4.5" fill="#E8C530"/><rect x="50" y="22" width="24" height="6" fill="#E8C530"/><ellipse cx="62" cy="22" rx="12" ry="4.5" fill="#F7E26B"/></g>
+            <g class="sl-disc sl-green"><ellipse cx="88" cy="49" rx="18" ry="6" fill="#7DB849"/><rect x="70" y="40" width="36" height="9" fill="#7DB849"/><ellipse cx="88" cy="40" rx="18" ry="6" fill="#A9D46F"/></g>
+        </svg>
+    </div>
+    {% if not small %}<span class="sgsi-loader__text">{{ text|default:"Cargando" }}</span>{% endif %}
+</div>

@@ -1,0 +1,56 @@
+/* Tema claro / oscuro con color-scheme y light-dark(). La elección se guarda por usuario en el navegador. */
+:root{color-scheme:light dark}
+:root[data-theme="light"]{color-scheme:light}
+:root[data-theme="dark"]{color-scheme:dark}
+:root{
+  --bg:light-dark(#f4f6f8,#0e1215);
+  --panel:light-dark(#fff,#151a1e);
+  --surface:light-dark(#fff,#151a1e);
+  --surface-2:light-dark(#f6f7f8,#1a2025);
+  --line:light-dark(#e1e6eb,#2a3239);
+  --text:light-dark(#1f2d3a,#dde3e8);
+  --muted:light-dark(#6b7f93,#8e9aa5);
+  --ink:light-dark(#3a3f45,#eef1f4);
+  --brand-ink:light-dark(#3a3f45,#e6e9ec);
+  --scroll:light-dark(#c3ccd4,#3a444d);
+}
+body{background:var(--bg);color:var(--text)}
+
+/* Una sola barra visible: la de la página, fina. El menú se desplaza sin mostrar barra. */
+html{scrollbar-width:thin;scrollbar-color:var(--scroll) transparent}
+html::-webkit-scrollbar{width:10px;height:10px}
+html::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:8px;border:3px solid var(--bg)}
+html::-webkit-scrollbar-track{background:transparent}
+.sgsi-sidebar,.sgsi-sidebar:hover{scrollbar-width:none}
+.sgsi-sidebar::-webkit-scrollbar{display:none}
+*{scrollbar-width:thin;scrollbar-color:var(--scroll) transparent}
+
+/* Logo según el tema */
+.brand-full-dark{display:none}
+:root[data-theme="dark"] .brand-full{display:none}
+:root[data-theme="dark"] .brand-full-dark{display:block}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .brand-full{display:none}
+  :root:not([data-theme="light"]) .brand-full-dark{display:block}
+}
+body.nav-collapsed .brand-full-dark{display:none !important}
+.brand-full-dark{width:160px;height:auto}
+
+/* Botones oscuros de la marca: en tema oscuro pasan a claros con texto oscuro */
+.mr-btn,.dw-btn.is-primary{background:light-dark(#3a3f45,#e6e9ec);border-color:light-dark(#3a3f45,#e6e9ec);color:light-dark(#fff,#15191d)}
+.mr-btn:hover,.dw-btn.is-primary:hover{background:light-dark(#23282d,#ffffff)}
+.is-busy::after{border-color:light-dark(rgba(255,255,255,.45),rgba(0,0,0,.25));border-top-color:light-dark(#fff,#15191d)}
+
+/* Selector de tema */
+.theme-switch{display:inline-flex;align-items:center;gap:2px;padding:3px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.theme-switch button{display:grid;place-items:center;width:30px;height:28px;border:0;border-radius:7px;background:none;color:var(--muted);cursor:pointer;transition:background .15s,color .15s}
+.theme-switch button:hover{color:var(--ink)}
+.theme-switch button[aria-pressed="true"]{background:light-dark(#eef1f4,#232a31);color:var(--ink)}
+.theme-switch .ico{width:17px;height:17px}
+.top-actions{display:flex;align-items:center;gap:12px}
+
+/* Transición al cambiar de tema (View Transitions API): el nuevo tema se abre en círculo desde el botón */
+::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
+::view-transition-new(root){clip-path:circle(0 at var(--vt-x,50%) var(--vt-y,0));animation:theme-reveal .5s cubic-bezier(.3,.7,.2,1) forwards}
+@keyframes theme-reveal{to{clip-path:circle(var(--vt-r,150vmax) at var(--vt-x,50%) var(--vt-y,0))}}
+@media (prefers-reduced-motion:reduce){::view-transition-new(root){animation:none;clip-path:none}}

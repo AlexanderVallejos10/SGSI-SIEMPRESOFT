@@ -1,0 +1,14 @@
+{% load registers_tags %}
+<tr class="rg-row" data-row="{{ e.pk }}" data-update="{% url 'registers:update_row' e.pk %}" data-delete="{% url 'registers:delete_row' e.pk %}" data-state="{{ e.data.estado }}">
+    <td><span class="rg-cell rg-strong" data-edit="software" data-type="text" {% if can_edit %}tabindex="0"{% endif %}>{{ e.data.software|default:"Sin nombre" }}</span></td>
+    <td><span class="rg-cell" data-edit="alcance" data-type="text" {% if can_edit %}tabindex="0"{% endif %}>{{ e.data.alcance|default:"—" }}</span></td>
+    <td class="rg-nowrap"><span class="rg-cell" data-edit="fecha" data-type="date" {% if can_edit %}tabindex="0"{% endif %} data-value="{{ e.data.fecha }}">{% if e.data.fecha %}{{ e.data.fecha|slice:"8:10" }}/{{ e.data.fecha|slice:"5:7" }}/{{ e.data.fecha|slice:":4" }}{% else %}—{% endif %}</span></td>
+    <td><span class="rg-cell" data-edit="autorizado_por" data-type="text" {% if can_edit %}tabindex="0"{% endif %}>{{ e.data.autorizado_por|default:"—" }}</span></td>
+    <td>
+        {% options section "estado" e.data.estado as sts %}
+        <select class="rg-pill st-{{ e.data.estado|slugify_state }}" data-edit="estado" {% if not can_edit %}disabled{% endif %} aria-label="Estado">
+            {% for o in sts %}<option value="{{ o }}" {% if o == e.data.estado %}selected{% endif %}>{{ o }}</option>{% endfor %}
+        </select>
+    </td>
+    <td class="rg-act">{% if can_edit %}<button type="button" class="rg-del" data-del title="Quitar fila"><svg class="ico"><use href="#i-close"></use></svg></button>{% endif %}</td>
+</tr>

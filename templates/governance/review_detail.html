@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% load static avatars %}
+{% block title %}{{ r.code }} | Revisión por la Dirección{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/governance.css' %}">{% endblock %}
+{% block content %}
+<div class="ac gv-doc{% if print %} is-print{% endif %}">
+  <div class="breadcrumb gv-noprint"><a href="{% url 'governance:review_list' %}">Revisión por la Dirección</a> / {{ r.code }}</div>
+
+  <section class="gv-sheet">
+    <div class="gv-sheet-top"><span>Siempresoft EIRL</span><span>Documento para: SGSI. Uso interno.</span></div>
+    <div class="gv-sheet-head">
+      <div><h1>{{ r.title }}</h1><p>{{ r.code }}. Fecha: {{ r.review_date|date:"d/m/Y" }}{% if r.period_from %}. Periodo revisado: {{ r.period_from|date:"d/m/Y" }} a {{ r.period_to|date:"d/m/Y" }}{% endif %}.</p></div>
+      <div class="gv-status">{% if r.status == "approved" %}<span class="ac-state on">Aprobada por {{ r.approved_by.get_full_name|default:r.approved_by.username }} el {{ r.approved_at|date:"d/m/Y" }}</span>{% else %}<span class="ac-state warn">En preparación</span>{% endif %}</div>
+    </div>
+    <div class="ac-row gv-noprint" style="margin-top:12px">
+      <a class="ac-btn is-small" href="?imprimir=1" target="_blank" rel="noopener">Imprimir o guardar en PDF</a>
+      {% if can_edit %}<form method="post">{% csrf_token %}<button class="ac-btn is-small" name="action" value="refresh">Actualizar datos del sistema</button></form>{% endif %}
+      <span class="ac-muted">Datos del sistema tomados el {{ r.inputs_at|date:"d/m/Y H:i" }}.</span>
+    </div>
+  </section>
+
+  {% if can_edit %}<form method="post" class="gv-texts">{% csrf_token %}<input type="hidden" name="action" value="texts">{% endif %}
+  <section class="ac-panel">
+    <h2>Participantes</h2>
+    {% if can_edit %}<div class="ac-field"><textarea name="attendees" rows="3" placeholder="Uno por línea: nombre y cargo">{{ r.attendees }}</textarea></div>{% else %}<p class="gv-pre">{{ r.attendees|default:"No registrados." }}</p>{% endif %}
+  </section>
+
+  <section class="ac-panel">
+    <h2>a) Estado de las acciones de revisiones anteriores</h2>
+    {% if i.a_previous %}
+      <p>De la revisión {{ i.a_previous.code }}:</p>
+      <div class="ac-table-wrap"><table class="ac-table"><thead><tr><th>Decisión</th><th>Responsable</th><th>Plazo</th><th>Estado</th></tr></thead><tbody>
+      {% for d in i.a_previous.decisions %}<tr><td>{{ d.description }}</td><td>{{ d.responsible|default:"—" }}</td><td>{{ d.due|default:"—" }}</td><td>{{ d.status }}</td></tr>{% empty %}<tr><td colspan="4" class="ac-empty">La revisión anterior no registró decisiones.</td></tr>{% endfor %}
+      </tbody></table></div>
+    {% else %}<p class="ac-muted">Es la primera revisión registrada en el sistema.</p>{% endif %}
+  </section>
+
+  <section class="ac-panel">
+    <h2>b) Cambios en las cuestiones internas y externas</h2>
+    <p>Referencia: contexto de la organización (4.1), FODA y matrices MEFI y MEFE.</p>
+    {% if can_edit %}<div class="ac-field"><textarea name="internal_external_changes" rows="4">{{ r.internal_external_changes }}</textarea></div>{% else %}<p class="gv-pre">{{ r.internal_external_changes|default:"Sin cambios registrados." }}</p>{% endif %}
+  </section>
+
+  <section class="ac-panel">
+    <h2>c) Cambios en las necesidades y expectativas de las partes interesadas</h2>
+    {% if can_edit %}<div class="ac-field"><textarea name="stakeholder_changes" rows="4">{{ r.stakeholder_changes }}</textarea></div>{% else %}<p class="gv-pre">{{ r.stakeholder_changes|default:"Sin cambios registrados." }}</p>{% endif %}
+  </section>
+
+  <section class="ac-panel">
+    <h2>d) Desempeño de la seguridad de la información</h2>
+    <dl class="ac-facts gv-facts">
+      <div><dt>No conformidades y acciones correctivas</dt><dd>{{ i.d1_corrective.done }} de {{ i.d1_corrective.total }} medidas implementadas ({{ i.d1_corrective.pct }} %); {{ i.d1_corrective.pending }} pendientes</dd></div>
+      <div><dt>Resultados de auditoría</dt><dd>{{ i.d3_audits.audits }} auditorías; {{ i.d3_audits.closed }} hallazgos cerrados y {{ i.d3_audits.open }} abiertos</dd></div>
+      <div><dt>Incidentes</dt><dd>{{ i.incidents.total }} registrados{% if i.incidents.last_year %}; {{ i.incidents.last_count }} en {{ i.incidents.last_year }}{% endif %}</dd></div>
+      {% if i.d2_metrics %}<div><dt>Seguimiento y medición</dt><dd>{{ i.d2_metrics.yes }} de {{ i.d2_metrics.total }} indicadores cumplen su meta</dd></div>{% endif %}
+      {% if i.d4_objectives %}<div><dt>Cumplimiento de objetivos</dt><dd>{{ i.d4_objectives.yes }} de {{ i.d4_objectives.total }} objetivos de seguridad en meta</dd></div>{% endif %}
+    </dl>
+    {% if i.d2_metrics %}
+    <h3 class="gv-sub">Indicadores del SGSI</h3>
+    <div class="ac-table-wrap"><table class="ac-table"><thead><tr><th>Indicador</th><th>Valor</th><th>Meta</th><th>Resultado</th></tr></thead><tbody>
+    {% for m in i.d2_metrics.rows %}<tr><td><b>M{{ m.id }}</b> {{ m.description }}</td><td>{{ m.value }}</td><td>{{ m.target }}</td><td class="ac-state {% if m.ok %}on{% else %}off gv-bad{% endif %}">{% if m.ok %}Cumple{% else %}No cumple{% endif %}</td></tr>{% endfor %}
+    </tbody></table></div>
+    {% endif %}
+    {% if i.d4_objectives %}
+    <h3 class="gv-sub">Objetivos de seguridad</h3>
+    <div class="ac-table-wrap"><table class="ac-table"><thead><tr><th>Objetivo</th><th>Valor</th><th>Meta</th><th>Resultado</th></tr></thead><tbody>
+    {% for m in i.d4_objectives.rows %}<tr><td><b>OESI{{ m.id }}</b> {{ m.description }}</td><td>{{ m.value }}</td><td>{{ m.target }}</td><td class="ac-state {% if m.ok %}on{% else %}off gv-bad{% endif %}">{% if m.ok %}Cumple{% else %}No cumple{% endif %}</td></tr>{% endfor %}
+    </tbody></table></div>
+    {% endif %}
+  </section>
+
+  <section class="ac-panel">
+    <h2>e) Retroalimentación de las partes interesadas</h2>
+    {% if can_edit %}<div class="ac-field"><textarea name="stakeholder_feedback" rows="4">{{ r.stakeholder_feedback }}</textarea></div>{% else %}<p class="gv-pre">{{ r.stakeholder_feedback|default:"Sin retroalimentación registrada." }}</p>{% endif %}
+  </section>
+
+  <section class="ac-panel">
+    <h2>f) Evaluación de riesgos y estado del plan de tratamiento</h2>
+    <dl class="ac-facts gv-facts">
+      <div><dt>Riesgos evaluados</dt><dd>{{ i.f_risks.total }}; {{ i.f_risks.high }} en nivel alto o muy alto</dd></div>
+      <div><dt>Distribución</dt><dd>{% for lv in i.f_risks.levels %}{{ lv.name }}: {{ lv.count }}{% if not forloop.last %}, {% endif %}{% endfor %}</dd></div>
+      <div><dt>Acciones de tratamiento</dt><dd>{{ i.f_risks.treatments_closed }} de {{ i.f_risks.treatments }} cerradas</dd></div>
+      <div><dt>Riesgo residual</dt><dd>Calculado en {{ i.f_risks.residual_calculated }}; aceptado por su propietario en {{ i.f_risks.accepted }}</dd></div>
+    </dl>
+  </section>
+
+  <section class="ac-panel">
+    <h2>g) Oportunidades de mejora continua</h2>
+    {% if can_edit %}<div class="ac-field"><textarea name="improvement_opportunities" rows="4">{{ r.improvement_opportunities }}</textarea></div>{% else %}<p class="gv-pre">{{ r.improvement_opportunities|default:"Sin oportunidades registradas." }}</p>{% endif %}
+  </section>
+
+  <section class="ac-panel">
+    <h2>Conclusiones sobre la conveniencia, adecuación y eficacia del SGSI</h2>
+    {% if can_edit %}<div class="ac-field"><textarea name="conclusions" rows="4">{{ r.conclusions }}</textarea></div>{% else %}<p class="gv-pre">{{ r.conclusions|default:"Sin conclusiones registradas." }}</p>{% endif %}
+    {% if can_edit %}<button class="ac-btn is-primary" type="submit">Guardar revisión</button>{% endif %}
+  </section>
+  {% if can_edit %}</form>{% endif %}
+
+  <section class="ac-panel">
+    <h2>Decisiones (9.3.3)</h2>
+    <p>Decisiones sobre oportunidades de mejora y cambios en el SGSI, con su responsable y plazo. Al aprobar la revisión, cada responsable recibe un aviso.</p>
+    <div class="ac-table-wrap"><table class="ac-table"><thead><tr><th>Tipo</th><th>Decisión</th><th>Responsable</th><th>Plazo</th><th>Estado</th></tr></thead><tbody>
+    {% for d in r.decisions.all %}<tr><td>{{ d.get_kind_display }}</td><td>{{ d.description }}</td>
+      <td>{% if d.responsible %}<span class="ac-person">{% avatar d.responsible %}<b>{{ d.responsible.get_full_name|default:d.responsible.username }}</b></span>{% else %}—{% endif %}</td>
+      <td>{{ d.due_date|date:"d/m/Y"|default:"—" }}</td>
+      <td>{% if not print and r.status == "approved" and d.responsible_id == request.user.pk or not print and sgsi_admin %}<form method="post" class="gv-inline">{% csrf_token %}<input type="hidden" name="action" value="decision_status"><input type="hidden" name="decision" value="{{ d.pk }}"><select name="status" onchange="this.form.submit()">{% for k, v in d.STATUS %}<option value="{{ k }}" {% if d.status == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></form>{% else %}{{ d.get_status_display }}{% endif %}</td></tr>
+    {% empty %}<tr><td colspan="5" class="ac-empty">Aún no hay decisiones.{% if can_edit %} Agregue la primera abajo.{% endif %}</td></tr>{% endfor %}
+    </tbody></table></div>
+    {% if can_edit %}
+    <form method="post" class="gv-decision-form">{% csrf_token %}<input type="hidden" name="action" value="decision">
+      <div class="ac-row" style="align-items:flex-end">
+        <div class="ac-field"><label for="k">Tipo</label><select id="k" name="kind"><option value="mejora">Oportunidad de mejora</option><option value="cambio">Cambio en el SGSI</option><option value="recursos">Necesidad de recursos</option></select></div>
+        <div class="ac-field" style="flex:3"><label for="ds">Decisión</label><input id="ds" name="description" required></div>
+        <div class="ac-field"><label for="rp">Responsable</label><select id="rp" name="responsible"><option value="">Sin asignar</option>{% for p in people %}<option value="{{ p.pk }}">{{ p.get_full_name|default:p.username }}</option>{% endfor %}</select></div>
+        <div class="ac-field"><label for="dd">Plazo</label><input id="dd" type="date" name="due_date"></div>
+      </div>
+      <button class="ac-btn" type="submit">Agregar decisión</button>
+    </form>
+    {% endif %}
+  </section>
+
+  {% if can_approve %}
+  <form method="post" class="ac-panel gv-noprint" onsubmit="return confirm('Al aprobarla, la revisión queda cerrada y ya no se puede editar. ¿Aprobar?')">
+    {% csrf_token %}<input type="hidden" name="action" value="approve">
+    <h2>Aprobación</h2><p>La aprueba el Gerente General. Queda registrada con su nombre y la fecha.</p>
+    <button class="ac-btn is-primary" type="submit">Aprobar revisión</button>
+  </form>
+  {% endif %}
+</div>
+{% if print %}<script>window.addEventListener("load", () => setTimeout(() => window.print(), 300));</script>{% endif %}
+{% endblock %}

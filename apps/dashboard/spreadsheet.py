@@ -235,3 +235,66 @@ def read_xlsx_preview(
             )
 
     return sheets
+
+
+def _col_letters(number):
+    letters = ""
+    while number:
+        number, rest = divmod(number - 1, 26)
+        letters = chr(65 + rest) + letters
+    return letters
+
+
+def _is_number(value):
+    try:
+        float(str(value).replace(",", ""))
+        return str(value).strip() != ""
+    except ValueError:
+        return False
+
+
+def read_xlsx_grid(path, max_rows=400, max_cols=40):
+    """Como read_xlsx_preview, pero conserva el número real de fila y la letra de columna,
+    para mostrar la hoja con la misma referencia que en Excel (A1, B7...)."""
+    if not os.path.isfile(path) or not zipfile.is_zipfile(path):
+        raise ValueError("El archivo no es XLSX/XLSM válido.")
+    sheets = []
+    with zipfile.ZipFile(path, "r") as zf:
+        shared = _shared_strings(zf)
+        for sheet_name, sheet_path in _sheet_paths(zf):
+            root = ET.fromstring(zf.read(sheet_path))
+            rows = []
+            max_seen = 0
+            truncated = False
+            for row in root.iter(f"{{{MAIN_NS}}}row"):
+                cells = {}
+                for cell in row.findall(f"{{{MAIN_NS}}}c"):
+                    col = _col_number(cell.attrib.get("r", ""))
+                    if not col or col > max_cols:
+                        continue
+                    value = _value(cell, shared)
+                    if str(value).strip():
+                        cells[col] = value
+                        max_seen = max(max_seen, col)
+                if not cells:
+                    continue
+                if len(rows) >= max_rows:
+                    truncated = True
+                    break
+                rows.append((int(row.attrib.get("r", len(rows) + 1)), cells))
+            sheets.append({
+                "name": sheet_name,
+                "columns": [_col_letters(c) for c in range(1, max_seen + 1)],
+                "rows": [
+                    {
+                        "number": number,
+                        "cells": [
+                            {"value": cells.get(c, ""), "numeric": _is_number(cells.get(c, ""))}
+                            for c in range(1, max_seen + 1)
+                        ],
+                    }
+                    for number, cells in rows
+                ],
+                "truncated": truncated,
+            })
+    return sheets

@@ -1,73 +1,140 @@
-{% load static %}
+{% load static avatars %}
 <!doctype html>
 <html lang="es">
 <head>
+    <script>try{var d=document.documentElement,t=localStorage.getItem("sgsi-theme");if(t==="light"||t==="dark")d.dataset.theme=t;d.dataset.accent=localStorage.getItem("sgsi-accent")||"green";d.dataset.density=localStorage.getItem("sgsi-density")||"comfortable"}catch(e){}</script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}SGSI | SIEMPRESOFT{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/app.css' %}">
     <link rel="stylesheet" href="{% static 'css/mockup_sgsi.css' %}">
     <link rel="stylesheet" href="{% static 'css/product_v64.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sgsi_loader.css' %}">
+    <link rel="stylesheet" href="{% static 'css/shell.css' %}">
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <link rel="stylesheet" href="{% static 'css/pdf_viewer.css' %}">
+    <link rel="preload" href="{% static 'fonts/instrument-sans-400.woff' %}" as="font" type="font/woff" crossorigin>
     {% block extra_css %}{% endblock %}
+    <link rel="stylesheet" href="{% static 'css/access.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sd_system.css' %}">
 </head>
 <body>
-<div class="app-shell">
-    <aside class="sgsi-sidebar">
-        <div class="logo-area">
-            <div class="logo-symbol"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i></div>
-            <div class="logo-text"><strong>Siempresoft</strong><small>E.I.R.L.</small></div>
-        </div>
+<script>try{if(localStorage.getItem("sgsi-nav")==="collapsed"&&window.innerWidth>900)document.body.classList.add("nav-collapsed")}catch(e){}</script>
+{% include "partials/icons.html" %}
+<div class="app-shell" data-shell>
+    <aside class="sgsi-sidebar" id="menu-principal" data-sidebar aria-label="Menú principal">
+        <a class="brand" href="{% url 'dashboard:home' %}" title="Siempresoft · Inicio">
+            <img class="brand-full" src="{% static 'img/siempresoft-logo.png' %}" alt="SiempreSoft, Sistemas Empresariales" width="176" height="75">
+            <img class="brand-full-dark" src="{% static 'img/siempresoft-logo-dark.png' %}" alt="" width="176" height="75">
+            <img class="brand-mark" src="{% static 'img/siempresoft-mark.png' %}" alt="SiempreSoft" width="40" height="12">
+        </a>
 
-        <a class="side-home" href="{% url 'dashboard:home' %}"><span>⌂</span><b>Dashboard</b></a>
+        <nav class="nav">
+            {% url 'dashboard:home' as home_url %}
+            <a class="nav-link{% if request.path == home_url %} is-current{% endif %}" href="{{ home_url }}" title="Dashboard"><svg class="ico"><use href="#i-home"></use></svg><span>Dashboard</span></a>
 
-        <div class="side-section-title">SGSI (ISO/IEC 27001)</div>
+            <p class="nav-title">Requisitos ISO/IEC 27001</p>
+            {% for item in global_clause_menu %}
+            <details class="nav-group" data-nav-group>
+                <summary title="{{ item.code }}. {{ item.title }}"><b class="nav-num">{{ item.code }}</b><span>{{ item.title }}</span><svg class="ico nav-caret"><use href="#i-chevron"></use></svg></summary>
+                <div class="nav-sub">
+                    <a href="{% url 'dashboard:clause_detail' item.code %}">Todos los requisitos</a>
+                    {% for child in item.children %}
+                    <a href="{% url 'dashboard:clause_detail' child.code %}"><b>{{ child.code }}</b> {{ child.title }}</a>
+                    {% endfor %}
+                </div>
+            </details>
+            {% endfor %}
+            <details class="nav-group" data-nav-group>
+                <summary title="Anexos"><b class="nav-num"><svg class="ico"><use href="#i-annex"></use></svg></b><span>Anexos</span><svg class="ico nav-caret"><use href="#i-chevron"></use></svg></summary>
+                <div class="nav-sub">
+                    <a href="{% url 'dashboard:annex_controls' %}">Anexo A y Declaración de Aplicabilidad</a>
+                    <a href="{% url 'dashboard:entity_list' 'documentos' %}">Documentación</a>
+                    <a href="{% url 'dashboard:entity_list' 'evidencias' %}">Evidencias</a>
+                </div>
+            </details>
 
-        {% for item in global_clause_menu %}
-        <details class="clause-menu">
-            <summary><span class="doc-ico">▧</span><span>{{ item.code }}. {{ item.title }}</span><i>⌄</i></summary>
-            <div class="submenu">
-                <a href="{% url 'dashboard:clause_detail' item.code %}">Ver matriz completa</a>
-                {% for child in item.children %}
-                <a href="{% url 'dashboard:clause_detail' child.code %}">{{ child.code }} {{ child.title }}</a>
-                {% endfor %}
-            </div>
-        </details>
-        {% endfor %}
+            <p class="nav-title">Gobierno del SGSI</p>
+            {% url 'governance:review_list' as gv_review %}<a class="nav-link{% if gv_review in request.path %} is-current{% endif %}" href="{{ gv_review }}" title="Revisión por la Dirección"><svg class="ico"><use href="#i-audit"></use></svg><span>Revisión por la Dirección</span></a>
+            {% url 'governance:acceptance' as gv_acc %}<a class="nav-link{% if request.path == gv_acc %} is-current{% endif %}" href="{{ gv_acc }}" title="Aceptación de riesgos"><svg class="ico"><use href="#i-risk"></use></svg><span>Aceptación de riesgos</span></a>
+            {% if sgsi_admin %}{% url 'governance:access_review' as gv_ar %}<a class="nav-link{% if request.path == gv_ar %} is-current{% endif %}" href="{{ gv_ar }}" title="Revisión de accesos"><svg class="ico"><use href="#i-key"></use></svg><span>Revisión de accesos</span></a>{% endif %}
+            {% url 'governance:soa' as gv_soa %}<a class="nav-link{% if request.path == gv_soa %} is-current{% endif %}" href="{{ gv_soa }}" title="Declaración de Aplicabilidad"><svg class="ico"><use href="#i-controls"></use></svg><span>Declaración de Aplicabilidad</span></a>
 
-        <details class="clause-menu">
-            <summary><span class="doc-ico">▧</span><span>11. Anexos</span><i>⌄</i></summary>
-            <div class="submenu">
-                <a href="{% url 'dashboard:annex_controls' %}">Anexo A · 93 controles</a>
-                <a href="{% url 'dashboard:entity_list' 'documentos' %}">Documentación</a>
-                <a href="{% url 'dashboard:entity_list' 'evidencias' %}">Evidencias</a>
-            </div>
-        </details>
-
-        <div class="side-divider"></div>
-        <div class="side-section-title">GESTIÓN DEL SGSI</div>
-
-        <a class="management-link" href="{% url 'dashboard:entity_list' 'usuarios' %}"><span>♟</span>Usuarios y accesos</a>
-        <a class="management-link" href="{% url 'organization:chart' %}"><span>⌘</span>Organización</a>
-        <a class="management-link" href="{% url 'processes:map' %}"><span>⇄</span>Procesos</a>
-        <a class="management-link" href="{% url 'dashboard:entity_list' 'activos' %}"><span>▣</span>Activos y equipos</a>
-        <a class="management-link" href="{% url 'traceability:risks' %}"><span>▲</span>Riesgos</a>
-        <a class="management-link" href="{% url 'dashboard:entity_list' 'incidentes' %}"><span>▲</span>Incidentes</a>
-        <a class="management-link" href="{% url 'dashboard:entity_list' 'vulnerabilidades' %}"><span>◉</span>Vulnerabilidades</a>
-        <a class="management-link" href="{% url 'dashboard:entity_list' 'documentos' %}"><span>▧</span>Documentos y evidencias</a>
-        <a class="management-link" href="{% url 'dashboard:entity_list' 'auditorias' %}"><span>▣</span>Auditorías</a>
-        <a class="management-link" href="{% url 'dashboard:report_center' %}"><span>▥</span>Reportes y métricas</a>
-        <a class="management-link" href="{% url 'dashboard:entity_list' 'controles' %}"><span>✓</span>Controles ISO</a>
-        {% if perms.traceability.view_documentlink %}<a class="management-link" href="{% url 'traceability:links' %}"><span>▧</span>Responsabilidades documentales</a>{% endif %}
-        {% if perms.traceability.add_importbatch %}<a class="management-link" href="{% url 'traceability:import' %}"><span>↑</span>Importar fuentes</a>{% endif %}
+            <p class="nav-title">Gestión del SGSI</p>
+            {% if sgsi_admin %}{% url 'accounts:access_list' as access_url %}<a class="nav-link{% if request.path == access_url %} is-current{% endif %}" href="{{ access_url }}" title="Accesos y permisos"><svg class="ico"><use href="#i-shield"></use></svg><span>Accesos y permisos</span>{% if pending_password_requests %}<em class="nav-badge" data-requests-badge>{{ pending_password_requests }}</em>{% else %}<em class="nav-badge" data-requests-badge hidden></em>{% endif %}</a>{% endif %}
+            {% url 'accounts:connected' as connected_url %}<a class="nav-link{% if request.path == connected_url %} is-current{% endif %}" href="{{ connected_url }}" title="Conectados"><svg class="ico"><use href="#i-online"></use></svg><span>Conectados</span><em class="nav-count" data-online-count></em></a>
+            <a class="nav-link" href="{% url 'dashboard:entity_list' 'usuarios' %}" title="Usuarios y accesos"><svg class="ico"><use href="#i-users"></use></svg><span>Usuarios y accesos</span></a>
+            <a class="nav-link" href="{% url 'organization:chart' %}" title="Organización"><svg class="ico"><use href="#i-org"></use></svg><span>Organización</span></a>
+            <a class="nav-link" href="{% url 'processes:map' %}" title="Procesos"><svg class="ico"><use href="#i-process"></use></svg><span>Procesos</span></a>
+            <a class="nav-link" href="{% url 'assets:list' %}" title="Activos y equipos"><svg class="ico"><use href="#i-assets"></use></svg><span>Activos y equipos</span></a>
+            <a class="nav-link" href="{% url 'traceability:risks' %}" title="Riesgos"><svg class="ico"><use href="#i-risk"></use></svg><span>Riesgos</span></a>
+            <a class="nav-link" href="{% url 'dashboard:entity_list' 'incidentes' %}" title="Incidentes"><svg class="ico"><use href="#i-incident"></use></svg><span>Incidentes</span></a>
+            <a class="nav-link" href="{% url 'dashboard:entity_list' 'vulnerabilidades' %}" title="Vulnerabilidades"><svg class="ico"><use href="#i-vuln"></use></svg><span>Vulnerabilidades</span></a>
+            <a class="nav-link" href="{% url 'registers:index' %}" title="Registros del SGSI"><svg class="ico"><use href="#i-book"></use></svg><span>Registros del SGSI</span></a>
+            <a class="nav-link" href="{% url 'dashboard:entity_list' 'documentos' %}" title="Documentos y evidencias"><svg class="ico"><use href="#i-docs"></use></svg><span>Documentos y evidencias</span></a>
+            <a class="nav-link" href="{% url 'dashboard:entity_list' 'auditorias' %}" title="Auditorías"><svg class="ico"><use href="#i-audit"></use></svg><span>Auditorías</span></a>
+            <a class="nav-link" href="{% url 'dashboard:report_center' %}" title="Reportes y métricas"><svg class="ico"><use href="#i-reports"></use></svg><span>Reportes y métricas</span></a>
+            <a class="nav-link" href="{% url 'dashboard:entity_list' 'controles' %}" title="Controles ISO"><svg class="ico"><use href="#i-controls"></use></svg><span>Controles ISO</span></a>
+            {% if perms.traceability.view_documentlink %}<a class="nav-link" href="{% url 'traceability:links' %}" title="Responsabilidades documentales"><svg class="ico"><use href="#i-key"></use></svg><span>Responsabilidades documentales</span></a>{% endif %}
+            {% if perms.traceability.add_importbatch %}<a class="nav-link" href="{% url 'traceability:import' %}" title="Importar fuentes"><svg class="ico"><use href="#i-upload"></use></svg><span>Importar fuentes</span></a>{% endif %}
+        </nav>
     </aside>
+    <div class="nav-scrim" data-nav-scrim hidden></div>
 
     <section class="page-column">
         <header class="topbar">
-            <div class="platform-title">Plataforma aValue · SGSI SIEMPRESOFT</div>
+            <button type="button" class="nav-toggle" data-nav-toggle aria-controls="menu-principal" aria-expanded="true" title="Mostrar u ocultar el menú">
+                <svg class="ico"><use href="#i-menu"></use></svg>
+            </button>
+            <div class="platform-title"><b>SGSI</b> Siempresoft E.I.R.L.</div>
             <div class="top-actions">
-                <div class="user-box">
-                    <b>{{ request.user.get_full_name|default:request.user.username }}</b>
-                    <small>Usuario autenticado</small>
+                <div class="tb-pop" data-pop>
+                    <button type="button" class="tb-btn" data-pop-toggle aria-expanded="false" title="Personas conectadas">
+                        <span class="tb-faces" data-online-faces></span><span class="tb-count" data-online-label>…</span>
+                    </button>
+                    <div class="tb-menu is-wide" data-pop-menu hidden>
+                        <p class="tb-menu-title">Conectados ahora</p>
+                        <ul class="tb-list" data-online-list><li class="tb-empty">Cargando…</li></ul>
+                        <a class="tb-menu-foot" href="{% url 'accounts:connected' %}">Ver todos</a>
+                    </div>
+                </div>
+                <div class="tb-pop" data-pop>
+                    <button type="button" class="tb-btn tb-icon" data-pop-toggle aria-expanded="false" title="Notificaciones">
+                        <svg class="ico"><use href="#i-bell"></use></svg><em class="tb-badge" data-unread{% if not unread_notifications %} hidden{% endif %}>{{ unread_notifications }}</em>
+                    </button>
+                    <div class="tb-menu is-wide" data-pop-menu hidden>
+                        <p class="tb-menu-title">Notificaciones</p>
+                        <ul class="tb-list" data-notif-list><li class="tb-empty">Sin notificaciones nuevas.</li></ul>
+                        <a class="tb-menu-foot" href="{% url 'accounts:notifications' %}">Ver todas</a>
+                    </div>
+                </div>
+                <div class="tb-pop" data-pop>
+                    <button type="button" class="user-box tb-user" data-pop-toggle aria-expanded="false">
+                        {% avatar request.user %}
+                        <div><b>{{ request.user.get_full_name|default:request.user.username }}</b><small>{% if sgsi_admin %}Administrador del SGSI{% else %}{{ request.user.position|default:"Colaborador" }}{% endif %}</small></div>
+                    </button>
+                    <div class="tb-menu" data-pop-menu hidden>
+                        <a href="{% url 'accounts:profile' %}">Mi perfil</a>
+                        <a href="{% url 'accounts:password_change' %}">Contraseña</a>
+                        <a href="{% url 'accounts:notifications' %}">Notificaciones</a>
+                        {% if sgsi_admin %}<a href="{% url 'accounts:access_list' %}">Accesos y permisos</a>{% endif %}
+                        <div class="tb-appearance">
+                            <p class="tb-menu-title">Apariencia</p>
+                            <div class="tb-appearance-row"><span>Tema</span><div class="theme-switch is-compact" role="group" aria-label="Tema de la pantalla" data-theme-switch>
+                    <button type="button" data-theme-choice="light" title="Tema claro" aria-pressed="false"><svg class="ico"><use href="#i-sun"></use></svg></button>
+                    <button type="button" data-theme-choice="system" title="Igual que el sistema" aria-pressed="false"><svg class="ico"><use href="#i-monitor"></use></svg></button>
+                    <button type="button" data-theme-choice="dark" title="Tema oscuro" aria-pressed="false"><svg class="ico"><use href="#i-moon"></use></svg></button>
+                </div></div>
+                            <div class="tb-appearance-row"><span>Color</span><div class="sys-accent" role="group" aria-label="Color de acento">
+                    <button type="button" data-accent-value="green" title="Verde SiempreSoft" aria-pressed="false"></button>
+                    <button type="button" data-accent-value="blue" title="Azul" aria-pressed="false"></button>
+                    <button type="button" data-accent-value="orange" title="Naranja" aria-pressed="false"></button>
+                    <button type="button" data-accent-value="violet" title="Violeta" aria-pressed="false"></button>
+                </div></div>
+                            <div class="tb-appearance-row"><span>Vista compacta</span><button type="button" class="sys-density" data-density-toggle title="Vista compacta o cómoda" aria-pressed="false"><svg class="ico"><use href="#i-fit"></use></svg></button></div>
+                        </div>
+                        <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button type="submit">Cerrar sesión</button></form>
+                    </div>
                 </div>
             </div>
         </header>
@@ -85,6 +152,16 @@
     </section>
 </div>
 <script src="{% static 'js/mockup_sgsi.js' %}"></script>
+<div hidden data-sgsi-loader-config data-lottie-lib="{% static 'vendor/lottie_light.min.js' %}" data-lottie-src="{% static 'lottie/sgsi-loader.json' %}" data-pdfjs-local="{% static 'vendor/pdfjs/pdf.min.js' %}" data-pdfjs-worker-local="{% static 'vendor/pdfjs/pdf.worker.min.js' %}"></div>
+{% include "partials/sgsi_loader.html" with overlay=True text="Cargando" %}
+<script src="{% static 'js/sgsi_loader.js' %}" defer></script>
+<script src="{% static 'js/shell.js' %}" defer></script>
+<script src="{% static 'js/theme.js' %}" defer></script>
+<script src="{% static 'js/pdf_viewer.js' %}" defer></script>
+<script src="{% static 'js/sd_ui.js' %}" defer></script>
+<div hidden data-live-config data-pulse="{% url 'accounts:pulse' %}" data-login="{% url 'accounts:login' %}" data-read="{% url 'accounts:notification_read' 0 %}"></div>
+<div class="tb-toasts" data-live-toasts aria-live="polite"></div>
+<script src="{% static 'js/sd_live.js' %}" defer></script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

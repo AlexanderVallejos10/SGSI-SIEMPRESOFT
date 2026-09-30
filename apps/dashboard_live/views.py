@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from .change_log import log_changes
@@ -40,12 +41,139 @@ def _trace_lookup(dataset, entity_type, entity_key):
     }
 
 
+def _bullet(value, indicator):
+    """Posición del valor actual y de la meta en una barra de 0 a 100 %, y hacia dónde es mejor ir."""
+    from decimal import Decimal
+
+    from .logic import parse_indicator
+
+    operator, target = parse_indicator(indicator)
+    if value is None or target is None:
+        return None
+    value, target = Decimal(value), Decimal(target)
+    percent_scale = "%" in (indicator or "") and value <= 100 and target <= 100
+    top = Decimal("100") if percent_scale else max(value, target, Decimal("1")) * Decimal("1.25")
+    return {
+        "value_pct": float(min(Decimal("100"), max(Decimal("0"), value / top * 100))),
+        "target_pct": float(min(Decimal("100"), max(Decimal("0"), target / top * 100))),
+        "direction": "up" if operator in (">=", ">") else "down" if operator in ("<=", "<") else "eq",
+        "unit": "%" if "%" in (indicator or "") else "",
+    }
+
+
 @login_required
 def home(request):
-    context = build_dashboard_context()
-    context["can_change"] = _can_change(request)
-    context["active_tab"] = request.GET.get("tab", "resumen")
-    return render(request, "dashboard_live/home.html", context)
+    """Solo el armazón con esqueletos: los datos llegan por la API JSON (carga asíncrona)."""
+    from .selectors import current_dataset
+
+    dataset = current_dataset()
+    return render(request, "dashboard_live/home.html", {
+        "dataset": dataset,
+        "can_change": _can_change(request),
+    })
+
+
+def _num(value):
+    return None if value is None else float(value)
+
+
+def dashboard_payload(request, refresh=False):
+    from django.urls import reverse
+
+    from .overview import system_overview
+
+    ctx = build_dashboard_context()
+    can_change = _can_change(request)
+    payload = {
+        "can_change": can_change,
+        "overview": system_overview(refresh=refresh),
+        "links": {
+            "risks": reverse("traceability:risks"),
+            "incidents": reverse("registers:detail", args=["registro-incidentes"]),
+            "corrective": reverse("registers:detail", args=["medidas-correctivas"]),
+            "assets": reverse("assets:list"),
+            "annex": reverse("dashboard:annex_controls"),
+            "clause": reverse("dashboard:clause_detail", args=["0"]).replace("/0/", "/{c}/"),
+        },
+        "dataset": None,
+    }
+    dataset = ctx.get("dataset")
+    if not dataset:
+        return payload
+
+    def metric(row, oesi=False):
+        obj = row["obj"]
+        value = row.get("effective", obj.current_value) if not oesi else obj.current_value
+        return {
+            "id": obj.metric_id, "description": obj.description, "pdca": getattr(obj, "pdca_cycle", ""),
+            "display": row["display"], "value": _num(value), "indicator": obj.indicator,
+            "ok": row["compliance"] == "SI", "bullet": _bullet(value, obj.indicator),
+            "responsible": obj.responsible_text, "period": obj.period,
+            "plan": getattr(obj, "action_plan", ""), "edit_url": row["edit_url"] if can_change else "",
+        }
+
+    security = ctx["security"]
+    index = {obj.pk: i for i, obj in enumerate(security)}
+
+    def matrix(objects, alignments, attr, name):
+        cells = {}
+        for a in alignments:
+            row = cells.setdefault(getattr(a, f"{attr}_id"), [None] * len(security))
+            row[index[a.security_objective_id]] = {
+                "rel": a.relation,
+                "url": reverse(f"dashboard_live:toggle_{name}_alignment", args=[a.pk]) if can_change else "",
+            }
+        return [{"obj": obj, "cells": cells.get(obj.pk, [None] * len(security))} for obj in objects]
+
+    labels = {"strength": ("Fortalezas", "ok"), "weakness": ("Debilidades", "bad"),
+              "opportunity": ("Oportunidades", "info"), "threat": ("Amenazas", "warn")}
+    groups = []
+    for summary in (ctx["mefi"], ctx["mefe"]):
+        for group, score in summary["groups"].items():
+            label, tone = labels.get(str(group), (str(group), "calm"))
+            groups.append({"label": label, "tone": tone, "value": _num(score),
+                           "count": sum(1 for f in summary["rows"] if f.group == group)})
+
+    payload.update({
+        "dataset": {"name": dataset.original_name, "version": dataset.version_label,
+                    "updated": dataset.updated_at.isoformat() if dataset.updated_at else ""},
+        "summary": {
+            "sgsi": [ctx["sgsi_yes"], ctx["sgsi_total"]], "oesi": [ctx["oesi_yes"], ctx["oesi_total"]],
+            "oee": [ctx["oee_obtained"], ctx["oee_expected"]], "req": [ctx["req_obtained"], ctx["req_expected"]],
+        },
+        "sgsi": [metric(r) for r in ctx["sgsi_rows"]],
+        "oesi": [metric(r, oesi=True) for r in ctx["oesi_rows"]],
+        "security": [{"code": s.code, "description": s.description} for s in security],
+        "oee_matrix": [{"code": r["obj"].code, "text": r["obj"].description, "cells": r["cells"]}
+                       for r in matrix(ctx["strategic"], ctx["oee_alignments"], "strategic_objective", "oee")],
+        "req_matrix": [{"code": r["obj"].stakeholder, "text": r["obj"].requirement, "cells": r["cells"]}
+                       for r in matrix(ctx["requirements"], ctx["req_alignments"], "requirement", "req")],
+        "osi_scores": [{"code": s.code, "description": s.description, "oee": ctx["oee_scores"][s.code],
+                        "req": ctx["req_scores"][s.code]} for s in security],
+        "factors": groups,
+        "efi": _num(ctx["efi"]), "efe": _num(ctx["efe"]), "averaged": ctx.get("averaged", False),
+        "warnings": ctx["warnings"],
+    })
+    return payload
+
+
+@login_required
+def dashboard_data(request):
+    """API del tablero. Devuelve una «versión» (huella del contenido): si el cliente ya la tiene,
+    responde solo {"unchanged": true} y el navegador no vuelve a dibujar nada."""
+    import hashlib
+    import json
+
+    from django.core.serializers.json import DjangoJSONEncoder
+
+    payload = dashboard_payload(request, refresh=request.GET.get("refresh") == "1")
+    body = json.dumps(payload, cls=DjangoJSONEncoder, ensure_ascii=False, sort_keys=True)
+    version = hashlib.sha1(body.encode()).hexdigest()[:12]
+    if request.GET.get("v") == version:
+        return JsonResponse({"unchanged": True, "version": version})
+    payload["version"] = version
+    payload["server_time"] = timezone.now().isoformat()
+    return JsonResponse(payload, encoder=DjangoJSONEncoder, json_dumps_params={"ensure_ascii": False})
 
 
 def _edit_model(request, *, obj, form_class, entity_type, entity_key, title, subtitle, return_url):

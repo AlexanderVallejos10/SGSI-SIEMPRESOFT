@@ -1,0 +1,30 @@
+/* Organigrama: mismo diseño, solo más legible.
+   Se carga después de organization.css. Si se quita este archivo, vuelve el aspecto anterior. */
+
+/* Texto a un tamaño que se lea sin acercarse a la pantalla */
+.org-kpis strong{font-size:22px}
+.org-kpis span{font-size:11px;color:light-dark(#6b7c8d, #8e969e)}
+.org-legend{font-size:11px}
+.zoom-controls button{font-size:12px;padding:5px 9px}
+.zoom-controls span{font-size:11px}
+
+.org-node{width:224px}
+.org-node > header{background:color-mix(in srgb,var(--node-accent) 38%,light-dark(white, #121619))}
+.node-title strong{font-size:12px}
+.node-title small{font-size:10.5px;color:light-dark(#5f7285, #959ea7)}
+.node-title small a{color:light-dark(var(--accent), color-mix(in srgb,var(--accent) 62%,#fff))}
+
+.node-person{padding:7px 8px}
+.node-person b{font-size:11.5px}
+.node-person small{font-size:10px;color:light-dark(#6f8192, #89929a)}
+
+.node-menu-popover{width:205px}
+.node-menu-popover b{font-size:10px}
+.node-menu-popover a,.node-menu-popover button{font-size:11.5px}
+
+.vacancy strong{font-size:11px;letter-spacing:0}
+.vacancy a{font-size:11px}
+
+/* Teclado: que se vea dónde está el foco */
+.org-canvas a:focus-visible,.org-canvas button:focus-visible,.zoom-controls button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.org-node,.org-tree-stage{transition:none}.org-node:hover{transform:none}}

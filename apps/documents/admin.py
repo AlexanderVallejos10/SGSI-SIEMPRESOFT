@@ -360,3 +360,15 @@ class DocumentSectionAssignmentAdmin(
         "section",
     )
 
+
+
+from .models import ManualDocumentRequirement  # noqa: E402
+
+
+@admin.register(ManualDocumentRequirement)
+class ManualDocumentRequirementAdmin(admin.ModelAdmin):
+    list_display = ("numeral", "name", "location", "manual_version", "sort_order", "is_active")
+    list_filter = ("is_active", "manual_version")
+    list_editable = ("sort_order", "is_active")
+    search_fields = ("numeral", "name", "location")
+    ordering = ("numeral", "sort_order")

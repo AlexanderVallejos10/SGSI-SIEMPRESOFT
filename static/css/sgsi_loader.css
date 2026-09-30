@@ -1,0 +1,46 @@
+/* Cargador de marca (discos de SiempreSoft), barra de progreso, esqueletos y botones ocupados. */
+.sgsi-loader{display:grid;justify-items:center;align-content:center;gap:12px;color:light-dark(#5b6b7a, #9da5ac);font-size:13px}
+.sgsi-loader__art{position:relative;width:108px;height:72px}
+.sgsi-loader--small .sgsi-loader__art{width:54px;height:36px}
+.sgsi-loader__lottie,.sgsi-loader__fallback{position:absolute;inset:0;width:100%;height:100%}
+.sgsi-loader__lottie{opacity:0;transition:opacity .2s ease}
+.sgsi-loader.has-lottie .sgsi-loader__lottie{opacity:1}
+.sgsi-loader.has-lottie .sgsi-loader__fallback{visibility:hidden}
+.sl-line{fill:none;stroke:#5DAA3C;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:100;animation:sl-line 1.6s ease-in-out infinite}
+.sl-disc{animation:sl-bounce 1s cubic-bezier(.4,0,.2,1) infinite}
+.sl-yellow{animation-delay:.07s}.sl-green{animation-delay:.14s}
+@keyframes sl-bounce{0%,45%,100%{transform:translateY(0)}20%{transform:translateY(-7px)}}
+@keyframes sl-line{0%{stroke-dashoffset:100}40%,100%{stroke-dashoffset:0}}
+.sgsi-loader__text{letter-spacing:.2px}
+
+/* Entre páginas: primero la barra fina; el cargador completo solo si tarda. */
+.sgsi-loader--overlay{position:fixed;inset:0;z-index:4000;background:light-dark(rgba(233,236,239,.94), rgba(18,21,24,.94));opacity:0;transition:opacity .22s ease}
+.sgsi-loader--overlay .sgsi-loader__art{width:150px;height:100px}
+.sgsi-loader--overlay .sgsi-loader__text{font-size:15px}
+.sgsi-loader--overlay.is-visible{opacity:1}
+.sgsi-loader--overlay[hidden]{display:none}
+.nav-progress{position:fixed;left:0;top:0;right:0;z-index:4100;height:3px;pointer-events:none;opacity:0;transition:opacity .25s ease}
+.nav-progress.is-active,.nav-progress.is-done{opacity:1}
+.nav-progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,#D9731F,#E8C530 45%,#5DAA3C);border-radius:0 2px 2px 0;box-shadow:0 0 6px rgba(93,170,60,.45)}
+.nav-progress.is-active i{animation:np-grow 8s cubic-bezier(.08,.8,.2,1) forwards}
+.nav-progress.is-done i{width:100%;transition:width .2s ease}
+@keyframes np-grow{0%{width:0}20%{width:55%}60%{width:80%}100%{width:92%}}
+
+/* Esqueleto de documento mientras carga el visor */
+.skel-doc{display:grid;place-items:center;gap:18px;width:100%;height:100%;padding:28px;box-sizing:border-box}
+.skel-page{width:min(560px,86%);padding:34px 36px;background:light-dark(#fff, #121619);border-radius:4px;box-shadow:0 1px 3px light-dark(rgba(20,34,48,.12), rgba(172,189,205,0.12));display:grid;gap:12px}
+.skel-l{display:block;height:10px;border-radius:5px;background:linear-gradient(90deg,light-dark(#eceff3, #202327) 0%,light-dark(#f6f8fa, #181c20) 40%,light-dark(#eceff3, #202327) 80%);background-size:300% 100%;animation:skel 1.4s ease-in-out infinite}
+.skel-l.h{height:16px;width:46%;margin-bottom:8px}.skel-l.w90{width:90%}.skel-l.w75{width:75%}.skel-l.w60{width:60%}.skel-l.w40{width:40%}.skel-l.gap{margin-top:10px}
+@keyframes skel{0%{background-position:100% 0}100%{background-position:0 0}}
+
+/* Botón ocupado al enviar un formulario */
+.is-busy{position:relative;pointer-events:none;color:transparent !important}
+.is-busy::after{content:"";position:absolute;left:50%;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;border:2px solid light-dark(rgba(255,255,255,.45), rgba(42,49,55,0.45));border-top-color:light-dark(#fff, #2a3137);animation:btn-spin .7s linear infinite}
+.mr-link.is-busy::after,.dw-btn:not(.is-primary).is-busy::after{border-color:color-mix(in srgb,var(--accent) 25%,transparent);border-top-color:var(--accent)}
+@keyframes btn-spin{to{transform:rotate(360deg)}}
+
+@media (prefers-reduced-motion:reduce){
+  .sl-disc,.sl-line,.skel-l,.nav-progress.is-active i{animation:none}
+  .sl-line{stroke-dashoffset:0}
+  .sgsi-loader--overlay{transition:none}
+}

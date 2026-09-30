@@ -28,6 +28,43 @@ def normalize_member_path(value):
     return unicodedata.normalize("NFC", value)
 
 
+# Material criptográfico y credenciales: nunca se guarda en el sistema documental.
+SECRET_EXTENSIONS = {
+    "p12", "pfx", "pem", "key", "ppk", "jks", "keystore", "kdbx", "ovpn", "rdp",
+}
+# Documentos que la empresa usa para anotar claves: se omiten aunque sean Excel o Word.
+# Su información útil (qué cuenta cambió de clave y cuándo) va al registro «Registro de cambio de claves».
+SECRET_DOCUMENT_HINTS = ("registro de cambio de claves", "log gestion de claves")
+DOCUMENT_EXTENSIONS = {"pdf", "doc", "docx", "ppt", "pptx", "xls", "xlsx", "xlsm", "odt", "md", "mp4"}
+SECRET_NAME_HINTS = (
+    "bitlocker", "clave de recuperacion", "claves de recuperacion", "recovery key",
+    "claves ssh", "id_rsa", "id_ed25519", "_key.zip", "credencial", "contrasena", "password",
+    "certificados smime", "certificadossl", "certificado ssl", "wildcard", "siempresoft_ca",
+)
+
+
+def secret_reason(value):
+    """Devuelve el motivo si la ruta es una llave, certificado privado o clave; si no, cadena vacía."""
+    path = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode().lower()
+    extension = PurePosixPath(path).suffix.lstrip(".")
+    if extension in SECRET_EXTENSIONS:
+        return f"archivo de llave o certificado privado (.{extension})"
+    for hint in SECRET_DOCUMENT_HINTS:
+        if hint in path:
+            return f"documento con claves escritas ({hint})"
+    if extension in DOCUMENT_EXTENSIONS:
+        return ""  # un instructivo sobre BitLocker o certificados es un documento, no un secreto
+    for hint in SECRET_NAME_HINTS:
+        if hint in path:
+            return f"ruta de credenciales ({hint})"
+    # Dentro de carpetas restringidas o de certificados, lo que no es un documento
+    # (zip de certificados, .cer, scripts, claves en .txt) no entra al sistema.
+    folders = path.rsplit("/", 1)[0]
+    if "restringida" in folders or "certificad" in folders or "/vpn" in folders:
+        return f"archivo técnico en carpeta restringida (.{extension or 'sin extensión'})"
+    return ""
+
+
 def path_is_suspicious(value):
     parts = PurePosixPath(value).parts
     return any(part == ".." for part in parts)
@@ -209,6 +246,8 @@ class Command(BaseCommand):
             "duplicates": 0,
             "invalid": 0,
             "bytes": 0,
+            "secrets": [],
+            "onedrive_errors": 0,
         }
 
         member_records = []
@@ -250,6 +289,18 @@ class Command(BaseCommand):
                 original_path = normalize_member_path(
                     zip_info.filename
                 )
+
+                # Avisos de OneDrive sobre archivos que no se descargaron: no son documentos.
+                if original_path.endswith("_Error.txt"):
+                    summary["onedrive_errors"] += 1
+                    continue
+
+                # Llaves, certificados privados y claves: no se leen ni se guardan.
+                reason = secret_reason(original_path)
+                if reason:
+                    summary["secrets"].append((original_path, reason))
+                    continue
+
                 original_name = PurePosixPath(
                     original_path
                 ).name
@@ -553,6 +604,25 @@ class Command(BaseCommand):
         self.stdout.write(
             f"Tamaño descomprimido: {human_size(summary['bytes'])}"
         )
+        if summary["onedrive_errors"]:
+            self.stdout.write(
+                self.style.WARNING(
+                    f"Archivos que OneDrive no descargó (se omiten sus avisos _Error.txt): {summary['onedrive_errors']}"
+                )
+            )
+        if summary["secrets"]:
+            self.stdout.write("")
+            self.stdout.write(
+                self.style.WARNING(
+                    f"OMITIDOS POR SEGURIDAD: {len(summary['secrets'])} archivos con llaves, "
+                    "certificados privados o claves. No se guardaron en el sistema; "
+                    "deben custodiarse en un almacén de secretos."
+                )
+            )
+            for path, reason in summary["secrets"][:40]:
+                self.stdout.write(f"  - {path} | {reason}")
+            if len(summary["secrets"]) > 40:
+                self.stdout.write(f"  … y {len(summary['secrets']) - 40} más")
 
         if dry_run:
             transaction.set_rollback(True)

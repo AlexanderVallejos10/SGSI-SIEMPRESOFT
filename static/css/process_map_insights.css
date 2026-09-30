@@ -1,0 +1,59 @@
+/* Capa interactiva del mapa: riesgos, búsqueda y trazado de relaciones. */
+:root{
+  --lvl-muy-alto:light-dark(#b83a3a, #dd9292); --lvl-alto:light-dark(#e07b39, #eaad86); --lvl-medio:light-dark(#d9a92e, #e9cd86);
+  --lvl-bajo:light-dark(#7fae4b, #96ac7e); --lvl-muy-bajo:light-dark(#4c9a6a, #8baf99); --lvl-pendiente:light-dark(#9aa8b5, #6c8093);
+}
+.visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* Herramientas */
+.process-map-toolbar{flex-wrap:wrap}
+.map-insight-tools{display:flex;flex-wrap:wrap;align-items:center;gap:10px;flex:1;justify-content:flex-end}
+.map-search input{width:220px;padding:7px 10px;border:1px solid light-dark(#c7d3dd, #4c555d);border-radius:4px;font:inherit;font-size:12px;background:light-dark(#fff, #121619)}
+.map-search input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.map-select{display:flex;align-items:center;gap:6px;font-size:12px;color:light-dark(#4d6478, #a1acb5)}
+.map-select select{padding:6px 8px;border:1px solid light-dark(#c7d3dd, #4c555d);border-radius:4px;font:inherit;font-size:12px;background:light-dark(#fff, #121619)}
+.map-toggle{display:flex;align-items:center;gap:6px;font-size:12px;color:light-dark(#4d6478, #a1acb5);cursor:pointer}
+
+/* Distintivo de riesgo en cada proceso */
+.node-risk{position:absolute;top:-9px;right:-9px;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:10px;border:2px solid light-dark(#fff, #2a3137);color:#fff;font-size:10px;font-weight:700;line-height:16px;text-align:center;box-shadow:0 1px 3px light-dark(rgba(20,40,60,.25), rgba(169,189,209,0.25));pointer-events:none}
+.hide-risk-layer .node-risk{display:none}
+.level-muy-alto{background:var(--lvl-muy-alto)}.level-alto{background:var(--lvl-alto)}.level-medio{background:var(--lvl-medio)}
+.level-bajo{background:var(--lvl-bajo)}.level-muy-bajo{background:var(--lvl-muy-bajo)}.level-pendiente{background:var(--lvl-pendiente)}
+
+/* Búsqueda y resaltado: lo que no coincide se atenúa */
+.process-node{transition:opacity .15s ease,box-shadow .15s ease,border-color .15s ease}
+.is-filtering .process-node:not(.is-match){opacity:.28}
+.is-filtering .process-node.is-match{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+
+/* Al pasar sobre un proceso se trazan sus relaciones */
+.process-lines path{transition:opacity .15s ease,stroke-width .15s ease}
+.is-tracing .process-lines path[data-dynamic-line]:not(.is-traced){opacity:.15}
+.is-tracing .process-lines path.is-traced{stroke:var(--accent);stroke-width:2.4}
+.is-tracing:not(.is-filtering) .process-node:not(.is-linked){opacity:.45}
+.is-tracing .process-node.is-linked{border-color:var(--accent)}
+.process-node:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* Panel de detalle: riesgos del proceso */
+.map-risk-section h3{display:flex;align-items:center;justify-content:space-between}
+.map-risk-section h3 span{font-size:12px;color:light-dark(#2a4a66, #b4c3d0);font-weight:600}
+.risk-bar{display:flex;height:8px;border-radius:2px;overflow:hidden;margin:6px 0 8px;background:light-dark(#eef2f5, #1e2226)}
+.risk-bar i{display:block;min-width:4px}
+.risk-legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11px;color:light-dark(#51687c, #9ea9b2);margin-bottom:10px}
+.risk-legend span{display:flex;align-items:center;gap:5px}
+.risk-legend i{width:9px;height:9px;border-radius:2px;display:inline-block}
+.map-risk-list{display:grid;gap:6px}
+.map-risk-row{display:grid;grid-template-columns:auto 1fr;gap:2px 8px;align-items:center;padding:8px;border:1px solid light-dark(#e3e9ee, #3c4349);border-radius:4px;text-decoration:none;color:light-dark(#223b50, #c4cfd9);background:light-dark(#fff, #121619)}
+.map-risk-row:hover,.map-risk-row:focus-visible{border-color:var(--accent);background:light-dark(#f5f9fd, #131b23)}
+.map-risk-row .level-chip{grid-row:span 3;align-self:start;color:#fff;font-size:10px;font-weight:600;border-radius:4px;padding:3px 6px;white-space:nowrap}
+.map-risk-row b{font-size:12px}
+.map-risk-event{font-size:11px;color:light-dark(#3d5569, #aeb9c3);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.map-risk-row small{font-size:10px;color:light-dark(#7a8c9c, #7f8992)}
+.map-risk-more{display:inline-block;margin:8px 0 12px;font-size:12px;color:light-dark(#176ab0, color-mix(in srgb,var(--accent) 62%,#fff))}
+.annex-chips{display:flex;flex-wrap:wrap;gap:5px}
+.annex-chips span{font-size:11px;font-weight:600;color:light-dark(var(--accent), color-mix(in srgb,var(--accent) 62%,#fff));background:light-dark(#e8f1f9, #1a232c);border:1px solid light-dark(color-mix(in srgb,var(--accent) 24%,#fff), #3b4b59);border-radius:4px;padding:2px 6px}
+.map-risk-warning{margin-top:10px;padding:8px 10px;border-left:3px solid var(--lvl-alto);background:light-dark(#fdf3ec, #2a1d14);color:light-dark(#7c4318, #e8b187);font-size:11px;line-height:1.45}
+
+@media (prefers-reduced-motion:reduce){
+  .process-node,.process-lines path{transition:none}
+}
+@media (max-width:900px){.map-insight-tools{justify-content:flex-start}.map-search input{width:100%}}

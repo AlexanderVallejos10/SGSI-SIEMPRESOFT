@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load static avatars %}
+{% block title %}Revisión de accesos | SGSI{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/governance.css' %}">{% endblock %}
+{% block content %}
+<div class="ac">
+  <header class="ac-head"><h1>Revisión periódica de accesos</h1>
+    <p>Cada acceso a los sistemas de la empresa se confirma cada 90 días: se mantiene, se modifica o se revoca (ISO/IEC 27001, control 5.18). Cada decisión queda registrada con quién la tomó.</p></header>
+  <dl class="ac-facts ac-panel">
+    <div><dt>Accesos por revisar</dt><dd>{{ due }}</dd></div>
+    <div><dt>Revisados en los últimos 90 días</dt><dd>{{ done_90 }}</dd></div>
+    <div><dt>Próxima revisión</dt><dd>90 días después de cada decisión</dd></div>
+  </dl>
+  <form method="get" class="ac-row"><input type="search" name="q" value="{{ q }}" placeholder="Buscar por persona" aria-label="Buscar por persona" class="gv-search"><button class="ac-btn" type="submit">Buscar</button></form>
+
+  {% for person, items in groups.items %}
+  <section class="ac-panel">
+    <h2 class="ac-person" style="gap:10px">{% avatar person %}<span>{{ person.get_full_name|default:person.username }}<small>{{ person.position|default:"" }}</small></span></h2>
+    <div class="ac-table-wrap"><table class="ac-table"><thead><tr><th>Sistema</th><th>Perfil</th><th>Nivel</th><th>Última revisión</th><th>Decisión</th></tr></thead><tbody>
+    {% for a in items %}<tr>
+      <td><b>{{ a.system.name }}</b>{% if a.is_privileged %} <span class="ac-role is-admin">Privilegiado</span>{% endif %}</td>
+      <td>{{ a.role_profile|default:"—" }}</td><td>{{ a.access_level|default:"—" }}</td><td class="ac-muted">{{ a.last_review_at|date:"d/m/Y"|default:"Nunca" }}</td>
+      <td><form method="post" class="gv-review">{% csrf_token %}<input type="hidden" name="access" value="{{ a.pk }}">
+        <input name="comments" placeholder="Comentario (obligatorio si modifica o revoca)" aria-label="Comentario">
+        <button class="ac-btn is-small" name="decision" value="keep">Mantener</button>
+        <button class="ac-btn is-small" name="decision" value="modify">Modificar</button>
+        <button class="ac-btn is-small is-danger" name="decision" value="revoke">Revocar</button></form></td></tr>{% endfor %}
+    </tbody></table></div>
+  </section>
+  {% empty %}<div class="ac-panel ac-empty">No hay accesos pendientes de revisión.{% if not q %} Los accesos se registran en «Usuarios y accesos».{% endif %}</div>{% endfor %}
+</div>
+{% endblock %}

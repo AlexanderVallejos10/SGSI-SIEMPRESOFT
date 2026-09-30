@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ schema.name }}{% if year %} {{ year }}{% endif %} | SGSI{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/document_workspace.css' %}"><link rel="stylesheet" href="{% static 'css/clause_pages.css' %}"><link rel="stylesheet" href="{% static 'css/registers.css' %}">{% endblock %}
+{% block content %}
+<div class="breadcrumb"><a href="{% url 'registers:index' %}">Registros del SGSI</a> / {{ schema.name }}</div>
+
+<section class="mx-sheet">
+    <div class="mx-sheet-top"><span>Siempresoft EIRL</span><span>Uso interno</span></div>
+    <div class="mx-head">
+        <div>
+            <span class="mx-eyebrow">{% if schema.clause != "Anexo A" %}Cláusula {{ schema.clause }} · {% endif %}Anexo A {{ schema.annex }}</span>
+            <h1>{{ schema.name }}{% if year %} {{ year }}{% endif %}</h1>
+            <p class="rg-desc">{{ schema.description }}</p>
+        </div>
+        <div class="rg-head-actions">
+            <a class="dw-btn" href="{% url 'registers:export' slug %}{% if year %}?anio={{ year }}{% endif %}" data-no-loader><svg class="ico"><use href="#i-download"></use></svg>Descargar Excel</a>
+            {% if can_import %}<button type="button" class="dw-btn is-primary" data-open-import><svg class="ico"><use href="#i-upload"></use></svg>{% if schema.accept %}Importar{% else %}Importar Excel{% endif %}</button>{% endif %}
+        </div>
+    </div>
+    <table class="mx-meta">
+        <tr><th>Formato original</th><td>{{ schema.source }}</td><th>Última importación</th><td>{% if last_import %}{{ last_import.file_name }} · {{ last_import.created_at|date:"d/m/Y H:i" }}{% else %}Sin importaciones{% endif %}</td></tr>
+    </table>
+</section>
+
+{% if schema.by_year %}
+<nav class="rg-years" aria-label="Año">
+    {% for y in years %}<a href="?anio={{ y }}" class="{% if y == year %}is-active{% endif %}">{{ y }}</a>{% endfor %}
+    {% if can_edit %}<form method="get" class="rg-newyear"><input type="number" name="anio" min="2015" max="2100" placeholder="Otro año" aria-label="Otro año"><button type="submit">Ir</button></form>{% endif %}
+</nav>
+{% endif %}
+
+<section class="rg-kpis" data-kpis>
+    {% for c in summary.cards %}
+    <div class="rg-kpi"><b data-kpi="{{ forloop.counter0 }}">{{ c.value }}</b><span>{{ c.label }}</span>{% if c.hint %}<small data-kpi-hint="{{ forloop.counter0 }}">{{ c.hint }}</small>{% endif %}</div>
+    {% endfor %}
+    <div class="rg-kpi rg-kpi-progress">
+        <span>{% if schema.layout == "timeline" %}Avance del plan{% elif schema.layout == "checklist" %}Cumplimiento{% elif schema.layout == "table" %}{{ summary.cards.1.label }}{% else %}En uso{% endif %}</span>
+        <div class="nm-progress-bar"><i data-kpi-bar style="--p:{{ summary.progress }}%"></i></div>
+        <small><b data-kpi-pct>{{ summary.progress }}</b> %</small>
+    </div>
+</section>
+
+{% if schema.layout == "timeline" %}
+<section class="rg-heat" aria-label="Temas por mes">
+    {% for m in summary.months %}
+    <div class="rg-heat-col{% if forloop.counter == current_month and year == now_year %} is-now{% endif %}"><i style="--p:{{ m.pct }}%"></i><b>{{ m.count }}</b><span>{{ m.label }}</span></div>
+    {% endfor %}
+</section>
+{% endif %}
+
+<div class="rg-toolbar">
+    {% if sections|length > 1 %}
+    <div class="rg-tabs" role="tablist">
+        {% for s in sections %}<button type="button" role="tab" data-tab="{{ s.meta.key }}" class="{% if forloop.first %}is-active{% endif %}">{{ s.meta.label }} <span>{{ s.count }}</span></button>{% endfor %}
+    </div>
+    {% endif %}
+    <input type="search" class="rg-search" placeholder="Buscar" data-search aria-label="Buscar en el registro">
+    {% if schema.layout == "list" %}
+    <div class="mx-segment" data-state-filter>
+        <button type="button" class="is-active" data-filter="">Todos</button>
+        <button type="button" data-filter="En uso">En uso</button>
+        <button type="button" data-filter="En desuso">En desuso</button>
+    </div>
+    {% endif %}
+</div>
+
+{% for s in sections %}
+<section class="rg-sheet" data-section="{{ s.meta.key }}" data-create="{% url 'registers:create_row' slug %}" data-year="{{ year|default:'' }}" {% if not forloop.first %}hidden{% endif %}>
+    <div class="rg-scroll">
+    <table class="rg-table rg-{{ schema.layout }}">
+        <thead>
+        {% if schema.layout == "timeline" %}
+            <tr><th class="rg-topic">{% if s.meta.key == "capacitacion" %}Conocimientos y habilidades{% else %}Tema{% endif %}</th>
+                {% for m in months %}<th class="rg-month-head{% if forloop.counter == current_month %} is-now{% endif %}">{{ m }}</th>{% endfor %}
+                <th>Modalidad</th><th>Estado</th><th></th></tr>
+        {% elif schema.layout == "table" %}
+            <tr>{% for f in s.meta.fields %}<th>{{ f.label }}</th>{% endfor %}<th></th></tr>
+        {% elif schema.layout == "list" %}
+            <tr><th>Software externo</th><th>Persona, perfil de cargo o área</th><th>Autorizado el</th><th>Autorizado por</th><th>Estado</th><th></th></tr>
+        {% else %}
+            <tr><th class="rg-num">N.°</th><th>Requisito u obligación</th><th>¿Cumple?</th><th>Control para el cumplimiento</th><th>Responsable</th><th></th></tr>
+        {% endif %}
+        </thead>
+        {% for g in s.groups %}
+        <tbody data-group="{{ g.name }}">
+            {% if g.name %}
+            <tr class="rg-group"><th colspan="{% if schema.layout == 'timeline' %}16{% else %}6{% endif %}">
+                <span>{{ g.name }}</span><small>{{ g.rows|length }}</small>
+                {% if can_edit and schema.layout == "timeline" %}<button type="button" class="rg-add-in" data-add data-group-value="{{ g.name }}">+ Agregar tema</button>{% endif %}
+            </th></tr>
+            {% endif %}
+            {% for e in g.rows %}
+                {% with section=s.meta %}{% include "registers/_row_"|add:schema.layout|add:".html" %}{% endwith %}
+            {% endfor %}
+        </tbody>
+        {% empty %}
+        <tbody><tr><td colspan="16" class="rg-empty">Todavía no hay filas{% if year %} para {{ year }}{% endif %}. {% if can_import %}Importe el Excel de SiempreSoft o{% endif %} {% if can_edit %}agregue la primera fila.{% endif %}</td></tr></tbody>
+        {% endfor %}
+    </table>
+    </div>
+    {% if can_edit %}
+    <div class="rg-addbar">
+        {% if s.meta.group_by and schema.layout == "timeline" %}
+        <input type="text" placeholder="Nuevo perfil de puesto (opcional)" data-new-group aria-label="Perfil de puesto">
+        {% endif %}
+        <button type="button" class="dw-btn" data-add>+ Agregar fila</button>
+    </div>
+    {% endif %}
+</section>
+{% endfor %}
+
+{% if can_import %}
+<dialog class="rg-dialog" data-import-dialog>
+    <form method="post" action="{% url 'registers:import' slug %}" enctype="multipart/form-data" data-dw-upload>
+        {% csrf_token %}
+        <header><strong>{% if schema.accept %}Importar{% else %}Importar Excel{% endif %}</strong><button type="button" data-close-import aria-label="Cerrar"><svg class="ico"><use href="#i-close"></use></svg></button></header>
+        <div class="rg-dialog-body">
+            <p>{% if schema.import_hint %}{{ schema.import_hint }}{% else %}Suba el Excel de SiempreSoft tal como está («{{ schema.source }}») o uno descargado de esta pantalla. El sistema reconoce las columnas por su encabezado.{% endif %}</p>
+            <label class="dw-drop" data-dw-drop>
+                <input type="file" name="file" accept="{% if schema.accept %}{{ schema.accept|join:',' }}{% else %}.xlsx,.xlsm{% endif %}" required data-dw-file>
+                <span data-dw-drop-text>Arrastre el archivo aquí o haga clic para elegirlo</span>
+                <small>{% if schema.accept %}{{ schema.accept|join:", " }}{% else %}.xlsx o .xlsm{% endif %}</small>
+            </label>
+            {% if schema.by_year %}<label class="rg-field">Año<input type="number" name="year" value="{{ year }}" min="2015" max="2100"><small>Si lo deja vacío se toma del nombre del archivo.</small></label>{% endif %}
+            <fieldset class="rg-field"><legend>¿Qué hacer con lo que ya existe{% if year %} en {{ year }}{% endif %}?</legend>
+                <label><input type="radio" name="mode" value="replace" checked> Reemplazar por el contenido del Excel</label>
+                <label><input type="radio" name="mode" value="append"> Agregar a lo que ya existe</label>
+            </fieldset>
+            <a class="rg-template" href="{% url 'registers:export' slug %}?plantilla=1{% if year %}&anio={{ year }}{% endif %}" data-no-loader>Descargar plantilla vacía con el formato</a>
+        </div>
+        <footer><button type="button" class="dw-btn" data-close-import>Cancelar</button><button type="submit" class="dw-btn is-primary">Importar</button></footer>
+    </form>
+</dialog>
+{% endif %}
+<div hidden data-csrf>{% csrf_token %}</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'js/document_workspace.js' %}"></script><script src="{% static 'js/registers.js' %}"></script>{% endblock %}

@@ -22,7 +22,9 @@ from .models import (
     ProcessReferenceVersion,
     ProcessRelation,
 )
-from .selectors import map_context, process_payload
+from .layout import free_slot
+from .models import LANE_KINDS
+from .selectors import map_context, process_payload, relation_json
 from .services import register_reference_upload
 
 
@@ -60,28 +62,7 @@ def process_create(request):
 
         if form.is_valid():
             process = form.save(commit=False)
-            category = process.category
-
-            next_y = {
-                "strategic": 82,
-                "operational": 305,
-                "support": 535,
-            }.get(category.kind, 300)
-
-            count = (
-                ProcessNode.objects
-                .filter(
-                    category=category,
-                    is_active=True,
-                )
-                .count()
-            )
-
-            process.x = min(
-                960,
-                120 + (count * 150),
-            )
-            process.y = next_y
+            process.x, process.y = free_slot(process.category)
             process.created_by = request.user
             process.updated_by = request.user
             process.full_clean()
@@ -125,6 +106,9 @@ def process_edit(request, pk):
 
         if form.is_valid():
             process = form.save(commit=False)
+            if "category" in form.changed_data:
+                # Al pasar a otra franja busca un lugar libre; sus relaciones se mantienen.
+                process.x, process.y = free_slot(process.category, exclude_pk=process.pk)
             process.updated_by = request.user
             process.full_clean()
             process.save()
@@ -233,6 +217,37 @@ def relation_create(request):
 
     if request.method != "POST":
         return redirect("processes:map")
+    wants_json = "application/json" in request.headers.get("Accept", "")
+    data = request.POST
+    # Una relación retirada antes se reactiva en lugar de chocar con la restricción de unicidad.
+    relation = ProcessRelation.objects.filter(
+        source_id=data.get("source") or None,
+        target_id=data.get("target") or None,
+        relation_type=data.get("relation_type") or "flow",
+        is_active=False,
+    ).first()
+    form = ProcessRelationForm(data, instance=relation)
+    error = ""
+    if data.get("source") and data.get("source") == data.get("target"):
+        error = "Un proceso no puede relacionarse consigo mismo."
+    elif form.is_valid():
+        relation = form.save(commit=False)
+        relation.is_active = True
+        relation.created_by = relation.created_by or request.user
+        relation.updated_by = request.user
+        relation.full_clean()
+        relation.save()
+    else:
+        error = " ".join(str(e) for errors in form.errors.values() for e in errors) or "No se pudo crear la relación."
+    if wants_json:
+        if error:
+            return JsonResponse({"ok": False, "error": error}, status=400)
+        return JsonResponse({"ok": True, "relation": relation_json(relation)})
+    if error:
+        messages.error(request, error)
+    else:
+        messages.success(request, "Relación creada.")
+    return redirect("processes:map")
 
     form = ProcessRelationForm(request.POST)
 
@@ -276,6 +291,8 @@ def relation_archive(request, pk):
             "updated_at",
         )
     )
+    if "application/json" in request.headers.get("Accept", ""):
+        return JsonResponse({"ok": True})
 
     messages.success(
         request,
@@ -336,17 +353,16 @@ def save_layout(request):
                 ),
             )
             y = max(
-                40,
+                0,
                 min(
                     650,
                     int(move.get("y", process.y)),
                 ),
             )
 
-            category = category_map.get(
-                move.get("category"),
-                process.category,
-            )
+            category = process.category
+            if move.get("category") in LANE_KINDS and process.category.kind in LANE_KINDS:
+                category = category_map.get(move["category"], process.category)
 
             process.x = x
             process.y = y

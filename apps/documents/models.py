@@ -1,3 +1,5 @@
+import uuid
+
 from django.conf import settings
 from django.db import models
 
@@ -672,3 +674,51 @@ from .models_classification import SourceArtifactClassification
 from .models_promotion import DocumentImportIssue, DocumentVersionRepresentation
 
 from .models_mapping import DocumentSectionAssignment
+
+
+class ManualDocumentRequirement(models.Model):
+    """Documento que el Manual del SGSI exige en un numeral. Se edita desde /admin/ cuando cambia el Manual."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    numeral = models.CharField(max_length=20, db_index=True, verbose_name="Numeral")
+    name = models.CharField(max_length=255, verbose_name="Documento, tal como lo nombra el Manual")
+    location = models.TextField(blank=True, verbose_name="Ubicación según el Manual")
+    manual_version = models.CharField(max_length=20, blank=True, verbose_name="Versión del Manual")
+    sort_order = models.PositiveSmallIntegerField(default=10, verbose_name="Orden")
+    is_active = models.BooleanField(default=True, verbose_name="Vigente")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("numeral", "sort_order", "name")
+        verbose_name = "Documento exigido por el Manual"
+        verbose_name_plural = "Documentos exigidos por el Manual"
+
+    def __str__(self):
+        return f"{self.numeral} · {self.name}"
+
+
+class ManualReference(models.Model):
+    """Versión del Manual del SGSI que se muestra en todas las cláusulas. Cada cambio es una fila nueva:
+    queda el historial de quién la cambió, cuándo y por qué (control documental, 7.5)."""
+
+    STATUS = (("Borrador", "Borrador"), ("Vigente", "Vigente"), ("En revisión", "En revisión"))
+
+    title = models.CharField(max_length=200, default="Manual del Sistema de Gestión de Seguridad de la Información")
+    version = models.CharField(max_length=20)
+    status = models.CharField(max_length=20, choices=STATUS, default="Borrador")
+    issue_date = models.DateField(null=True, blank=True)
+    prepared_by = models.CharField(max_length=120, blank=True)
+    approved_by = models.CharField(max_length=120, blank=True)
+    change_note = models.TextField(blank=True)
+    is_current = models.BooleanField(default=True, db_index=True)
+    changed_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    changed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-changed_at",)
+        verbose_name = "Versión del Manual del SGSI"
+        verbose_name_plural = "Versiones del Manual del SGSI"
+        constraints = [models.UniqueConstraint(fields=("is_current",), condition=models.Q(is_current=True), name="uniq_current_manual_reference")]
+
+    def __str__(self):
+        return f"{self.title} v{self.version} ({self.status})"

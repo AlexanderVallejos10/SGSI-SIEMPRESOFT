@@ -1,0 +1,64 @@
+{# Documento que exige el Manual, abierto como en 4.1: archivo vigente, acciones, vista y historial. #}
+<details class="mdoc{% if not d.found %} is-missing{% endif %}" {% if open %}open{% endif %} data-mdoc>
+    <summary class="mdoc-head">
+        <span class="mdoc-num">{{ index|stringformat:"02d" }}</span>
+        <span class="mdoc-title">
+            <b>{{ d.name }}</b>
+            <small>{% if d.found %}{{ d.type }}{% if d.version %} · versión {{ d.version }}{% endif %}{% if d.history|length > 1 %} · {{ d.history|length }} versiones{% endif %}{% else %}No está cargado en el sistema{% endif %}</small>
+        </span>
+        <span class="mdoc-state {% if d.found %}is-ok{% else %}is-missing{% endif %}">{% if d.found %}En el sistema{% else %}Falta{% endif %}</span>
+        <span class="mdoc-toggle"><span class="when-closed">Ver contenido</span><span class="when-open">Ocultar</span><svg class="ico"><use href="#i-chevron"></use></svg></span>
+    </summary>
+
+    <div class="mdoc-body">
+        <div class="mdoc-bar">
+            <div class="mdoc-file">
+                <b>{% if d.found %}Archivo vigente{% else %}Documento pendiente{% endif %}</b>
+                <span>{% if d.found %}{{ d.file_name|default:d.system_title }}{% else %}{{ d.name }}{% endif %}</span>
+                <small>{% if d.location %}Ubicación según el Manual: {{ d.location }}{% else %}El Manual no indica la ubicación.{% endif %}</small>
+            </div>
+            <div class="mdoc-actions">
+                {% if d.view_url %}<a class="dw-btn" href="{{ d.view_url }}" target="_blank" rel="noopener">Abrir PDF</a>{% endif %}
+                {% if d.table_url %}<a class="dw-btn" href="{{ d.table_url }}">Hoja completa</a>{% endif %}
+                {% if d.download_url %}<a class="dw-btn" href="{{ d.download_url }}" data-no-loader>Descargar</a>{% endif %}
+                {% if d.upload_url %}
+                    <a class="dw-btn is-primary" href="{{ d.upload_url }}">Subir nueva versión</a>
+                {% elif can_register %}
+                    <form method="post" action="{% url 'dashboard:manual_register' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="numeral" value="{{ numeral }}">
+                        <input type="hidden" name="name" value="{{ d.name }}">
+                        {% if d.register_artifact %}<input type="hidden" name="artifact" value="{{ d.register_artifact }}">{% endif %}
+                        <input type="hidden" name="upload" value="1">
+                        <button type="submit" class="dw-btn is-primary">{% if d.found %}Subir nueva versión{% else %}Subir el documento{% endif %}</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if d.view_url %}
+            <div class="mdoc-view">{% include "partials/pdf_viewer.html" with url=d.view_url download=d.download_url title=d.file_name %}</div>
+        {% elif d.sheet %}
+            <div class="mdoc-sheet">{% include "dashboard/_sheet_grid.html" with sheets=d.sheet %}</div>
+        {% elif d.found %}
+            <p class="mdoc-empty">Este formato no se muestra en el navegador. Use <b>Descargar</b> para abrirlo.</p>
+        {% else %}
+            <p class="mdoc-empty">El Manual pide este documento y todavía no hay un archivo de la empresa con ese nombre. Con <b>Subir el documento</b> se crea su ficha y se sube la primera versión.</p>
+        {% endif %}
+
+        {% if d.found %}
+        <details class="mdoc-history">
+            <summary>Historial de versiones{% if d.history %} ({{ d.history|length }}){% endif %}</summary>
+            {% if d.history %}
+            <ol>
+                {% for v in d.history %}
+                <li><b>Versión {{ v.version|default:"sin número" }}</b><span class="dw-state s-{% if v.status == 'Vigente' or v.status == 'Vigente / Activo' %}active{% else %}obsolete{% endif %}">{{ v.status }}</span><time>{{ v.date|date:"d/m/Y" }}</time>{% if v.reason %}<p>{{ v.reason }}</p>{% endif %}</li>
+                {% endfor %}
+            </ol>
+            {% else %}
+            <p>Este archivo todavía no tiene historial en el sistema. Cuando suba una versión nueva, este{% if d.version %} (versión {{ d.version }}){% endif %} queda guardado como la versión anterior, y la nueva pasa a ser la vigente. Nada se pierde.</p>
+            {% endif %}
+        </details>
+        {% endif %}
+    </div>
+</details>

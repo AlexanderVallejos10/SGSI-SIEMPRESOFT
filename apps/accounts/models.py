@@ -1,3 +1,5 @@
+from django.utils import timezone
+from django.conf import settings
 import uuid
 
 from django.contrib.auth.models import AbstractUser
@@ -91,6 +93,22 @@ class User(AbstractUser):
     source_verified = models.BooleanField(
         default=False,
     )
+
+    # ---- foto de perfil (nombre de archivo aleatorio; se sirve solo a usuarios con sesión)
+    photo = models.FileField(upload_to="avatares/", blank=True)
+
+    # ---- acceso al sistema
+    must_change_password = models.BooleanField(
+        default=False,
+        help_text="Debe cambiar la contraseña al ingresar (credenciales nuevas o restablecidas).",
+    )
+    password_changes = models.PositiveIntegerField(
+        default=0,
+        help_text="Veces que el usuario cambió su contraseña por su cuenta.",
+    )
+    password_changed_at = models.DateTimeField(null=True, blank=True)
+    credentials_issued_at = models.DateTimeField(null=True, blank=True)
+    last_seen_at = models.DateTimeField(null=True, blank=True, db_index=True)
 
     created_at = models.DateTimeField(
         auto_now_add=True,
@@ -467,3 +485,88 @@ class AccessReview(TraceableModel):
             f"{self.access.business_code} - "
             f"{self.get_decision_display()}"
         )
+
+
+# ======================================================================
+# Acceso al sistema: sesiones, intentos de ingreso, solicitudes de cambio
+# de contraseña y notificaciones.
+# ======================================================================
+
+
+class UserSession(models.Model):
+    """Una conexión al sistema: desde que ingresa hasta que sale o vence por inactividad."""
+
+    ENDED_REASONS = (
+        ("logout", "Cerró sesión"),
+        ("inactividad", "Cerrada por inactividad"),
+        ("reemplazada", "Reemplazada por un nuevo ingreso"),
+    )
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="connection_sessions")
+    session_key = models.CharField(max_length=64, db_index=True)
+    started_at = models.DateTimeField(default=timezone.now, db_index=True)
+    last_seen_at = models.DateTimeField(default=timezone.now)
+    ended_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    ended_reason = models.CharField(max_length=20, choices=ENDED_REASONS, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        ordering = ("-started_at",)
+        verbose_name = "Sesión de usuario"
+        verbose_name_plural = "Sesiones de usuarios"
+
+    @property
+    def duration(self):
+        return (self.ended_at or self.last_seen_at) - self.started_at
+
+    def __str__(self):
+        return f"{self.user} · {self.started_at:%d/%m/%Y %H:%M}"
+
+
+class LoginAttempt(models.Model):
+    """Cada intento de ingreso. Sirve para bloquear ataques de fuerza bruta y para auditoría."""
+
+    username = models.CharField(max_length=150, db_index=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    success = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+        verbose_name = "Intento de ingreso"
+        verbose_name_plural = "Intentos de ingreso"
+
+
+class PasswordChangeRequest(models.Model):
+    STATUS = (("pending", "Pendiente"), ("approved", "Aprobada"), ("rejected", "Rechazada"))
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="password_requests")
+    reason = models.TextField()
+    status = models.CharField(max_length=10, choices=STATUS, default="pending", db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    resolved_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    resolution_note = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+        verbose_name = "Solicitud de cambio de contraseña"
+        verbose_name_plural = "Solicitudes de cambio de contraseña"
+
+
+class Notification(models.Model):
+    recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="notifications")
+    actor = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    kind = models.CharField(max_length=40, db_index=True)
+    title = models.CharField(max_length=200)
+    body = models.TextField(blank=True)
+    url = models.CharField(max_length=300, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    read_at = models.DateTimeField(null=True, blank=True, db_index=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+        indexes = [models.Index(fields=("recipient", "read_at"), name="acc_notif_unread_idx")]
+        verbose_name = "Notificación"
+        verbose_name_plural = "Notificaciones"

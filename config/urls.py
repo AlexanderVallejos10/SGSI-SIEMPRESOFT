@@ -5,6 +5,9 @@ from apps.traceability.media import protected_media
 
 urlpatterns = [
     path("trazabilidad/", include("apps.traceability.urls")),
+    path("registros/", include("apps.registers.urls")),
+    path("activos/", include("apps.assets.urls")),
+    path("gobierno/", include("apps.governance.urls")),
     path("", include("apps.dashboard_live.urls")),
     path("", include("apps.processes.urls")),
     path("", include("apps.context42.urls")),

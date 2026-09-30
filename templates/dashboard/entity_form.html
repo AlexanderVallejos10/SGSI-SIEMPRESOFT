@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}
 Editar {{ entity.title }} | SGSI
@@ -106,5 +107,9 @@ Editar {{ entity.title }} | SGSI
     </form>
 
 </section>
+
+{% if entity_key == "tratamientos-riesgo" %}
+<script src="{% static 'js/risk_treatment_form.js' %}" defer></script>
+{% endif %}
 
 {% endblock %}

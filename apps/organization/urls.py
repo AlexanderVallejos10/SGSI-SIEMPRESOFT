@@ -10,6 +10,7 @@ urlpatterns = [
         views.chart,
         name="chart",
     ),
+    path("puestos/<uuid:pk>/trazabilidad/", views.position_trace, name="position_trace"),
     path(
         "puestos/nuevo/",
         views.position_create,

@@ -1,0 +1,20 @@
+{% load registers_tags %}
+<tr class="rg-row" data-row="{{ e.pk }}" data-update="{% url 'registers:update_row' e.pk %}" data-delete="{% url 'registers:delete_row' e.pk %}" data-state="{{ e.data.estado }}">
+    {% for f in section.fields %}
+    {% with value=e.data|get_item:f.key %}
+    <td{% if f.type == "date" %} class="rg-nowrap"{% endif %}>
+        {% if f.type == "choice" %}
+            {% options section f.key value as opts %}
+            <select class="rg-pill st-{{ value|slugify_state }}" data-edit="{{ f.key }}" {% if not can_edit %}disabled{% endif %} aria-label="{{ f.label }}">
+                {% for o in opts %}<option value="{{ o }}" {% if o == value %}selected{% endif %}>{{ o }}</option>{% endfor %}
+            </select>
+        {% elif f.type == "months" %}
+            <div class="rg-mini-months">{% for m in months %}<button type="button" class="rg-m{% if forloop.counter in value %} is-on{% endif %}" data-month="{{ forloop.counter }}" title="{{ m }}" {% if not can_edit %}disabled{% endif %}><span>{{ m|slice:":1" }}</span></button>{% endfor %}</div>
+        {% else %}
+            <span class="rg-cell{% if forloop.first %} rg-strong{% endif %}" data-edit="{{ f.key }}" data-type="{{ f.type }}" {% if f.type == "date" %}data-value="{{ value }}"{% endif %} {% if can_edit %}tabindex="0"{% endif %}>{% if f.type == "date" %}{{ value|as_date|default:"—" }}{% else %}{{ value|default:"—" }}{% endif %}</span>
+        {% endif %}
+    </td>
+    {% endwith %}
+    {% endfor %}
+    <td class="rg-act">{% if can_edit %}<button type="button" class="rg-del" data-del title="Quitar fila"><svg class="ico"><use href="#i-close"></use></svg></button>{% endif %}</td>
+</tr>

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load static avatars %}
+{% block title %}Activos y equipos | SGSI{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/clause_pages.css' %}"><link rel="stylesheet" href="{% static 'css/registers.css' %}"><link rel="stylesheet" href="{% static 'css/assets.css' %}">{% endblock %}
+{% block content %}
+<div class="breadcrumb">Inicio / Gestión del SGSI / Activos y equipos</div>
+<section class="mx-sheet">
+    <div class="mx-sheet-top"><span>Siempresoft EIRL</span><span>Uso interno</span></div>
+    <div class="mx-head"><div>
+        <span class="mx-eyebrow">Anexo A 5.9 · 5.10 · 5.11 · 7.9 · 7.10 · 7.14</span>
+        <h1>Activos y equipos</h1>
+        <a class="outline-btn" style="float:right;margin-top:-34px" href="{% url 'assets:export' %}" data-no-loader>Descargar inventario en Excel</a>
+        <p class="rg-desc">Inventario de activos con su responsable, ubicación e historial: asignaciones por año, salidas y retornos, revisiones periódicas, software instalado y bajas.</p>
+    </div></div>
+</section>
+
+<nav class="as-tabs" aria-label="Clase de activo">
+    {% for t in tabs %}<a href="?clase={{ t.key }}" class="{% if t.key == klass %}is-active{% endif %}">{{ t.label }} <span>{{ t.count }}</span></a>{% endfor %}
+</nav>
+
+<section class="rg-kpis">
+    {% for k in kpis %}<div class="rg-kpi"><b>{{ k.value }}</b><span>{{ k.label }}</span>{% if k.hint %}<small>{{ k.hint }}</small>{% endif %}</div>{% endfor %}
+</section>
+
+<form method="get" class="rg-toolbar as-filters">
+    <input type="hidden" name="clase" value="{{ klass }}">
+    <input type="search" name="q" value="{{ query }}" class="rg-search" placeholder="Buscar por código, nombre, persona o equipo" aria-label="Buscar">
+    {% if areas %}<select name="area" class="as-select" aria-label="Área"><option value="">Todas las áreas</option>{% for a in areas %}<option value="{{ a }}" {% if a == area %}selected{% endif %}>{{ a }}</option>{% endfor %}</select>{% endif %}
+    <select name="estado" class="as-select" aria-label="Estado"><option value="">Todos los estados</option>{% for k, label in statuses %}<option value="{{ k }}" {% if k == status %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+    <button type="submit" class="dw-btn">Filtrar</button>
+    <span class="rg-count">{{ rows|length }} activo{{ rows|length|pluralize }}</span>
+</form>
+
+<section class="rg-sheet">
+    <div class="rg-scroll">
+    <table class="rg-table as-table">
+        <thead><tr>
+            <th>Código</th><th>Activo</th><th>Responsable</th>
+            {% if is_cid %}<th>Proceso</th><th title="Confidencialidad · Integridad · Disponibilidad">C · I · D</th><th>Valor</th>{% else %}<th>Área / ubicación</th><th>Historial</th>{% endif %}
+            <th>Estado</th>
+        </tr></thead>
+        <tbody>
+        {% for r in rows %}
+            <tr class="rg-row as-row" onclick="location.href='{% url 'assets:detail' r.a.code %}'">
+                <td class="rg-nowrap"><a class="as-code" href="{% url 'assets:detail' r.a.code %}">{{ r.a.code }}</a></td>
+                <td><span class="rg-strong">{{ r.a.name }}</span><small class="as-sub">{{ r.a.asset_type }}{% if r.a.model %} · {{ r.a.model }}{% endif %}</small></td>
+                <td>{% if r.responsible %}{% if r.responsible.user %}<a class="as-person" href="{% url 'dashboard:user_profile' r.responsible.user.pk %}">{% avatar r.responsible.user %}{{ r.responsible.name }}</a>{% else %}<span class="as-person{% if r.responsible.role %} is-role{% endif %}"><i>{{ r.responsible.name|slice:":1" }}</i>{{ r.responsible.name }}</span>{% endif %}{% else %}<span class="as-muted">Sin responsable</span>{% endif %}</td>
+                {% if is_cid %}
+                <td>{{ r.a.process|default:"—" }}</td>
+                <td class="rg-nowrap"><span class="as-cid">{{ r.a.confidentiality|slice:":1"|default:"·" }}</span><span class="as-cid">{{ r.a.integrity|slice:":1"|default:"·" }}</span><span class="as-cid">{{ r.a.availability|slice:":1"|default:"·" }}</span></td>
+                <td><b>{{ r.a.valuation|default:"—" }}</b></td>
+                {% else %}
+                <td>{{ r.a.location|default:r.a.area|default:"—" }}</td>
+                <td class="rg-nowrap as-muted">{% if r.moves or r.reviews %}{{ r.moves }} mov. · {{ r.reviews }} rev.{% if r.last %} · {{ r.last|date:"Y" }}{% endif %}{% else %}—{% endif %}</td>
+                {% endif %}
+                <td><span class="rg-pill st-{{ r.tone }}">{{ r.a.get_status_display }}</span></td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="7" class="rg-empty">No hay activos con estos filtros. Si el sistema está vacío, ejecute <code>python manage.py cargar_datos_siempresoft</code>.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</section>
+{% endblock %}

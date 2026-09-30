@@ -90,3 +90,6 @@ htmlcov/
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+apps/assets/data/*.json
+apps/registers/data/*.json

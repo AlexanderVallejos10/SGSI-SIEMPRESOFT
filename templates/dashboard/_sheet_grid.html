@@ -1,0 +1,29 @@
+{# Hoja de cálculo con referencias de Excel: pestañas, letras de columna y número de fila. #}
+<div class="xl" data-xl>
+    <div class="xl-bar">
+        <input type="search" class="xl-search" placeholder="Buscar en la hoja" data-xl-search aria-label="Buscar en la hoja">
+        <span class="xl-count" data-xl-count></span>
+    </div>
+    {% for sheet in sheets %}
+    <div class="xl-sheet" data-xl-sheet="{{ forloop.counter0 }}" {% if not forloop.first %}hidden{% endif %}>
+        {% if sheet.rows %}
+        <div class="xl-scroll">
+            <table class="xl-grid">
+                <thead><tr><th class="xl-corner"></th>{% for col in sheet.columns %}<th>{{ col }}</th>{% endfor %}</tr></thead>
+                <tbody>
+                {% for row in sheet.rows %}
+                    <tr><th>{{ row.number }}</th>{% for cell in row.cells %}<td{% if cell.numeric %} class="n"{% endif %}>{{ cell.value|linebreaksbr }}</td>{% endfor %}</tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if sheet.truncated %}<p class="xl-note">Se muestran las primeras {{ sheet.rows|length }} filas con datos. Descargue el archivo para ver la hoja completa.</p>{% endif %}
+        {% else %}
+        <p class="xl-note">Esta hoja no tiene celdas con datos.</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+    <div class="xl-tabs" role="tablist">
+        {% for sheet in sheets %}<button type="button" role="tab" data-xl-tab="{{ forloop.counter0 }}" class="{% if forloop.first %}is-active{% endif %}">{{ sheet.name }}</button>{% endfor %}
+    </div>
+</div>

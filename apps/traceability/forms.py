@@ -25,15 +25,22 @@ class RiskForm(StyledForm):
         model = Risk
         fields = (
             "code",
+            "identification_type",
+            "project_name",
             "origin",
             "category",
             "process",
+            "affected_asset_text",
+            "affected_assets",
             "scenario",
+            "operational_scenario",
             "event",
             "threat",
             "motivation",
             "consequence",
             "existing_controls",
+            "finding_origin",
+            "evidence_reference",
             "owner",
             "owner_position",
             "status",
@@ -41,7 +48,7 @@ class RiskForm(StyledForm):
         )
         labels = {
             "process": "Proceso indicado en la fuente",
-            "scenario": "Escenario",
+            "scenario": "Escenario estratégico",
             "threat": "Fuente / amenaza",
             "owner": "Propietario (persona)",
             "owner_position": "Cargo responsable",

@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% load static avatars %}
+{% block title %}{{ asset.code }} | Activos{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/clause_pages.css' %}"><link rel="stylesheet" href="{% static 'css/registers.css' %}"><link rel="stylesheet" href="{% static 'css/assets.css' %}">{% endblock %}
+{% block content %}
+<div class="breadcrumb"><a href="{% url 'assets:list' %}?clase={{ asset.asset_class }}">Activos y equipos</a> / {{ asset.code }}</div>
+
+<section class="mx-sheet as-hero">
+    <div class="mx-sheet-top"><span>Siempresoft EIRL</span><span>{{ asset.get_classification_display }}</span></div>
+    <div class="mx-head">
+        <div>
+            <span class="mx-eyebrow">{{ asset.get_asset_class_display }} · {{ asset.asset_type }}</span>
+            <h1><span class="as-code-big">{{ asset.code }}</span> {{ asset.name }}</h1>
+            {% if note %}<p class="as-note">{{ note }}</p>{% endif %}
+        </div>
+        <span class="rg-pill st-{{ tone }} as-status">{{ asset.get_status_display }}</span>
+    </div>
+    <div class="as-facts">
+        <div class="as-fact">
+            <span>Responsable</span>
+            {% if responsible %}
+                {% if responsible.user %}<a href="{% url 'dashboard:user_profile' responsible.user.pk %}" class="as-person is-big">{% avatar responsible.user %}{{ responsible.name }}</a>
+                {% else %}<b class="as-person is-big{% if responsible.role %} is-role{% endif %}"><i>{{ responsible.name|slice:":1" }}</i>{{ responsible.name }}</b>{% endif %}
+                {% if responsible.user and not responsible.user.is_active %}<small>Usuario sin acceso al sistema (pendiente de confirmar)</small>{% endif %}
+            {% else %}<b>Sin responsable</b>{% endif %}
+        </div>
+        {% if asset.asset_class == "information" or asset.asset_class == "support" or asset.asset_class == "technology" %}
+        <div class="as-fact"><span>Proceso</span><b>{{ asset.process|default:"—" }}</b></div>
+        <div class="as-fact"><span>Propietario (cargo)</span><b>{{ asset.owner_role|default:"—" }}</b></div>
+        {% if asset.valuation %}<div class="as-fact"><span>Valoración CID</span><b>{{ asset.valuation }}</b><small>C {{ asset.confidentiality }} · I {{ asset.integrity }} · D {{ asset.availability }}</small></div>{% endif %}
+        {% if asset.criticality %}<div class="as-fact"><span>Nivel de riesgo más alto</span><b>{{ asset.criticality }}</b></div>{% endif %}
+        {% else %}
+        <div class="as-fact"><span>Ubicación</span><b>{{ asset.location|default:asset.area|default:"—" }}</b></div>
+        <div class="as-fact"><span>Nombre del equipo</span><b>{{ asset.hostname|default:"—" }}</b></div>
+        <div class="as-fact"><span>Modelo / placa</span><b>{{ asset.model|default:"—" }}</b></div>
+        {% endif %}
+    </div>
+    <p class="as-source">Fuente: {{ asset.source|default:"registrado en el sistema" }}</p>
+</section>
+
+<div class="as-layout">
+    <section class="as-main">
+        <header class="as-section-head">
+            <h2>Trazabilidad</h2>
+            <div class="as-legend">
+                {% if counts.asignacion or counts.cambio %}<span class="k-asignacion">Asignaciones {{ counts.asignacion|add:counts.cambio }}</span>{% endif %}
+                {% if counts.salida %}<span class="k-salida">Salidas {{ counts.salida }}</span>{% endif %}
+                {% if counts.revision %}<span class="k-revision">Revisiones {{ counts.revision }}</span>{% endif %}
+                {% if counts.software %}<span class="k-software">Software {{ counts.software }}</span>{% endif %}
+                {% if counts.baja %}<span class="k-baja">Baja</span>{% endif %}
+            </div>
+        </header>
+        {% if events %}
+        <ol class="as-timeline">
+            {% for e in events %}
+            <li class="as-event k-{{ e.kind }}">
+                <time>{% if e.year_only %}Inventario {{ e.when|date:"Y" }}{% else %}{{ e.when|date:"d/m/Y" }}{% endif %}</time>
+                <div class="as-event-body">
+                    <strong>{{ e.title }}</strong>
+                    {% if e.person %}<span class="as-event-person">{% if e.user %}<a href="{% url 'dashboard:user_profile' e.user.pk %}">{{ e.person }}</a>{% else %}{{ e.person }}{% endif %}</span>{% endif %}
+                    {% if e.route %}<span class="as-event-route">{{ e.route }}</span>{% endif %}
+                    {% if e.detail %}<p>{{ e.detail }}</p>{% endif %}
+                    {% if e.extra %}<p class="as-muted">{{ e.extra }}</p>{% endif %}
+                    {% if e.source %}<small>Fuente: {{ e.source }}</small>{% endif %}
+                </div>
+            </li>
+            {% endfor %}
+        </ol>
+        {% else %}
+        <p class="rg-empty">Este activo todavía no tiene eventos registrados.</p>
+        {% endif %}
+    </section>
+
+    <aside class="as-side">
+        {% if kit %}
+        <section class="as-card">
+            <h3>Resto del puesto de {{ responsible.name }}</h3>
+            <ul class="as-kit">{% for k in kit %}<li><a href="{% url 'assets:detail' k.code %}"><span class="as-code">{{ k.code }}</span>{{ k.asset_type }}</a></li>{% endfor %}</ul>
+        </section>
+        {% endif %}
+
+        {% if tech_risks %}
+        <section class="as-card">
+            <h3>Riesgos tecnológicos del activo</h3>
+            {% for r in tech_risks %}
+            <div class="as-risk"><b>{{ r.risk }}</b><span class="rg-pill st-{% if 'Alto' in r.level or 'alto' in r.level %}bad{% elif 'Medio' in r.level %}warn{% else %}ok{% endif %}">{{ r.level|default:"Sin nivel" }}</span>
+                <small>Consecuencia {{ r.consequence|default:"—" }} · Probabilidad {{ r.probability|default:"—" }}</small>
+                {% if r.controls %}<small>Controles: {{ r.controls }}</small>{% endif %}</div>
+            {% endfor %}
+        </section>
+        {% endif %}
+
+        {% if risks %}
+        <section class="as-card">
+            <h3>Riesgos vinculados</h3>
+            <ul class="as-kit">{% for r in risks %}<li><a href="{% url 'traceability:risks' %}?q={{ r.code }}"><span class="as-code">{{ r.code }}</span>{{ r.event|default:r.category|truncatechars:90 }}</a></li>{% endfor %}</ul>
+        </section>
+        {% endif %}
+
+        {% if snapshot %}
+        <section class="as-card">
+            <h3>Software instalado <small>{{ snapshot.taken_at|date:"d/m/Y" }}</small></h3>
+            <p class="as-muted">{{ snapshot.total }} programas · <b>{{ snapshot.weaknesses }}</b> debilidades · {{ snapshot.exploitable }} con exploit público. Ordenado por debilidades.</p>
+            <ul class="as-software">
+                {% for s in software %}<li><span>{{ s.name }}<small>{{ s.vendor }} {{ s.version }}</small></span>{% if s.weaknesses %}<b class="{% if s.exploit %}is-exploit{% endif %}">{{ s.weaknesses }}</b>{% endif %}</li>{% endfor %}
+            </ul>
+            {% if snapshots|length > 1 %}<p class="as-muted">Inventarios anteriores: {% for s in snapshots|slice:"1:" %}{{ s.taken_at|date:"d/m/Y" }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}
+        </section>
+        {% endif %}
+
+        {% if inventory %}
+        <section class="as-card">
+            <h3>En los inventarios anuales</h3>
+            <table class="as-mini">{% for i in inventory %}<tr><th>{{ i.year }}</th><td>{{ i.area|default:"—" }}</td></tr>{% endfor %}</table>
+        </section>
+        {% endif %}
+    </aside>
+</div>
+{% endblock %}

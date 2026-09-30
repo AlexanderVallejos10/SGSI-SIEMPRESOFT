@@ -1,0 +1,79 @@
+{% load static %}<!doctype html>
+<html lang="es">
+<head>
+    <script>try{var d=document.documentElement,t=localStorage.getItem("sgsi-theme");if(t==="light"||t==="dark")d.dataset.theme=t;d.dataset.accent=localStorage.getItem("sgsi-accent")||"green";d.classList.add("js-motion")}catch(e){}</script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <title>Ingresar | SGSI SiempreSoft</title>
+    <link rel="preload" href="{% static 'fonts/instrument-sans-700.woff' %}" as="font" type="font/woff" crossorigin>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sd_system.css' %}">
+    <link rel="stylesheet" href="{% static 'css/access.css' %}">
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+<body class="lg">
+<section class="lg-side" aria-label="SiempreSoft">
+    <i class="lg-stripe" data-stripe></i>
+    <!-- Isotipo de SiempreSoft en gran tamaño: flota detrás del título y sigue al puntero -->
+    <svg class="lg-bg" viewBox="0 0 120 80" aria-hidden="true" data-bg>
+        <path class="lg-bg-line" data-bg-line d="M47 37 C51 29 51 23 51 22 M73 22 C80 23 86 28 88 34 M58 51 C64 53 70 51 72 46"/>
+        <g data-bg-disc data-depth="1"><ellipse cx="36" cy="56" rx="24" ry="8" fill="#D9731F"/><rect x="12" y="44" width="48" height="12" fill="#D9731F"/><ellipse cx="36" cy="44" rx="24" ry="8" fill="#F29A4A"/></g>
+        <g data-bg-disc data-depth="2.2"><ellipse cx="62" cy="28" rx="12" ry="4.5" fill="#E8C530"/><rect x="50" y="22" width="24" height="6" fill="#E8C530"/><ellipse cx="62" cy="22" rx="12" ry="4.5" fill="#F7E26B"/></g>
+        <g data-bg-disc data-depth="1.6"><ellipse cx="88" cy="49" rx="18" ry="6" fill="#7DB849"/><rect x="70" y="40" width="36" height="9" fill="#7DB849"/><ellipse cx="88" cy="40" rx="18" ry="6" fill="#A9D46F"/></g>
+    </svg>
+    <div class="lg-top" data-in>
+        <img class="lg-logo light" src="{% static 'img/siempresoft-logo.png' %}" alt="SiempreSoft, Sistemas Empresariales" width="190" height="81">
+        <img class="lg-logo dark" src="{% static 'img/siempresoft-logo-dark.png' %}" alt="SiempreSoft, Sistemas Empresariales" width="190" height="81">
+    </div>
+    <div class="lg-copy">
+        <h1 class="lg-title" data-title>Sistema de Gestión de Seguridad de la Información</h1>
+        <p class="lg-sub" data-in>Riesgos, controles, activos, incidentes y documentos del SGSI de SiempreSoft, conforme a la ISO/IEC 27001:2022.</p>
+    </div>
+    <dl class="lg-class" data-in>
+        <dt>Documento para</dt><dd>SGSI</dd>
+        <dt>Nivel de confidencialidad</dt><dd>Uso interno</dd>
+        <dt>Acceso</dt><dd>Solo colaboradores autorizados. Cada ingreso y cambio queda registrado.</dd>
+    </dl>
+</section>
+<main class="lg-main">
+    <form class="lg-form" method="post" novalidate data-form>
+        {% csrf_token %}
+        <div class="lg-mark" data-mark aria-hidden="true">
+            <div class="lg-lottie" data-lottie></div>
+            <svg class="lg-discs" viewBox="0 0 120 80" focusable="false">
+                <path class="lg-line" data-line d="M47 37 C51 29 51 23 51 22 M73 22 C80 23 86 28 88 34 M58 51 C64 53 70 51 72 46"/>
+                <g class="lg-disc" data-disc><ellipse cx="36" cy="56" rx="24" ry="8" fill="#D9731F"/><rect x="12" y="44" width="48" height="12" fill="#D9731F"/><ellipse cx="36" cy="44" rx="24" ry="8" fill="#F29A4A"/></g>
+                <g class="lg-disc" data-disc><ellipse cx="62" cy="28" rx="12" ry="4.5" fill="#E8C530"/><rect x="50" y="22" width="24" height="6" fill="#E8C530"/><ellipse cx="62" cy="22" rx="12" ry="4.5" fill="#F7E26B"/></g>
+                <g class="lg-disc" data-disc><ellipse cx="88" cy="49" rx="18" ry="6" fill="#7DB849"/><rect x="70" y="40" width="36" height="9" fill="#7DB849"/><ellipse cx="88" cy="40" rx="18" ry="6" fill="#A9D46F"/></g>
+            </svg>
+        </div>
+        <h2 data-in-form>Ingresar</h2>
+        <p data-in-form>Use el usuario y la contraseña que le entregó el Oficial de Seguridad de la Información.</p>
+        {% if messages %}{% for m in messages %}<div class="ac-note" style="margin-bottom:14px" data-in-form>{{ m }}</div>{% endfor %}{% endif %}
+        {% if form.errors %}<div class="ac-errors" role="alert" data-error>{% for e in form.non_field_errors %}<p>{% if "introduzca" in e|lower or "correct" in e|lower %}El usuario o la contraseña no son correctos.{% else %}{{ e }}{% endif %}</p>{% endfor %}</div>{% endif %}
+        <div class="ac-field" data-in-form>
+            <label for="id_username">Usuario</label>
+            <input id="id_username" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required autofocus value="{{ form.username.value|default:'' }}">
+        </div>
+        <div class="ac-field" data-in-form>
+            <label for="id_password">Contraseña</label>
+            <div class="lg-pass">
+                <input id="id_password" name="password" type="password" autocomplete="current-password" required>
+                <button type="button" class="lg-toggle" data-toggle-pass aria-controls="id_password">Mostrar</button>
+            </div>
+            <span class="lg-caps" data-caps>Bloq Mayús está activado.</span>
+        </div>
+        <input type="hidden" name="next" value="{{ next }}">
+        <div class="lg-submit-wrap" data-in-form><button type="submit" class="ac-btn is-primary lg-submit" data-magnetic><span data-submit-label>Ingresar</span></button></div>
+        <p class="lg-help" data-in-form>¿Olvidó su contraseña? Pida que la restablezcan al Gerente General o al Oficial de Seguridad de la Información.</p>
+    </form>
+</main>
+<div hidden data-login-config data-lottie-src="{% static 'lottie/sgsi-loader.json' %}"></div>
+{% if motion.gsap %}<script src="{% static 'vendor/gsap/gsap.min.js' %}"></script>{% endif %}
+{% if motion.split %}<script src="{% static 'vendor/gsap/SplitText.min.js' %}"></script>{% endif %}
+{% if motion.draw %}<script src="{% static 'vendor/gsap/DrawSVGPlugin.min.js' %}"></script>{% endif %}
+{% if motion.lottie %}<script src="{% static 'vendor/lottie_light.min.js' %}"></script>{% endif %}
+<script src="{% static 'js/sgsi_login.js' %}"></script>
+</body>
+</html>

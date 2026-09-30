@@ -1,0 +1,42 @@
+# Producción: se usa SOBRE docker-compose.yml
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+# Requiere HTTPS delante (proxy inverso o Azure App Gateway): la configuración de producción redirige a HTTPS.
+services:
+  web:
+    command: gunicorn config.wsgi:application -c gunicorn.conf.py
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.prod
+      COLLECT_STATIC: "True"
+      RUN_MIGRATIONS: "True"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/ingresar/', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Respaldo diario de PostgreSQL (A.8.13). Guarda 14 días; copie la carpeta fuera del servidor.
+  backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - db_backups:/backups
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >
+        while true; do
+          pg_dump -h db -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -Fc -f /backups/sgsi_$$(date +%Y%m%d_%H%M).dump
+          && echo "Respaldo listo $$(date)"
+          && find /backups -name 'sgsi_*.dump' -mtime +14 -delete;
+          sleep 86400;
+        done
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_backups:

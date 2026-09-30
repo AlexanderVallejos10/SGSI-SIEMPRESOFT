@@ -28,6 +28,7 @@ DJANGO_APPS = [
 LOCAL_APPS = [
     "apps.core",
     "apps.accounts",
+    "apps.governance",
     "apps.auditlog",
     "apps.documents",
     "apps.controls",
@@ -42,6 +43,7 @@ LOCAL_APPS = [
     "apps.incidents",
     "apps.assurance",
     "apps.traceability",
+    "apps.registers.apps.RegistersConfig",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS
@@ -53,10 +55,12 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    # Todas las páginas exigen sesión; las públicas se marcan con @login_not_required.
+    "django.contrib.auth.middleware.LoginRequiredMiddleware",
     "apps.auditlog.middleware.AuditContextMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
+    # Inactividad, presencia y cambio obligatorio de contraseña.
+    "apps.accounts.middleware.AccessControlMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
@@ -73,6 +77,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "apps.dashboard.context_processors.sgsi_navigation",
+                "apps.accounts.context_processors.access",
             ],
         },
     },
@@ -107,7 +112,14 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-LOGIN_URL = "/admin/login/"
+LOGIN_URL = "accounts:login"
+LOGOUT_REDIRECT_URL = "accounts:login"
+
+# Sesiones: máximo 8 horas y cierre tras 30 minutos sin actividad (SGSI_IDLE_MINUTES).
+SESSION_COOKIE_AGE = 8 * 60 * 60
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+SGSI_IDLE_MINUTES = env.int("SGSI_IDLE_MINUTES", default=30)
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 

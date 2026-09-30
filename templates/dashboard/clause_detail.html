@@ -1,81 +1,194 @@
 {% extends "dashboard/mockup_shell.html" %}
-{% block title %}{{ clause.root }}. {{ clause.title }} | SGSI{% endblock %}
+{% load static %}
+{% block title %}{{ matrix.root }}. {{ matrix.title }} | SGSI{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/document_workspace.css' %}"><link rel="stylesheet" href="{% static 'css/clause_pages.css' %}">{% endblock %}
 {% block content %}
-<div class="breadcrumb">⌂ / SGSI / Cláusula {{ clause.root }}</div>
-<div class="page-head">
-    <div>
-        <h1>{{ clause.root }}. {{ clause.title }}</h1>
-        <p>Matriz de requisitos y documentos sustentatorios importada desde VerificacionNorma.xlsx.</p>
-    </div>
-    <div class="head-badges">
-        <span class="summary-badge">{{ clause.requirement_count }} requisitos</span>
-    </div>
-</div>
+<div class="breadcrumb">Inicio / SGSI / {% if matrix.is_subclause %}Numeral{% else %}Cláusula{% endif %} {{ matrix.root }}</div>
 
-<div class="clause-list">
-{% for group in clause.groups %}
-<details class="requirement-group" {% if forloop.first %}open{% endif %}>
-    <summary>
+<section class="mx-sheet">
+    <div class="mx-sheet-top"><span>Siempresoft EIRL</span><span>{{ matrix.meta.classification }}</span></div>
+    <div class="mx-head">
         <div>
-            <b>{{ group.code }}</b>
-            <strong>{{ group.title }}</strong>
+            <span class="mx-eyebrow">{% if matrix.is_subclause %}Numeral{% else %}Cláusula{% endif %} de la NTP ISO/IEC 27001:2022</span>
+            <h1>{{ matrix.root }}. {{ matrix.title }}</h1>
         </div>
-        <span>{{ group.rows|length }} filas ▾</span>
-    </summary>
-    <div class="requirement-body">
-        <table class="requirements-table">
-            <thead>
-                <tr>
-                    <th>Cláusula / ítem</th>
-                    <th>Descripción</th>
-                    <th>Documento sustentatorio</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for row in group.rows %}
-                <tr>
-                    <td class="req-label">{{ row.label }}</td>
-                    <td>{{ row.description }}</td>
-                    <td class="support-cell">
-                        {% for support in row.support %}
-                            <div class="support-item">
-                                <div>
-                                    <b>{{ support.label }}</b>
-                                    {% if support.match %}
-                                    <small>Vinculado: {{ support.match.matched }} · {{ support.match.score }}%</small>
-                                    {% else %}
-                                    <small class="unmatched">Referencia del Excel todavía sin archivo vinculado</small>
-                                    {% endif %}
-                                </div>
-                                {% if support.match %}
-                                <div class="doc-actions">
-                                    {% if support.match.kind == "document" %}
-                                    <a href="{% url 'dashboard:document_detail' support.match.id %}" class="btn-light">Ficha</a>
-                                    {% endif %}
-                                    {% if support.match.kind == "artifact" %}
-                                        {% if support.match.is_pdf %}
-                                        <a target="_blank" href="{% url 'dashboard:artifact_view' support.match.id %}" class="btn-light">Ver PDF</a>
-                                        {% endif %}
-                                        {% if support.match.is_spreadsheet %}
-                                        <a href="{% url 'dashboard:artifact_table' support.match.id %}" class="primary-small">Ver tabla</a>
-                                        {% endif %}
-                                        <a href="{% url 'dashboard:artifact_download' support.match.id %}" class="btn-light">Descargar</a>
-                                    {% endif %}
-                                </div>
-                                {% endif %}
-                            </div>
-                        {% empty %}
-                            <span class="muted">—</span>
-                        {% endfor %}
-                    </td>
-                </tr>
-            {% empty %}
-                <tr><td colspan="3" class="empty-cell">Esta fila de cláusula no tiene subrequisitos cargados.</td></tr>
-            {% endfor %}
-            </tbody>
-        </table>
+        {% if manual_total %}
+        <div class="mx-score" title="Documentos que exige el Manual y que están cargados en el sistema">
+            <strong>{{ manual_found }}</strong><span>de {{ manual_total }} documentos del Manual<br>cargados en el sistema</span>
+        </div>
+        {% endif %}
     </div>
-</details>
+    <table class="mx-meta">
+        <tr><th>Documento de referencia</th><td>{{ matrix.meta.title }}</td><th>Versión</th><td>{{ matrix.meta.version }} ({{ matrix.meta.status|lower }}) <small class="mx-note">{{ matrix.meta.version_note }}</small>{% if sgsi_admin %} <button type="button" class="mx-edit-version" data-open-dialog="manual-version">Cambiar versión</button>{% endif %}</td></tr>
+        <tr><th>Elaboró</th><td>{{ matrix.meta.author }}</td><th>Aprobó</th><td>{{ matrix.meta.approver }}</td></tr>
+    </table>
+</section>
+
+{% if sgsi_admin %}
+<dialog class="mx-dialog" id="manual-version">
+  <form method="post" action="{% url 'dashboard:manual_reference_update' %}">
+    {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+    <h2>Versión del Manual del SGSI</h2>
+    <p>Se muestra en todas las cláusulas. El cambio queda en el historial con su motivo.</p>
+    <div class="ac-field"><label for="mv-title">Documento</label><input id="mv-title" name="title" value="{{ matrix.meta.title }}"></div>
+    <div class="ac-row" style="align-items:flex-start">
+      <div class="ac-field" style="flex:1"><label for="mv-version">Versión</label><input id="mv-version" name="version" value="{{ matrix.meta.version }}" required></div>
+      <div class="ac-field" style="flex:1"><label for="mv-status">Estado</label><select id="mv-status" name="status"><option {% if matrix.meta.status == "Borrador" %}selected{% endif %}>Borrador</option><option {% if matrix.meta.status == "En revisión" %}selected{% endif %}>En revisión</option><option {% if matrix.meta.status == "Vigente" %}selected{% endif %}>Vigente</option></select></div>
+      <div class="ac-field" style="flex:1"><label for="mv-date">Fecha</label><input id="mv-date" name="issue_date" type="date"></div>
+    </div>
+    <div class="ac-row" style="align-items:flex-start">
+      <div class="ac-field" style="flex:1"><label for="mv-prep">Elaboró</label><input id="mv-prep" name="prepared_by" value="{{ matrix.meta.author }}"></div>
+      <div class="ac-field" style="flex:1"><label for="mv-appr">Aprobó</label><input id="mv-appr" name="approved_by" value="{{ matrix.meta.approver }}"></div>
+    </div>
+    <div class="ac-field"><label for="mv-note">Qué cambió respecto a la versión anterior</label><textarea id="mv-note" name="change_note" required placeholder="Por ejemplo: se aprobó en la revisión por la Dirección del 20/10/2026."></textarea></div>
+    {% if manual_history %}<details class="mx-history"><summary>Historial de versiones</summary><ul>{% for h in manual_history %}<li><b>v{{ h.version }}</b> {{ h.status|lower }}, {{ h.changed_at|date:"d/m/Y" }}{% if h.changed_by %}, {{ h.changed_by.get_full_name|default:h.changed_by.username }}{% endif %}{% if h.change_note %}<small>{{ h.change_note }}</small>{% endif %}</li>{% endfor %}</ul></details>{% endif %}
+    <div class="ac-row" style="justify-content:flex-end;margin-top:14px"><button type="button" class="ac-btn" data-close-dialog>Cancelar</button><button type="submit" class="ac-btn is-primary">Guardar versión</button></div>
+  </form>
+</dialog>
+<script>
+document.addEventListener("click", (e) => {
+  const open = e.target.closest("[data-open-dialog]"); if (open) document.getElementById(open.dataset.openDialog)?.showModal();
+  const close = e.target.closest("[data-close-dialog]"); if (close) close.closest("dialog")?.close();
+});
+</script>
+{% endif %}
+
+{% if numeral_cards|length > 1 %}
+<nav class="nm-nav" aria-label="Numerales de la cláusula" data-nm-nav>
+    {% for card in numeral_cards %}
+    <a href="#{{ card.anchor }}" data-nm-link="{{ card.anchor }}">
+        <b>{{ card.code }}</b>
+        <span>{{ card.title }}</span>
+        {% if card.manual_total %}<em class="{% if card.manual_found == card.manual_total %}is-ok{% else %}is-pending{% endif %}"><i style="--p:{% widthratio card.manual_found card.manual_total 100 %}%"></i></em>{% endif %}
+    </a>
+    {% endfor %}
+</nav>
+{% endif %}
+
+{% for card in numeral_cards %}
+<article class="nm" id="{{ card.anchor }}" data-nm>
+    <header class="nm-head">
+        <span class="nm-code">{{ card.code }}</span>
+        <div class="nm-title">
+            <h2>{{ card.title }}</h2>
+            {% if card.summary %}<p>{{ card.summary }}</p>{% endif %}
+        </div>
+        {% if card.manual_total %}
+        <div class="nm-progress {% if card.manual_found == card.manual_total %}is-ok{% else %}is-pending{% endif %}" title="Documentos del Manual cargados en el sistema">
+            <span class="nm-progress-text"><b>{{ card.manual_found }}</b> de {{ card.manual_total }} documentos</span>
+            <span class="nm-progress-bar"><i style="--p:{% widthratio card.manual_found card.manual_total 100 %}%"></i></span>
+        </div>
+        {% endif %}
+    </header>
+
+    <div class="nm-body">
+        <h3 class="nm-label">Documentos que exige el Manual</h3>
+        {% for group in card.manual %}
+            {% if group.numeral != card.code %}<p class="nm-subnum"><b>{{ group.numeral }}</b> {{ group.title }}</p>{% endif %}
+            {% if matrix.is_subclause %}
+            <div class="mdocs">
+                {% for d in group.documents %}
+                {% include "dashboard/_manual_doc_card.html" with d=d index=forloop.counter numeral=group.numeral open=forloop.first %}
+                {% endfor %}
+            </div>
+            {% else %}
+            <table class="mr-table">
+                <colgroup><col class="c-name"><col class="c-loc"><col class="c-sys"><col class="c-act"></colgroup>
+                <thead><tr><th>Documento</th><th>Ubicación según el Manual</th><th>En el sistema</th><th>Acciones</th></tr></thead>
+                <tbody>
+                {% for d in group.documents %}
+                    <tr class="{% if not d.found %}is-missing{% endif %}">
+                        <td class="mr-name">{{ d.name }}</td>
+                        <td class="mr-loc">{% if d.location %}{{ d.location }}{% else %}<span class="mr-muted">El Manual no indica la ubicación</span>{% endif %}</td>
+                        <td class="mr-sys">
+                            {% if d.found %}
+                                <span class="t t-{{ d.type|lower }}">{{ d.type }}</span><span class="mr-file">{{ d.file_name|default:d.system_title }}</span>
+                                {% if d.version %}<small>Versión {{ d.version }}{% if d.versions and d.versions > 1 %}, {{ d.versions }} en el historial{% endif %}</small>{% endif %}
+                            {% else %}
+                                <span class="mr-none">No está cargado en el sistema</span>
+                            {% endif %}
+                        </td>
+                        <td class="mr-act">
+                            {% if d.view_url %}<button type="button" class="mr-link" data-open-pdf="{{ d.view_url }}" data-download="{{ d.download_url }}" data-title="{{ d.name }}">Ver</button>{% endif %}
+                            {% if d.table_url %}<a class="mr-link" href="{{ d.table_url }}">Ver hoja</a>{% endif %}
+                            {% if d.manage_url %}<a class="mr-link" href="{{ d.manage_url }}">{{ d.manage_label }}</a>{% endif %}
+                            {% if can_register and d.register_artifact %}
+                            <form method="post" action="{% url 'dashboard:manual_register' %}">{% csrf_token %}<input type="hidden" name="numeral" value="{{ group.numeral }}"><input type="hidden" name="name" value="{{ d.name }}"><input type="hidden" name="artifact" value="{{ d.register_artifact }}"><button type="submit" class="mr-link">Registrar para versionar</button></form>
+                            {% elif can_register and not d.found %}
+                            <form method="post" action="{% url 'dashboard:manual_register' %}">{% csrf_token %}<input type="hidden" name="numeral" value="{{ group.numeral }}"><input type="hidden" name="name" value="{{ d.name }}"><button type="submit" class="mr-btn">Registrar y subir archivo</button></form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+        {% empty %}
+            <p class="nm-note">El Manual no nombra un documento propio para este numeral.{% if card.head_supports %} La matriz de verificación lo sustenta con {% for sp in card.head_supports %}<b>{{ sp.label }}</b>{% if not forloop.last %}, {% endif %}{% endfor %}.{% endif %}</p>
+        {% endfor %}
+
+        {% if card.linked_extra %}
+        <div class="nm-extra">
+            <p class="nm-label">Otros documentos asignados a {{ card.code }} en el sistema</p>
+            <ul>{% for d in card.linked_extra %}<li><span class="t t-{{ d.type|lower }}">{{ d.type }}</span><a href="{{ d.url }}">{{ d.title }}</a>{% if d.version %}<small>Versión {{ d.version }}</small>{% endif %}</li>{% endfor %}</ul>
+        </div>
+        {% endif %}
+
+        {% if card.modules %}
+        <p class="nm-modules">Se trabaja en {% for m in card.modules %}<a href="{{ m.url }}">{{ m.label }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}.</p>
+        {% endif %}
+
+        {% if card.norm_rows %}
+        <details class="nm-norm" data-nm-norm>
+            <summary>
+                <svg class="ico"><use href="#i-chevron"></use></svg>
+                <span>Requisitos de la norma para {{ card.code }}</span>
+                <small>{{ card.norm_done }} de {{ card.norm_total }} con documento según VerificacionNorma</small>
+            </summary>
+            <div class="nm-norm-body">
+                <table class="nm-req">
+                    <colgroup><col class="c-code"><col class="c-desc"><col class="c-doc"><col class="c-state"></colgroup>
+                    <thead><tr><th>Ítem</th><th>Requisito</th><th>Documento sustentatorio</th><th>Estado</th></tr></thead>
+                    <tbody>
+                    {% for row in card.norm_rows %}
+                        {% if row.kind == "section" %}
+                        <tr class="nm-req-sec"><td>{{ row.section }}</td><td colspan="3">{{ row.description }}{% for sp in row.supports %} · <span class="mx-docline-inline">{{ sp.label }}</span>{% endfor %}</td></tr>
+                        {% else %}
+                        <tr class="k-{{ row.kind }}">
+                            <td class="nm-req-code">{{ row.label }}</td>
+                            <td>{{ row.description }}</td>
+                            <td>
+                                {% for sp in row.supports %}
+                                <span class="mx-docline{% if not sp.found %} is-missing{% endif %}">{% if sp.found %}<b class="t t-{{ sp.type|lower }}">{{ sp.type }}</b>{% endif %}{{ sp.label }}{% if sp.view_url %} <button type="button" class="mr-link" data-open-pdf="{{ sp.view_url }}" data-download="{{ sp.download_url }}" data-title="{{ sp.name }}">Ver</button>{% endif %}</span>
+                                {% empty %}{% if row.kind == "group" %}<span class="mr-muted">Ver subpuntos</span>{% endif %}
+                                {% endfor %}
+                            </td>
+                            <td><span class="st st-{{ row.status }}">{% if row.status == 'ok' %}Con documento{% elif row.status == 'partial' %}Parcial{% elif row.status == 'missing' %}Falta documento{% endif %}</span></td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </details>
+        {% endif %}
+    </div>
+</article>
+{% empty %}
+<p class="nm-note">Esta cláusula no tiene numerales cargados.</p>
 {% endfor %}
-</div>
+
+<aside class="pdf-drawer" data-pdf-drawer hidden aria-label="Vista del documento">
+    <header>
+        <strong data-pdf-title></strong>
+        <div>
+            <button type="button" data-pdf-close>Cerrar</button>
+        </div>
+    </header>
+    <div class="pdf-body">
+        {% include "partials/pdf_viewer.html" with url="" title="" %}
+    </div>
+</aside>
+<div class="pdf-backdrop" data-pdf-backdrop hidden></div>
 {% endblock %}
+{% block extra_js %}<script src="{% static 'js/document_workspace.js' %}"></script><script src="{% static 'js/clause_page.js' %}"></script>{% endblock %}

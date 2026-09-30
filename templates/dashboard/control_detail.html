@@ -51,6 +51,26 @@
     </section>
 </div>
 
+<section class="mock-panel" id="riesgos">
+    <div class="panel-title">Riesgos que justifican este control</div>
+    {% if control.applicability == "not_applicable" and risk_treatments %}
+    <p class="soa-warning">En la Declaración de Aplicabilidad figura como no aplicable, pero {{ risk_treatments|length }} tratamiento{{ risk_treatments|length|pluralize }} lo elige{{ risk_treatments|length|pluralize:"n" }}. Revise la aplicabilidad o el tratamiento.</p>
+    {% endif %}
+    <div class="related-table">
+        {% for item in risk_treatments %}
+        <div class="related-row">
+            <div>
+                <a class="entity-link" href="{% url 'traceability:risk_edit' item.risk.pk %}"><b>{{ item.risk.code }}</b> {{ item.risk.event|default:item.risk.scenario|truncatechars:110 }}</a>
+                <small>{{ item.processes }}. Nivel {{ item.level|lower }}. {{ item.treatment.action|truncatechars:90 }}</small>
+            </div>
+            <span class="status-pill">{{ item.treatment.status }}</span>
+        </div>
+        {% empty %}
+        <div class="empty-cell">Ningún tratamiento de riesgo ha elegido este control todavía.</div>
+        {% endfor %}
+    </div>
+</section>
+
 <section class="mock-panel">
     <div class="panel-title">Evidencias</div>
     <div class="related-table">
@@ -64,4 +84,5 @@
         {% endfor %}
     </div>
 </section>
+<style>.soa-warning{margin:0 0 10px;padding:9px 12px;border-left:3px solid #c0702b;background:#fdf4ec;color:#6d3a12;font-size:12.5px}</style>
 {% endblock %}

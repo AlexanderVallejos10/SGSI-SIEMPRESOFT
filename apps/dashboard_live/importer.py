@@ -1,4 +1,5 @@
 import hashlib
+import json
 import re
 import unicodedata
 from decimal import Decimal
@@ -83,186 +84,223 @@ def trace(dataset, entity_type, entity_key, field_name, sheet_name, cell_ref, ce
     )
 
 
-def import_metrics(dataset, sheet):
+# ---------------------------------------------------------------------------------------------
+# Lectura adaptable: sirve para el Dashboard de 2021 (posiciones fijas) y para el de 2026, que tiene
+# otra cantidad de mediciones, 9 OESI, 18 expectativas y MEFI/MEFE sin pesos (promedio por grupo).
+
+def col_letter(index):
+    letters = ""
+    while index:
+        index, rem = divmod(index - 1, 26)
+        letters = chr(65 + rem) + letters
+    return letters
+
+
+def max_row(sheet):
+    rows = [int(re.sub(r"[A-Z]+", "", ref)) for ref in sheet if re.sub(r"[A-Z]+", "", ref).isdigit()]
+    return max(rows, default=1)
+
+
+def numeric_id(value):
+    try:
+        return int(Decimal(str(value).strip()))
+    except Exception:
+        return None
+
+
+def find_sheet(reader, *prefixes):
+    for name in reader.sheet_paths:
+        if any(normalize(name).startswith(normalize(p)) for p in prefixes):
+            return name
+    raise KeyError(f"No se encontró la hoja {prefixes[0]!r} en el Excel del dashboard.")
+
+
+def _rows_with_numeric_id(sheet):
+    seen = set()
+    for row in range(2, max_row(sheet) + 1):
+        metric_id = numeric_id(c(sheet, f"A{row}")["value"])
+        if metric_id is None or metric_id in seen:
+            continue  # filas de notas o ID repetido (en 2026 la medición 5 aparece dos veces)
+        seen.add(metric_id)
+        yield row, metric_id
+
+
+def import_metrics(dataset, sheet, sheet_name=SHEET_SGSI):
     mappings = {
         "description": "B", "pdca_cycle": "C", "sgsi_process": "D",
         "method": "E", "objective": "F", "responsible_text": "G",
         "period": "H", "indicator": "I", "current_value": "J",
         "source_compliance": "K", "action_plan": "L",
     }
-    for row in range(2, 12):
-        metric_id = int(Decimal(c(sheet, f"A{row}")["value"]))
+    for row, metric_id in _rows_with_numeric_id(sheet):
         indicator = clean_text(c(sheet, f"I{row}")["value"])
-        current_value, current_text, scale = numeric_display(
-            c(sheet, f"J{row}")["value"], indicator
-        )
+        current_value, current_text, scale = numeric_display(c(sheet, f"J{row}")["value"], indicator)
         responsible = clean_text(c(sheet, f"G{row}")["value"])
-        metric = DashboardMetric.objects.create(
-            dataset=dataset,
-            metric_id=metric_id,
-            source_row=row,
+        DashboardMetric.objects.create(
+            dataset=dataset, metric_id=metric_id, source_row=row,
             description=clean_text(c(sheet, f"B{row}")["value"]),
             pdca_cycle=clean_text(c(sheet, f"C{row}")["value"]),
             sgsi_process=clean_text(c(sheet, f"D{row}")["value"]),
             method=clean_text(c(sheet, f"E{row}")["value"]),
             objective=clean_text(c(sheet, f"F{row}")["value"]),
-            responsible_text=responsible,
-            responsible_position=match_position(responsible),
-            period=clean_text(c(sheet, f"H{row}")["value"]),
-            indicator=indicator,
-            current_value=current_value,
-            current_text=current_text,
-            excel_scale=scale,
+            responsible_text=responsible, responsible_position=match_position(responsible),
+            period=clean_text(c(sheet, f"H{row}")["value"]), indicator=indicator,
+            current_value=current_value, current_text=current_text, excel_scale=scale,
             source_compliance=clean_text(c(sheet, f"K{row}")["value"]),
             action_plan=clean_text(c(sheet, f"L{row}")["value"]),
         )
         for field_name, col in mappings.items():
-            trace(dataset, "sgsi_metric", metric_id, field_name, SHEET_SGSI, f"{col}{row}", c(sheet, f"{col}{row}"))
+            trace(dataset, "sgsi_metric", metric_id, field_name, sheet_name, f"{col}{row}", c(sheet, f"{col}{row}"))
 
 
-def import_oesi(dataset, sheet):
+def import_oesi(dataset, sheet, sheet_name=SHEET_OESI, legacy=False):
     mappings = {
         "description": "B", "method": "C", "responsible_text": "D",
         "period": "E", "indicator": "F", "current_value": "G",
         "source_compliance": "H", "record_label": "K",
     }
-    for row in range(2, 6):
-        metric_id = int(Decimal(c(sheet, f"A{row}")["value"]))
+    for row, metric_id in _rows_with_numeric_id(sheet):
         indicator = clean_text(c(sheet, f"F{row}")["value"])
         current_value, current_text, scale = numeric_display(
-            c(sheet, f"G{row}")["value"],
-            indicator,
-            force_percent=row in {2, 3, 4},
+            c(sheet, f"G{row}")["value"], indicator, force_percent=legacy and row in {2, 3, 4},
         )
         responsible = clean_text(c(sheet, f"D{row}")["value"])
-        metric = OesiMetric.objects.create(
-            dataset=dataset,
-            metric_id=metric_id,
-            source_row=row,
+        OesiMetric.objects.create(
+            dataset=dataset, metric_id=metric_id, source_row=row,
             description=clean_text(c(sheet, f"B{row}")["value"]),
             method=clean_text(c(sheet, f"C{row}")["value"]),
-            responsible_text=responsible,
-            responsible_position=match_position(responsible),
-            period=clean_text(c(sheet, f"E{row}")["value"]),
-            indicator=indicator,
-            current_value=current_value,
-            current_text=current_text,
-            excel_scale=scale,
+            responsible_text=responsible, responsible_position=match_position(responsible),
+            period=clean_text(c(sheet, f"E{row}")["value"]), indicator=indicator,
+            current_value=current_value, current_text=current_text, excel_scale=scale,
             source_compliance=clean_text(c(sheet, f"H{row}")["value"]),
             record_label=clean_text(c(sheet, f"K{row}")["value"]),
         )
         for field_name, col in mappings.items():
-            trace(dataset, "oesi_metric", metric_id, field_name, SHEET_OESI, f"{col}{row}", c(sheet, f"{col}{row}"))
+            trace(dataset, "oesi_metric", metric_id, field_name, sheet_name, f"{col}{row}", c(sheet, f"{col}{row}"))
 
 
-def import_objectives(dataset, oee_sheet, req_sheet):
+def _minimum_expected(sheet):
+    """Valor de «Mínimo esperado» que calcula el propio Excel bajo cada matriz."""
+    for row in range(1, max_row(sheet) + 1):
+        for col in ("A", "B"):
+            if normalize(c(sheet, f"{col}{row}")["value"]).startswith("minimo esperado"):
+                for value_col in ("C", "D"):
+                    number = decimal_or_none(c(sheet, f"{value_col}{row}")["value"])
+                    if number is not None:
+                        return int(number)
+    return None
+
+
+def import_objectives(dataset, oee_sheet, req_sheet, oee_name=SHEET_OEE, req_name=SHEET_REQ):
     security = {}
-    for index, col in enumerate(("C", "D", "E", "F"), start=1):
+    col_index = 3
+    while True:
+        col = col_letter(col_index)
         code = clean_text(c(oee_sheet, f"{col}2")["value"])
-        objective = SecurityObjective.objects.create(
-            dataset=dataset,
-            code=code,
-            description=clean_text(c(oee_sheet, f"{col}3")["value"]),
-            source_column=col,
-            sort_order=index,
+        if not code or not normalize(code).startswith(("oesi", "osi")):
+            break
+        security[col] = SecurityObjective.objects.create(
+            dataset=dataset, code=code, description=clean_text(c(oee_sheet, f"{col}3")["value"]),
+            source_column=col, sort_order=col_index - 2,
         )
-        security[col] = objective
-        trace(dataset, "security_objective", code, "description", SHEET_OEE, f"{col}3", c(oee_sheet, f"{col}3"))
+        trace(dataset, "security_objective", code, "description", oee_name, f"{col}3", c(oee_sheet, f"{col}3"))
+        col_index += 1
 
-    for row in range(4, 10):
+    for row in range(4, max_row(oee_sheet) + 1):
         code = clean_text(c(oee_sheet, f"A{row}")["value"])
+        if not normalize(code).startswith("oee"):
+            continue
         objective = StrategicObjective.objects.create(
-            dataset=dataset,
-            code=code,
-            description=clean_text(c(oee_sheet, f"B{row}")["value"]),
-            source_row=row,
+            dataset=dataset, code=code, description=clean_text(c(oee_sheet, f"B{row}")["value"]), source_row=row,
         )
-        trace(dataset, "strategic_objective", code, "description", SHEET_OEE, f"B{row}", c(oee_sheet, f"B{row}"))
-        for col in ("C", "D", "E", "F"):
+        trace(dataset, "strategic_objective", code, "description", oee_name, f"B{row}", c(oee_sheet, f"B{row}"))
+        for col, security_objective in security.items():
             ref = f"{col}{row}"
             relation = clean_text(c(oee_sheet, ref)["value"]).upper()
-            if relation not in {"P", "S"}:
-                relation = ""
             alignment = OeeOsiAlignment.objects.create(
-                dataset=dataset,
-                strategic_objective=objective,
-                security_objective=security[col],
-                relation=relation,
-                source_cell=ref,
+                dataset=dataset, strategic_objective=objective, security_objective=security_objective,
+                relation=relation if relation in {"P", "S"} else "", source_cell=ref,
             )
-            trace(dataset, "oee_osi", alignment.pk, "relation", SHEET_OEE, ref, c(oee_sheet, ref))
+            trace(dataset, "oee_osi", alignment.pk, "relation", oee_name, ref, c(oee_sheet, ref))
 
     current_stakeholder = ""
-    for row in range(4, 16):
+    for row in range(4, max_row(req_sheet) + 1):
+        requirement_text = clean_text(c(req_sheet, f"B{row}")["value"])
+        if normalize(requirement_text).startswith(("leyenda", "puntaje", "p ", "s ", "evaluacion", "minimo", "obtenido")):
+            break  # empieza la leyenda del Excel
         stakeholder = clean_text(c(req_sheet, f"A{row}")["value"])
         if stakeholder:
             current_stakeholder = stakeholder
-        requirement_text = clean_text(c(req_sheet, f"B{row}")["value"])
         if not requirement_text:
             continue
         requirement = StakeholderRequirement.objects.create(
-            dataset=dataset,
-            source_row=row,
-            stakeholder=current_stakeholder,
-            requirement=requirement_text,
+            dataset=dataset, source_row=row, stakeholder=current_stakeholder, requirement=requirement_text,
         )
-        trace(dataset, "stakeholder_requirement", requirement.pk, "requirement", SHEET_REQ, f"B{row}", c(req_sheet, f"B{row}"))
-        for col in ("C", "D", "E", "F"):
+        trace(dataset, "stakeholder_requirement", requirement.pk, "requirement", req_name, f"B{row}", c(req_sheet, f"B{row}"))
+        for col, security_objective in security.items():
             ref = f"{col}{row}"
             relation = clean_text(c(req_sheet, ref)["value"]).upper()
-            if relation not in {"P", "S"}:
-                relation = ""
             alignment = RequirementOsiAlignment.objects.create(
-                dataset=dataset,
-                requirement=requirement,
-                security_objective=security[col],
-                relation=relation,
-                source_cell=ref,
+                dataset=dataset, requirement=requirement, security_objective=security_objective,
+                relation=relation if relation in {"P", "S"} else "", source_cell=ref,
             )
-            trace(dataset, "req_osi", alignment.pk, "relation", SHEET_REQ, ref, c(req_sheet, ref))
+            trace(dataset, "req_osi", alignment.pk, "relation", req_name, ref, c(req_sheet, ref))
+    return {"oee_minimo": _minimum_expected(oee_sheet), "req_minimo": _minimum_expected(req_sheet)}
 
 
-def import_factors(dataset, sheet, matrix_type):
-    if matrix_type == MatrixType.MEFI:
-        sections = [(FactorGroup.STRENGTH, range(4, 9)), (FactorGroup.WEAKNESS, range(11, 15))]
-        sheet_name = SHEET_MEFI
-    else:
-        sections = [(FactorGroup.OPPORTUNITY, range(4, 9)), (FactorGroup.THREAT, range(11, 17))]
-        sheet_name = SHEET_MEFE
+GROUP_HEADERS = {
+    "fortalezas": FactorGroup.STRENGTH, "debilidades": FactorGroup.WEAKNESS,
+    "oportunidades": FactorGroup.OPPORTUNITY, "amenazas": FactorGroup.THREAT,
+}
 
-    for group, rows in sections:
-        for row in rows:
-            description = clean_text(c(sheet, f"A{row}")["value"])
-            if not description:
-                continue
+
+def import_factors(dataset, sheet, matrix_type, sheet_name=None):
+    """Si el Excel tiene columna «Peso» (2021) se usa; si no (2026), cada grupo se promedia:
+    el peso de cada factor es 1 / cantidad de factores de su grupo, igual que el subtotal del Excel."""
+    sheet_name = sheet_name or (SHEET_MEFI if matrix_type == MatrixType.MEFI else SHEET_MEFE)
+    last = max_row(sheet)
+    weighted = any(normalize(c(sheet, f"{col}{r}")["value"]) == "peso" for r in range(1, 5) for col in "BCD")
+    group, pending = None, []
+    for row in range(2, last + 1):
+        description = clean_text(c(sheet, f"A{row}")["value"])
+        key = normalize(description)
+        if key in GROUP_HEADERS:
+            group = GROUP_HEADERS[key]
+            continue
+        if not description or group is None or key.startswith(("subtotal", "total")):
+            continue
+        if weighted:
             weight = decimal_or_none(c(sheet, f"B{row}")["value"])
             classification = decimal_or_none(c(sheet, f"C{row}")["value"])
-            if weight is None or classification is None:
-                continue
-            factor = StrategicFactor.objects.create(
-                dataset=dataset,
-                matrix_type=matrix_type,
-                group=group,
-                source_row=row,
-                description=description,
-                weight=weight,
-                classification=int(classification),
-            )
-            for field_name, col in (("description", "A"), ("weight", "B"), ("classification", "C")):
-                trace(dataset, "strategic_factor", factor.pk, field_name, sheet_name, f"{col}{row}", c(sheet, f"{col}{row}"))
+        else:
+            weight, classification = None, decimal_or_none(c(sheet, f"B{row}")["value"])
+        if classification is None or (weighted and weight is None):
+            continue
+        pending.append((group, row, description, weight, classification))
+    sizes = {}
+    for group, *_ in pending:
+        sizes[group] = sizes.get(group, 0) + 1
+    for group, row, description, weight, classification in pending:
+        if weight is None:
+            weight = (Decimal("1") / Decimal(sizes[group])).quantize(Decimal("0.000001"))
+        factor = StrategicFactor.objects.create(
+            dataset=dataset, matrix_type=matrix_type, group=group, source_row=row,
+            description=description, weight=weight, classification=int(classification),
+        )
+        cols = (("description", "A"), ("weight", "B"), ("classification", "C")) if weighted else (("description", "A"), ("classification", "B"))
+        for field_name, col in cols:
+            trace(dataset, "strategic_factor", factor.pk, field_name, sheet_name, f"{col}{row}", c(sheet, f"{col}{row}"))
+    return "pesos" if weighted else "promedio por grupo"
 
 
 def workbook_summary(path):
     reader = WorkbookReader(path)
     try:
+        sgsi = reader.sheet(find_sheet(reader, "Dashboard SGSI"))
+        oesi = reader.sheet(find_sheet(reader, "Dashboard OESI"))
         return {
-            "sgsi_metrics": 10,
-            "oesi_metrics": 4,
-            "oee_objectives": 6,
-            "security_objectives": 4,
-            "requirements": 12,
-            "mefi_factors": 9,
-            "mefe_factors": 11,
+            "sgsi_metrics": sum(1 for _ in _rows_with_numeric_id(sgsi)),
+            "oesi_metrics": sum(1 for _ in _rows_with_numeric_id(oesi)),
         }
     finally:
         reader.close()
@@ -303,12 +341,24 @@ def import_workbook(*, path, version_label="", notes="", actor=None, original_na
 
     reader = WorkbookReader(path)
     try:
-        import_metrics(dataset, reader.sheet(SHEET_SGSI))
-        import_oesi(dataset, reader.sheet(SHEET_OESI))
-        import_objectives(dataset, reader.sheet(SHEET_OEE), reader.sheet(SHEET_REQ))
-        import_factors(dataset, reader.sheet(SHEET_MEFI), MatrixType.MEFI)
-        import_factors(dataset, reader.sheet(SHEET_MEFE), MatrixType.MEFE)
+        names = {
+            "sgsi": find_sheet(reader, "Dashboard SGSI"),
+            "oesi": find_sheet(reader, "Dashboard OESI"),
+            "oee": find_sheet(reader, "Matriz OEE"),
+            "req": find_sheet(reader, "Matriz RyEPI", "Matriz EPI"),
+            "mefi": find_sheet(reader, "MEFI"),
+            "mefe": find_sheet(reader, "MEFE"),
+        }
+        legacy = names["oee"] == SHEET_OEE  # formato 2021, con los porcentajes de OESI en otra escala
+        import_metrics(dataset, reader.sheet(names["sgsi"]), names["sgsi"])
+        import_oesi(dataset, reader.sheet(names["oesi"]), names["oesi"], legacy=legacy)
+        meta = import_objectives(dataset, reader.sheet(names["oee"]), reader.sheet(names["req"]), names["oee"], names["req"])
+        meta["ponderacion"] = import_factors(dataset, reader.sheet(names["mefi"]), MatrixType.MEFI, names["mefi"])
+        import_factors(dataset, reader.sheet(names["mefe"]), MatrixType.MEFE, names["mefe"])
     finally:
         reader.close()
 
+    # Datos del formato que usa el tablero (mínimos esperados y tipo de ponderación).
+    dataset.notes = (dataset.notes + "\n" if dataset.notes else "") + "META:" + json.dumps(meta, ensure_ascii=False)
+    dataset.save(update_fields=["notes"])
     return dataset

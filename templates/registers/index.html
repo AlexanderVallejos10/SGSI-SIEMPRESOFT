@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Registros del SGSI{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/document_workspace.css' %}"><link rel="stylesheet" href="{% static 'css/clause_pages.css' %}"><link rel="stylesheet" href="{% static 'css/registers.css' %}">{% endblock %}
+{% block content %}
+<div class="breadcrumb">Inicio / Registros del SGSI</div>
+<section class="mx-sheet">
+    <div class="mx-sheet-top"><span>Siempresoft EIRL</span><span>Uso interno</span></div>
+    <div class="mx-head"><div><span class="mx-eyebrow">Registros que la empresa llevaba en Excel</span><h1>Registros del SGSI</h1>
+        <p class="rg-desc">Cada registro se edita aquí, se descarga en Excel con el formato de SiempreSoft y se puede volver a importar.</p></div></div>
+</section>
+<div class="rg-toolbar"><input type="search" class="rg-search" placeholder="Buscar un registro" data-card-search aria-label="Buscar un registro"><span class="rg-count">{{ total }} registros</span></div>
+{% for g in groups %}
+<section class="rg-group-block" data-card-group>
+    <h2 class="rg-group-title">{{ g.name }} <small>{{ g.cards|length }}</small></h2>
+    <div class="rg-cards">
+    {% for c in g.cards %}
+    <a class="rg-card" href="{% url 'registers:detail' c.slug %}" data-card>
+        <span class="rg-card-tag">{% if c.schema.clause != "Anexo A" %}{{ c.schema.clause }} · {% endif %}A.{{ c.schema.annex }}</span>
+        <h3>{{ c.schema.name }}</h3>
+        <p>{{ c.schema.description }}</p>
+        <footer>
+            <span><b>{{ c.rows }}</b> fila{{ c.rows|pluralize }}</span>
+            {% if c.years %}<span>{{ c.years|join:", " }}</span>{% endif %}
+            <span>{% if c.last %}Actualizado {{ c.last|date:"d/m/Y" }}{% else %}Sin datos: importe su archivo{% endif %}</span>
+        </footer>
+    </a>
+    {% endfor %}
+    </div>
+</section>
+{% endfor %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const q = document.querySelector("[data-card-search]");
+    q?.addEventListener("input", () => {
+        const t = q.value.trim().toLowerCase();
+        document.querySelectorAll("[data-card-group]").forEach((g) => {
+            let any = false;
+            g.querySelectorAll("[data-card]").forEach((c) => { const ok = !t || c.textContent.toLowerCase().includes(t); c.hidden = !ok; any = any || ok; });
+            g.hidden = !any;
+        });
+    });
+});
+</script>
+{% endblock %}

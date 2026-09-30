@@ -1,0 +1,24 @@
+/* Visor de PDF: barra propia, páginas como hojas y pantalla completa. */
+.pv{display:flex;flex-direction:column;height:100%;min-height:420px;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:light-dark(#e9ecef,#0c0f12)}
+.pv-bar{display:flex;align-items:center;gap:10px;padding:6px 8px 6px 14px;background:var(--surface);border-bottom:1px solid var(--line)}
+.pv-title{flex:1;min-width:0;font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pv-group{display:flex;align-items:center;gap:2px;padding-left:8px;border-left:1px solid var(--line)}
+.pv-group button,.pv-group a{display:grid;place-items:center;width:30px;height:30px;border:0;border-radius:7px;background:none;color:var(--ink);cursor:pointer;text-decoration:none;transition:background .15s}
+.pv-group button:hover,.pv-group a:hover{background:light-dark(#eef1f4,#232a31)}
+.pv-group .ico{width:17px;height:17px}
+.pv-page{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)}
+.pv-page input{width:34px;padding:3px 4px;text-align:center;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--text);font:inherit;font-size:12.5px}
+.pv-scale{min-width:44px;text-align:center;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.pv-pages{flex:1;overflow:auto;display:flex;flex-direction:column;align-items:center;gap:14px;padding:20px 16px 28px}
+.pv-sheet{flex:none;position:relative;background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.18),0 6px 18px light-dark(rgba(20,34,48,.08),rgba(0,0,0,.4));overflow:hidden}
+.pv-sheet:not(.is-drawn){background:linear-gradient(90deg,light-dark(#f3f5f7,#1c2126) 0%,light-dark(#fafbfc,#232a30) 40%,light-dark(#f3f5f7,#1c2126) 80%);background-size:300% 100%;animation:skel 1.4s ease-in-out infinite}
+.pv-sheet canvas{display:block;animation:pv-in .25s ease-out}
+@keyframes pv-in{from{opacity:0}to{opacity:1}}
+.pv.is-fallback [data-pv-nav],.pv.is-fallback [data-pv-zoomset]{display:none}
+.pv.is-fallback .pv-pages{padding:0;display:block}
+.pv.is-fallback iframe{width:100%;height:100%;border:0;background:#fff}
+.pv:fullscreen{border-radius:0;height:100vh}
+@media (max-width:700px){.pv-title{display:none}}
+.pdf-frame .pv,.dw-pdf .pv{border:0;border-radius:0}
+.pdf-body .pv{position:absolute;inset:0;border:0;border-radius:0}
+.dw-pdf{border-radius:8px;overflow:hidden}

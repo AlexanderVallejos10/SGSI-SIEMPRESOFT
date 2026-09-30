@@ -79,6 +79,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         path.setAttribute("d", d);
         path.dataset.dynamicLine = "1";
+        path.dataset.source = relation.source;
+        path.dataset.target = relation.target;
         path.classList.add(`relation-${relation.type}`);
         svg.appendChild(path);
     }

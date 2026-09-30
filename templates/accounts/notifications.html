@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Notificaciones | SGSI{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/access.css' %}">{% endblock %}
+{% block content %}
+<div class="ac" style="max-width:820px">
+  <header class="ac-head ac-row" style="justify-content:space-between">
+    <div><h1>Notificaciones</h1><p>Solicitudes, cambios de permisos y avisos del sistema.</p></div>
+    <form method="post">{% csrf_token %}<button class="ac-btn is-small" type="submit">Marcar todas como leídas</button></form>
+  </header>
+  <ul class="ac-notes">{% for n in items %}
+    <li class="{% if not n.read_at %}is-unread{% endif %}"><span class="dot"></span>
+      <div>{% if n.url %}<a href="{{ n.url }}" style="color:inherit;text-decoration:none"><b>{{ n.title }}</b></a>{% else %}<b>{{ n.title }}</b>{% endif %}{% if n.body %}<p>{{ n.body }}</p>{% endif %}</div>
+      <time datetime="{{ n.created_at|date:'c' }}">{{ n.created_at|date:"d/m/Y H:i" }}</time></li>
+  {% empty %}<li class="ac-empty" style="display:block">No tiene notificaciones.</li>{% endfor %}</ul>
+</div>
+{% endblock %}

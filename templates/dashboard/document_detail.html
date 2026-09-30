@@ -1,106 +1,126 @@
 {% extends "base.html" %}
-{% block title %}{{ document.code }} | Documento SGSI{% endblock %}
+{% load static %}
+{% block title %}{{ document.title }} | Documento SGSI{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/document_workspace.css' %}">{% endblock %}
 {% block content %}
-<div class="breadcrumb">⌂ / Documentos y evidencias / {{ document.code }}</div>
+<div class="breadcrumb">Inicio / Documentos y evidencias / {{ document.code }}</div>
 
-<div class="page-head">
-    <div>
-        <h1>{{ document.code }} · {{ document.title }}</h1>
-        <p>{{ document.document_type }} · {{ document.category }}</p>
+<section class="dw-sheet">
+    <div class="dw-sheet-top"><span>Siempresoft EIRL</span><span>{{ document.get_classification_display }}</span></div>
+    <div class="dw-title">
+        <div>
+            <span class="dw-code">{{ document.code }}</span>
+            <h1>{{ document.title }}</h1>
+        </div>
+        <div class="dw-actions">
+            <a class="dw-btn" href="{% url 'dashboard:entity_edit' 'documentos' document.pk %}">Editar datos</a>
+            {% if can_upload %}<a class="dw-btn is-primary" href="#nueva-version" data-open-upload>Subir nueva versión</a>{% endif %}
+        </div>
     </div>
-    <div class="head-actions">
-        <a class="outline-btn" href="{% url 'dashboard:entity_edit' 'documentos' document.pk %}">Editar metadatos</a>
-        <a class="primary-btn" href="{% url 'dashboard:entity_list' 'documentos' %}">Volver</a>
-    </div>
-</div>
+    <table class="dw-meta">
+        <tr>
+            <th>Versión vigente</th><td>{% if current %}{{ current.version }}{% else %}Sin versiones{% endif %}</td>
+            <th>Estado</th><td><span class="dw-state s-{{ current.status_code|default:'none' }}">{{ current.status|default:"Sin estado" }}</span></td>
+        </tr>
+        <tr>
+            <th>Fecha de la versión</th><td>{{ current.date|date:"d/m/Y"|default:"—" }}</td>
+            <th>Propietario</th><td>{{ document.owner|default:"Pendiente" }}</td>
+        </tr>
+        <tr>
+            <th>Tipo</th><td>{{ document.document_type|default:"—" }}{% if document.category %}, {{ document.category }}{% endif %}</td>
+            <th>Próxima revisión</th><td>{{ document.next_review_at|date:"d/m/Y"|default:"Sin fecha" }}</td>
+        </tr>
+    </table>
+</section>
 
-<div class="doc-three-cols">
-    <section class="mock-panel">
-        <div class="panel-title">Vista del documento</div>
-        <div class="doc-preview">
-            {% if preview %}
-                {% if preview.kind == "pdf" %}
-                    <iframe src="{{ preview.url }}"></iframe>
-                {% elif preview.kind == "image" %}
-                    <img src="{{ preview.url }}" alt="{{ preview.file_name }}">
-                {% elif preview.kind == "sheet" %}
-                    <div class="sheet-cta">
-                        <h3>Archivo tabular detectado</h3>
-                        <p>Este archivo se puede ver como datos estructurados dentro del sistema.</p>
-                        <a class="primary-btn" href="{{ preview.url }}">Abrir datos</a>
-                    </div>
-                {% endif %}
+<div class="dw-layout">
+    <div class="dw-main">
+        <nav class="dw-tabs" role="tablist">
+            <button type="button" role="tab" class="is-active" data-dw-tab="preview">Vista previa</button>
+            <button type="button" role="tab" data-dw-tab="history">Historial de versiones <span>{{ history|length }}</span></button>
+            <button type="button" role="tab" data-dw-tab="trace">Trazabilidad</button>
+        </nav>
+
+        <section class="dw-card" data-dw-panel="preview">
+            {% if preview.kind == "pdf" %}
+                <div class="dw-pdf">
+                    {% include "partials/pdf_viewer.html" with url=preview.file.view_url download=preview.file.download_url title=preview.file.name %}
+                </div>
+                <div class="dw-filebar"><span class="t t-pdf">PDF</span>{{ preview.file.name }}<span class="dw-filebar-acts"><a href="{{ preview.file.view_url }}" target="_blank" rel="noopener">Pestaña nueva</a><a href="{{ preview.file.download_url }}" data-no-loader>Descargar</a></span></div>
+            {% elif preview.kind == "sheet" %}
+                <div class="dw-filebar"><span class="t t-xlsx">XLSX</span>{{ preview.file.name }}<span class="dw-filebar-acts"><a href="{{ preview.file.table_url }}">Abrir hoja completa</a><a href="{{ preview.file.download_url }}" data-no-loader>Descargar</a></span></div>
+                {% if preview.sheets %}{% include "dashboard/_sheet_grid.html" with sheets=preview.sheets %}{% else %}<p class="dw-empty">No se pudo leer la hoja. Descárguela para abrirla en Excel.</p>{% endif %}
+            {% elif preview.kind == "file" %}
+                <div class="dw-empty">
+                    <p><b>{{ preview.file.name }}</b></p>
+                    <p>Este formato no se puede mostrar en el navegador.</p>
+                    <a class="dw-btn is-primary" href="{{ preview.file.download_url }}" data-no-loader>Descargar</a>
+                </div>
             {% else %}
-                <div class="empty-preview">No hay un archivo visualizable para mostrar en esta ficha.</div>
+                <div class="dw-empty"><p>El documento todavía no tiene archivos.</p>{% if can_upload %}<a class="dw-btn is-primary" href="#nueva-version" data-open-upload>Subir la primera versión</a>{% endif %}</div>
             {% endif %}
-        </div>
+        </section>
 
-        {% if preview %}
-        <div class="preview-actions">
-            {% if preview.kind != "sheet" %}
-            <a class="primary-small" target="_blank" href="{{ preview.url }}">Ver en pestaña nueva</a>
-            {% endif %}
-            <a class="btn-light" href="{{ preview.download_url }}">Descargar archivo</a>
-        </div>
-        {% endif %}
-    </section>
-
-    <section class="mock-panel">
-        <div class="panel-title">Trazabilidad</div>
-        <div class="trace-cards">
-            <div><small>Secciones SGSI</small><strong>{{ sections|length }}</strong></div>
-            <div><small>Controles ISO</small><strong>{{ controls|length }}</strong></div>
-            <div><small>Versiones</small><strong>{{ versions|length }}</strong></div>
-        </div>
-        <h3 class="subheading">Secciones del Manual / Norma</h3>
-        <div class="chips">
-            {% for section in sections %}
-            <a href="{% url 'dashboard:clause_detail' section.code %}">{{ section.code }} {{ section.title }}</a>
+        <section class="dw-card" data-dw-panel="history" hidden>
+            <ol class="dw-timeline">
+            {% for v in history %}
+                <li class="{% if forloop.first %}is-current{% endif %}">
+                    <div class="dw-tl-head">
+                        <b>Versión {{ v.version }}</b>
+                        <span class="dw-state s-{{ v.status_code }}">{{ v.status }}</span>
+                        {% if forloop.first %}<span class="dw-latest">Última</span>{% endif %}
+                        <time>{{ v.date|date:"d/m/Y" }}</time>
+                    </div>
+                    {% if v.reason %}<p class="dw-reason">{{ v.reason }}</p>{% endif %}
+                    {% if v.author %}<p class="dw-author">Registró: {{ v.author }}</p>{% endif %}
+                    <ul class="dw-files">
+                    {% for f in v.files %}
+                        <li><span class="t t-{% if f.ext == 'pdf' %}pdf{% elif f.ext == 'xlsx' or f.ext == 'xlsm' %}xlsx{% else %}ficha{% endif %}">{{ f.ext|upper|default:"—" }}</span><span class="dw-fname">{{ f.name }}</span>
+                            <span class="dw-file-acts">{% if f.view_url %}<a href="{{ f.view_url }}" target="_blank" rel="noopener">Ver</a>{% endif %}{% if f.table_url %}<a href="{{ f.table_url }}">Tabla</a>{% endif %}<a href="{{ f.download_url }}" data-no-loader>Descargar</a></span></li>
+                    {% empty %}
+                        <li class="dw-muted">Sin archivo.</li>
+                    {% endfor %}
+                    </ul>
+                </li>
             {% empty %}
-            <span class="muted">Sin sección vinculada.</span>
+                <li class="dw-muted">Sin versiones registradas.</li>
             {% endfor %}
-        </div>
-        <h3 class="subheading">Controles vinculados</h3>
-        <div class="control-links">
-            {% for control in controls %}
-            <a href="{% url 'dashboard:control_detail' control.pk %}"><b>{{ control.code }}</b> {{ control.name }}</a>
-            {% empty %}
-            <span class="muted">Sin controles vinculados.</span>
-            {% endfor %}
-        </div>
-    </section>
+            </ol>
+        </section>
 
-    <section class="mock-panel">
-        <div class="panel-title">Versiones y archivos</div>
-        {% for version in versions %}
-        <div class="version-block">
-            <div class="version-head"><div><b>Versión {{ version.version }}</b><small>{{ version.status }}</small></div></div>
-            {% for file in version.files %}
-            <div class="file-row">
-                <div>
-                    <span class="file-icon">{{ file.extension|upper }}</span>
-                    <div><b>{{ file.name }}</b><small>{{ file.extension|upper }}</small></div>
-                </div>
-                <div class="doc-actions">
-                    {% if file.is_pdf %}
-                    <a target="_blank" href="{% url 'dashboard:artifact_view' file.artifact_id %}" class="primary-small">Ver PDF</a>
-                    {% endif %}
-                    {% if file.extension == "xlsx" or file.extension == "xlsm" %}
-                    <a href="{% url 'dashboard:artifact_table' file.artifact_id %}" class="primary-small">Abrir datos</a>
-                    {% endif %}
-                    <a href="{% url 'dashboard:artifact_download' file.artifact_id %}" class="btn-light">Descargar</a>
-                </div>
+        <section class="dw-card" data-dw-panel="trace" hidden>
+            <h3>Secciones del Manual y de la norma</h3>
+            <div class="dw-chips">{% for s in sections %}<a href="{% url 'dashboard:clause_detail' s.code %}"><b>{{ s.code }}</b> {{ s.title }}</a>{% empty %}<span class="dw-muted">Sin secciones asignadas.</span>{% endfor %}</div>
+            <h3>Controles del Anexo A</h3>
+            <div class="dw-chips">{% for c in controls %}<a href="{% url 'dashboard:control_detail' c.pk %}"><b>{{ c.code }}</b> {{ c.name }}</a>{% empty %}<span class="dw-muted">Sin controles vinculados.</span>{% endfor %}</div>
+        </section>
+    </div>
+
+    {% if can_upload %}
+    <aside class="dw-side">
+        <form class="dw-card dw-upload{% if upload_errors %} has-errors{% endif %}" id="nueva-version" method="post" enctype="multipart/form-data" data-dw-upload data-no-loader>
+            {% csrf_token %}
+            <h2>Subir nueva versión</h2>
+            <p class="dw-muted">La versión actual no se borra: pasa al historial.</p>
+            <label class="dw-drop" data-dw-drop>
+                <input type="file" name="file" accept=".pdf,.xlsx,.xlsm,.docx,.doc,.pptx,.png,.jpg,.jpeg" data-dw-file required>
+                <span data-dw-drop-text>Arrastre el archivo aquí o haga clic para elegirlo</span>
+                <small>PDF, Excel, Word, PowerPoint o imagen. Máximo 25 MB.</small>
+            </label>
+            {% if upload_errors.file %}<p class="dw-error">{{ upload_errors.file|join:" " }}</p>{% endif %}
+            <div class="dw-row">
+                <label>Versión<input type="text" name="version" value="{{ upload_values.version|default:suggested_version }}" placeholder="0.14" required></label>
+                <label>Estado<select name="status">{% for value, label in status_choices %}<option value="{{ value }}" {% if upload_values.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
             </div>
-            {% empty %}
-            <p class="muted">Esta versión no tiene archivo materializado.</p>
-            {% endfor %}
-        </div>
-        {% empty %}
-        <p class="muted">Sin versiones.</p>
-        {% endfor %}
-        <div class="update-note">
-            <b>Actualización:</b> si necesitas sustituir o subir una nueva versión, usa la edición del documento o el flujo de carga del repositorio documental.
-        </div>
-    </section>
+            {% if upload_errors.version %}<p class="dw-error">{{ upload_errors.version|join:" " }}</p>{% endif %}
+            <label>Qué cambió<textarea name="reason" rows="3" placeholder="Por ejemplo: se agregan los requisitos de protección de datos personales" required>{{ upload_values.reason }}</textarea></label>
+            {% if upload_errors.reason %}<p class="dw-error">{{ upload_errors.reason|join:" " }}</p>{% endif %}
+            <p class="dw-hint">Si marca la versión como <b>Vigente</b>, la vigente anterior pasa a obsoleta.</p>
+            <button type="submit" class="dw-btn is-primary">Registrar versión</button>
+            <div class="dw-uploading" data-dw-uploading hidden>{% include "partials/sgsi_loader.html" with text="Subiendo versión" %}</div>
+        </form>
+    </aside>
+    {% endif %}
 </div>
 {% endblock %}
+{% block extra_js %}<script src="{% static 'js/document_workspace.js' %}"></script>{% endblock %}

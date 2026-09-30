@@ -6,6 +6,7 @@ app_name = "dashboard_live"
 urlpatterns = [
     path("", views.home, name="home"),
     path("dashboard-sgsi/", views.home, name="dashboard"),
+    path("dashboard-sgsi/datos.json", views.dashboard_data, name="data"),
     path("dashboard-sgsi/sgsi/<uuid:pk>/editar/", views.edit_sgsi_metric, name="edit_sgsi_metric"),
     path("dashboard-sgsi/oesi/<uuid:pk>/editar/", views.edit_oesi_metric, name="edit_oesi_metric"),
     path("dashboard-sgsi/factor/<uuid:pk>/editar/", views.edit_factor, name="edit_factor"),

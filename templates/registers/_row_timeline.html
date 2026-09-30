@@ -1,0 +1,25 @@
+{% load registers_tags %}
+<tr class="rg-row" data-row="{{ e.pk }}" data-update="{% url 'registers:update_row' e.pk %}" data-delete="{% url 'registers:delete_row' e.pk %}">
+    <td class="rg-topic">
+        <span class="rg-cell" data-edit="tema" data-type="longtext" {% if can_edit %}tabindex="0"{% endif %}>{{ e.data.tema|default:"Sin tema" }}</span>
+    </td>
+    {% for m in months %}
+    <td class="rg-month-cell{% if forloop.counter == current_month %} is-now{% endif %}">
+        <button type="button" class="rg-m{% if forloop.counter in e.data.meses %} is-on{% endif %}" data-month="{{ forloop.counter }}" title="{{ m }}" {% if not can_edit %}disabled{% endif %} aria-pressed="{% if forloop.counter in e.data.meses %}true{% else %}false{% endif %}"></button>
+    </td>
+    {% endfor %}
+    <td class="rg-meta">
+        {% options section "modalidad" e.data.modalidad as mods %}
+        <select class="rg-select" data-edit="modalidad" {% if not can_edit %}disabled{% endif %} aria-label="Modalidad">
+            <option value="">Sin modalidad</option>
+            {% for o in mods %}<option value="{{ o }}" {% if o == e.data.modalidad %}selected{% endif %}>{{ o }}</option>{% endfor %}
+        </select>
+    </td>
+    <td class="rg-meta">
+        {% options section "estado" e.data.estado as sts %}
+        <select class="rg-pill st-{{ e.data.estado|slugify_state }}" data-edit="estado" {% if not can_edit %}disabled{% endif %} aria-label="Estado">
+            {% for o in sts %}<option value="{{ o }}" {% if o == e.data.estado %}selected{% endif %}>{{ o }}</option>{% endfor %}
+        </select>
+    </td>
+    <td class="rg-act">{% if can_edit %}<button type="button" class="rg-del" data-del title="Quitar fila"><svg class="ico"><use href="#i-close"></use></svg></button>{% endif %}</td>
+</tr>

@@ -5,6 +5,8 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/processes_v71.css' %}">
+<link rel="stylesheet" href="{% static 'css/processes_map.css' %}">
+<link rel="stylesheet" href="{% static 'css/process_map_insights.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -155,108 +157,62 @@
         </div>
 
         <div class="process-canvas" data-process-canvas tabindex="0" aria-label="Mapa interactivo de procesos">
-            <div class="map-loader" data-map-loader role="status" aria-live="polite">
-                <span class="map-loader-mark" aria-hidden="true"><i></i><i></i><i></i></span>
-                <span>Organizando procesos</span>
+            <div class="map-loader" data-map-loader>
+                {% include "partials/sgsi_loader.html" with text="Organizando procesos" %}
             </div>
-            <div class="process-stage" data-process-stage>
-
-                <div class="map-title">MAPA DE PROCESOS SIEMPRESOFT</div>
-
-                <div class="external-label external-left">
-                    CLIENTE / PSE
+            <div class="map-sizer" data-map-sizer>
+            <div class="process-stage map-v2" data-process-stage{% if can_change %} data-can-change="1" data-relation-url="{% url 'processes:relation_create' %}"{% endif %}>
+                <div class="map-v2-title">MAPA DE PROCESOS SIEMPRESOFT</div>
+                <div class="map-v2-note">Uso interno</div>
+                <div class="map-v2-box" data-map-box></div>
+                <div class="map-v2-lanes" data-map-lanes></div>
+                <div class="map-v2-scope" data-map-scope hidden>
+                    <strong>FACTURACIÓN ELECTRÓNICA PSE Y VALIDACIÓN DE COMPROBANTES OSE</strong>
                 </div>
-
-                <div class="external-label external-right">
-                    CLIENTE / PSE / SUNAT
-                </div>
-
-                <div class="process-lane lane-strategic" data-lane="strategic">
-                    <span>PROCESOS ESTRATÉGICOS</span>
-                </div>
-
-                <div class="process-lane lane-operational" data-lane="operational">
-                    <span>PROCESOS OPERATIVOS</span>
-                </div>
-
-                <div class="process-lane lane-support" data-lane="support">
-                    <span>PROCESOS DE APOYO</span>
-                </div>
-
-                <div class="scope-frame">
-                    <strong>
-                        FACTURACIÓN ELECTRÓNICA PSE Y
-                        VALIDACIÓN DE COMPROBANTES OSE
-                    </strong>
-                </div>
-
-                <div class="scope-legend">
-                    <i></i>
-                    Alcance del SGSI
-                </div>
-
-                <div class="category-arrow strategic-arrow">↓</div>
-                <div class="category-arrow support-arrow">↑</div>
-
-                <svg
-                    class="process-lines"
-                    data-process-lines
-                    viewBox="0 0 1200 690"
-                    preserveAspectRatio="none"
-                    aria-hidden="true"
-                >
+                <svg class="process-lines" data-process-lines aria-hidden="true">
                     <defs>
-                        <marker
-                            id="process-arrow"
-                            viewBox="0 0 10 10"
-                            refX="9"
-                            refY="5"
-                            markerWidth="7"
-                            markerHeight="7"
-                            orient="auto-start-reverse"
-                        >
-                            <path d="M 0 0 L 10 5 L 0 10 z"></path>
-                        </marker>
-                        <marker
-                            id="process-arrow-support"
-                            viewBox="0 0 10 10"
-                            refX="9"
-                            refY="5"
-                            markerWidth="7"
-                            markerHeight="7"
-                            orient="auto-start-reverse"
-                        >
-                            <path d="M 0 0 L 10 5 L 0 10 z"></path>
+                        <marker id="map-arrow" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                            <path d="M0 0 L10 5 L0 10 z"></path>
                         </marker>
                     </defs>
-
-                    <line class="reference-flow" x1="50" y1="250" x2="1150" y2="250"></line>
-                    <line class="reference-flow" x1="50" y1="350" x2="1150" y2="350"></line>
-                    <line class="reference-flow" x1="50" y1="440" x2="1150" y2="440"></line>
+                    <g data-map-blocks></g>
+                    <g data-map-links></g>
+                    <path class="map-v2-draft" data-map-draft d=""></path>
                 </svg>
 
                 {% for process in processes %}
                 <button
                     type="button"
-                    class="
-                        process-node
-                        category-{{ process.category.kind }}
-                        {% if process.is_external %}outside-scope{% endif %}
-                    "
+                    class="process-node{% if process.category.kind == 'input' or process.category.kind == 'output' %} process-party{% endif %}{% if process.is_external %} is-external{% endif %}"
                     data-process-id="{{ process.pk }}"
+                    data-kind="{{ process.category.kind }}"
                     data-category="{{ process.category.kind }}"
                     data-x="{{ process.x }}"
                     data-y="{{ process.y }}"
-                    style="left: {{ process.x }}px; top: {{ process.y }}px;"
+                    data-scope="{% if process.is_in_scope %}1{% else %}0{% endif %}"
+                    title="{{ process.name }}"
                 >
-                    {% if can_change %}
-                    <span class="drag-handle">::</span>
+                    {% if can_change and process.category.kind != 'input' and process.category.kind != 'output' %}
+                    <span class="drag-handle" title="Arrastrar para mover o cambiar de categoría" aria-hidden="true"></span>
                     {% endif %}
                     <span class="process-node-title">{{ process.name }}</span>
-                    <span class="process-node-menu">···</span>
+                    {% if can_change %}<span class="connect-port" title="Arrastrar hasta otro proceso para crear una relación" aria-hidden="true"></span>{% endif %}
                 </button>
                 {% endfor %}
 
+                <div class="map-v2-popover" data-link-popover hidden>
+                    <strong data-link-popover-title></strong>
+                    <div>
+                        <button type="button" class="outline-btn" data-link-remove>Retirar relación</button>
+                        <button type="button" class="outline-btn" data-link-cancel>Cancelar</button>
+                    </div>
+                </div>
+                <div class="map-v2-legend" data-map-legend>
+                    <span><i class="legend-scope"></i>Proceso principal del alcance del SGSI</span>
+                    <span><i class="legend-external"></i>Proceso externo</span>
+                    <span><i class="legend-internal"></i>Proceso interno</span>
+                </div>
+            </div>
             </div>
         </div>
     </section>
@@ -315,5 +271,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/processes_v71.js' %}"></script>
+<script src="{% static 'js/processes_map.js' %}"></script>
+<script src="{% static 'js/process_map_insights.js' %}"></script>
 {% endblock %}

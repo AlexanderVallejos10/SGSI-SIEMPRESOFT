@@ -1,0 +1,17 @@
+{
+  "vendor/gsap/gsap.min.js": {
+    "url": "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js",
+    "sha256": "96c01b81f44a3290e2b4532f55e2c9534b2adc43273a19f3756b2cb41f0fd0b6",
+    "bytes": 72435
+  },
+  "vendor/gsap/SplitText.min.js": {
+    "url": "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/SplitText.min.js",
+    "sha256": "5e519ea2470faa15ca4d4f27e9263e5906c07c034a9b4771164dee108136563a",
+    "bytes": 7247
+  },
+  "vendor/gsap/DrawSVGPlugin.min.js": {
+    "url": "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/DrawSVGPlugin.min.js",
+    "sha256": "d8f70b87c137f4b30f25c9fc3f7bda824dc070510888121b1199a1bf47624bbc",
+    "bytes": 4351
+  }
+}

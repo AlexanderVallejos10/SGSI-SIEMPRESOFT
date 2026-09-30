@@ -184,13 +184,8 @@ def _asset_rows(user):
                     asset,
                     ("status", "state"),
                 ),
-                "url": reverse(
-                    "dashboard:entity_detail",
-                    kwargs={
-                        "entity": "activos",
-                        "pk": asset.pk,
-                    },
-                ),
+                # la ficha de activos con su trazabilidad (quién lo tuvo, salidas, revisiones, software)
+                "url": reverse("assets:detail", args=[asset.code]),
             }
         )
 

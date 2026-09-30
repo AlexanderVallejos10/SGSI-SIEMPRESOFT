@@ -97,7 +97,7 @@
                     {% if can_change %}
                     <a
                         class="primary-btn"
-                        href="{% url 'context41:upload_version' mission.slug %}"
+                        href="{% if mission.slug %}{% url 'context41:upload_version' mission.slug %}{% endif %}"
                     >
                         Subir nueva versión
                     </a>
@@ -106,10 +106,9 @@
             </div>
 
             <div class="pdf-frame">
-                <iframe
-                    title="Misión y Visión - FODA"
-                    src="{% url 'dashboard:artifact_view' mission.current_version.source_artifact.pk %}"
-                ></iframe>
+                {% url 'dashboard:artifact_view' mission.current_version.source_artifact.pk as mission_pdf %}
+                {% url 'dashboard:artifact_download' mission.current_version.source_artifact.pk as mission_dl %}
+                {% include "partials/pdf_viewer.html" with url=mission_pdf download=mission_dl title=mission.current_version.original_name %}
             </div>
 
             <details class="version-history">
@@ -212,7 +211,7 @@
                     {% if can_change %}
                     <a
                         class="outline-btn"
-                        href="{% url 'context41:upload_version' organization_doc.slug %}"
+                        href="{% if organization_doc.slug %}{% url 'context41:upload_version' organization_doc.slug %}{% endif %}"
                     >
                         Subir nueva versión
                     </a>
@@ -316,7 +315,7 @@
                     {% if can_change %}
                     <a
                         class="primary-btn"
-                        href="{% url 'context41:upload_version' legal_doc.slug %}"
+                        href="{% if legal_doc.slug %}{% url 'context41:upload_version' legal_doc.slug %}{% endif %}"
                     >
                         Subir nueva versión
                     </a>

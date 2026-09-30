@@ -1,0 +1,94 @@
+/* Pantallas de acceso: ingreso, cuenta, perfil, conectados, notificaciones y administración de accesos */
+.ac,.ac *,.lg-form,.lg-form *,.mx-dialog,.mx-dialog *{box-sizing:border-box}
+.ac{display:grid;gap:22px;max-width:1180px}
+.ac-head h1{margin:0;font-size:clamp(24px,2.4vw,30px);font-weight:700;letter-spacing:-.022em;color:var(--ink)}
+.ac-head p{margin:6px 0 0;max-width:68ch;color:var(--muted);line-height:1.55}
+.ac-panel{padding:20px 22px;border:1px solid var(--hair);border-radius:10px;background:var(--surface)}
+.ac-panel h2{margin:0 0 4px;font-size:16px;font-weight:600;color:var(--ink)}
+.ac-panel>p{margin:0 0 14px;color:var(--muted);font-size:13px;line-height:1.5}
+.ac-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.ac-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.ac-field{display:grid;gap:5px;margin-bottom:12px}
+.ac-field label{font-size:13px;font-weight:600;color:var(--ink)}
+.ac-field small{font-size:12px;color:var(--muted)}
+.ac-field input,.ac-field select,.ac-field textarea{width:100%;padding:9px 11px;font:inherit;font-size:14px;border:1px solid var(--hair-strong);border-radius:6px;background:var(--surface);color:var(--text)}
+.ac-field textarea{min-height:90px;resize:vertical}
+.ac-errors{margin:0 0 14px;padding:10px 12px;border-radius:6px;background:light-dark(#fdf0ec,#34201a);color:light-dark(#9c3b24,#f2a08a);font-size:13px}
+.ac-errors p{margin:0}.ac-errors p+p{margin-top:4px}
+.ac-note{padding:10px 12px;border-left:3px solid var(--accent);background:var(--hover);border-radius:0 6px 6px 0;font-size:13px;color:var(--text)}
+.ac-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 15px;border:1px solid var(--hair-strong);border-radius:6px;background:var(--surface);color:var(--ink);font:600 13px var(--f-sans);text-decoration:none;cursor:pointer;transition:background .15s,border-color .15s,transform .1s}
+.ac-btn:hover{border-color:var(--ink)}
+.ac-btn:active{transform:scale(.98)}
+.ac-btn.is-primary{background:var(--ink);border-color:var(--ink);color:light-dark(#fff,#15191d)}
+.ac-btn.is-danger{color:light-dark(#a3391f,#f08c74)}
+.ac-btn.is-small{padding:6px 11px;font-size:12.5px}
+
+/* Datos en pares etiqueta / valor */
+.ac-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px 20px;margin:0}
+.ac-facts div{display:grid;gap:2px}
+.ac-facts dt{font-size:12.5px;color:var(--muted)}
+.ac-facts dd{margin:0;font-size:14px;font-weight:600;color:var(--ink)}
+
+/* Persona */
+.ac-person{display:flex;align-items:center;gap:10px;min-width:0}
+.ac-avatar{position:relative;display:grid;place-items:center;flex:none;width:32px;height:32px;border-radius:50%;background:var(--hover);color:var(--ink);font-size:12px;font-weight:700;border:1px solid var(--hair)}
+.ac-avatar.is-lg{width:52px;height:52px;font-size:18px}
+.ac-avatar.is-on::after{content:"";position:absolute;right:-1px;bottom:-1px;width:10px;height:10px;border-radius:50%;background:#3f8f3a;border:2px solid var(--surface)}
+.ac-person b{display:block;color:var(--ink);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ac-person small{display:block;color:var(--muted);font-size:12px}
+
+/* Tablas */
+.ac-table{width:100%;border-collapse:collapse;font-size:13.5px}
+.ac-table th{padding:9px 12px;text-align:left;font-size:12.5px;font-weight:600;color:var(--muted);border-bottom:1px solid var(--hair)}
+.ac-table td{padding:10px 12px;border-bottom:1px solid var(--hair);vertical-align:middle}
+.ac-table tr:last-child td{border-bottom:0}
+.ac-table-wrap{overflow-x:auto;border:1px solid var(--hair);border-radius:10px;background:var(--surface)}
+.ac-muted{color:var(--muted)}
+.ac-role{display:inline-block;margin:1px 4px 1px 0;padding:1px 7px;border:1px solid var(--hair-strong);border-radius:4px;font-size:12px;color:var(--ink);white-space:nowrap}
+.ac-role.is-admin{border-color:var(--accent);color:var(--accent)}
+.ac-state{font-size:12.5px;font-weight:600}
+.ac-state.on{color:light-dark(#2f7a2c,#7fcf78)}.ac-state.off{color:var(--muted)}.ac-state.warn{color:light-dark(#9a6414,#e8b86a)}
+
+/* Casillas de permisos */
+.ac-checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:6px}
+.ac-check{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border:1px solid var(--hair);border-radius:6px;cursor:pointer;transition:border-color .15s,background .15s}
+.ac-check:hover{border-color:var(--hair-strong)}
+.ac-check:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.ac-check input{margin-top:2px;accent-color:var(--accent);width:16px;height:16px}
+.ac-check span{font-size:13.5px;color:var(--ink);font-weight:600}
+.ac-check small{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+.ac-matrix td:not(:first-child),.ac-matrix th:not(:first-child){text-align:center;width:110px}
+.ac-matrix input{width:17px;height:17px;accent-color:var(--accent);cursor:pointer}
+.ac-matrix .by-role{font-size:11.5px;color:var(--muted)}
+
+/* Contraseñas generadas */
+.ac-cred{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:14px;letter-spacing:.02em;padding:3px 8px;border-radius:4px;background:var(--hover);color:var(--ink);user-select:all}
+.ac-copy{border:0;background:none;color:var(--accent);font:600 12.5px var(--f-sans);cursor:pointer;padding:2px 6px}
+
+/* Notificaciones */
+.ac-notes{list-style:none;margin:0;padding:0;border:1px solid var(--hair);border-radius:10px;background:var(--surface)}
+.ac-notes li{display:grid;grid-template-columns:10px 1fr auto;gap:12px;padding:13px 16px;border-bottom:1px solid var(--hair)}
+.ac-notes li:last-child{border-bottom:0}
+.ac-notes .dot{width:8px;height:8px;margin-top:6px;border-radius:50%;background:transparent}
+.ac-notes li.is-unread .dot{background:var(--accent)}
+.ac-notes b{color:var(--ink);font-weight:600}
+.ac-notes p{margin:2px 0 0;font-size:13px;color:var(--muted)}
+.ac-notes time{font-size:12px;color:var(--muted);white-space:nowrap}
+.ac-empty{padding:28px;text-align:center;color:var(--muted)}
+@media (max-width:760px){.ac-table .hide-sm{display:none}}
+
+/* Foto de perfil o iniciales */
+.ac-avatar{overflow:hidden}
+.ac-avatar.has-photo{background:var(--hover);border-color:var(--hair)}
+.ac-avatar.has-photo img{display:block;width:100%;height:100%;object-fit:cover}
+.ac-avatar.is-xl{width:72px;height:72px;font-size:24px}
+.ac-presence{position:relative;display:inline-flex;flex:none}
+.ac-presence.is-on::after{content:"";position:absolute;right:-1px;bottom:-1px;width:10px;height:10px;border-radius:50%;background:#3f8f3a;border:2px solid var(--surface)}
+.ac-photo .ac-avatar.is-lg{width:56px;height:56px}
+
+/* Avatar en otras pantallas (organigrama, activos, perfil) */
+.node-person-link{display:flex;align-items:center;gap:8px}
+.node-person-link .ac-avatar{width:28px;height:28px;font-size:11px}
+.as-person .ac-avatar{width:24px;height:24px;font-size:10px;margin-right:6px;vertical-align:middle}
+.as-person.is-big .ac-avatar{width:36px;height:36px;font-size:13px}
+.user-profile-identity .ac-avatar.is-xl{flex:none}

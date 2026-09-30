@@ -1,3 +1,4 @@
+{% load avatars %}
 <li
     class="
     org-node-item
@@ -6,6 +7,10 @@
 >
 
     <article
+        data-org-node="{{ node.position.pk }}"
+        data-trace-url="{% url 'organization:position_trace' node.position.pk %}"
+        data-area="{{ node.position.area_id|default:'' }}"
+        tabindex="0"
         class="
         org-node
         {% if not node.assignments %}
@@ -150,14 +155,11 @@
 
                 <a
                     href="{% url 'dashboard:user_profile' assignment.user.pk %}"
+                    class="node-person-link"
                 >
-                    <b>
-                        {{ assignment.user.get_full_name|default:assignment.user.username }}
-                    </b>
-
-                    <small>
-                        {{ assignment.user.business_code|default:assignment.user.username }}
-                    </small>
+                    {% avatar assignment.user %}
+                    <b>{{ assignment.user.get_full_name|default:assignment.user.username }}</b>
+                    <small>{{ assignment.user.business_code|default:assignment.user.username }}</small>
                 </a>
 
                 {% if can_change %}
@@ -191,9 +193,7 @@
 
             <div class="vacancy">
 
-                <strong>
-                    VACANTE
-                </strong>
+                <strong>Vacante</strong>
 
                 {% if can_change %}
 
@@ -228,8 +228,9 @@
             class="collapse-branch"
             data-collapse-branch
             aria-expanded="true"
+            title="Mostrar u ocultar los {{ node.children|length }} puestos a cargo"
         >
-            −
+            <span class="cb-count">{{ node.children|length }}</span>
         </button>
 
         {% endif %}

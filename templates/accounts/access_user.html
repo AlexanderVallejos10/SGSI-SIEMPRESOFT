@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load static avatars %}
+{% block title %}Permisos de {{ u.get_full_name|default:u.username }} | SGSI{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/access.css' %}">{% endblock %}
+{% block content %}
+<div class="ac">
+  <div class="breadcrumb"><a href="{% url 'accounts:access_list' %}">Accesos y permisos</a> / {{ u.get_full_name|default:u.username }}</div>
+  <header class="ac-head ac-person" style="gap:16px">{% avatar u "xl" %}
+    <div><h1>{{ u.get_full_name|default:u.username }}</h1><p style="margin-top:2px">Usuario {{ u.username }}{% if u.email %}, {{ u.email }}{% endif %}. Conectado {{ time_30 }} en los últimos 30 días.</p></div></header>
+
+  <form method="post" class="ac-panel">
+    {% csrf_token %}<input type="hidden" name="action" value="save">
+    <h2>Acceso</h2>
+    <label class="ac-check" style="max-width:420px;margin:10px 0 18px"><input type="checkbox" name="active" value="1" {% if u.is_active %}checked{% endif %} {% if is_self %}disabled{% endif %}>
+      <span>Puede ingresar al sistema<small>{% if is_self %}No puede desactivar su propia cuenta.{% else %}Si lo desmarca, la persona no podrá ingresar.{% endif %}</small></span></label>
+    {% if is_self %}<input type="hidden" name="active" value="1">{% endif %}
+
+    <h2>Roles</h2>
+    <p>Cada rol trae un conjunto de permisos. «Administrador SGSI» puede editar todo, asignar permisos, generar credenciales y ubicar personas en el organigrama.</p>
+    <div class="ac-checks">{% for r in roles %}
+      <label class="ac-check"><input type="checkbox" name="roles" value="{{ r.name }}" {% if r.name in user_roles %}checked{% endif %}><span>{{ r.name }}</span></label>{% endfor %}</div>
+
+    <h2 style="margin-top:22px">Permisos adicionales por módulo</h2>
+    <p>Además de lo que dan sus roles. Editar incluye ver.</p>
+    <div class="ac-table-wrap"><table class="ac-table ac-matrix">
+      <thead><tr><th>Módulo</th><th>Sin permiso adicional</th><th>Ver</th><th>Editar</th></tr></thead>
+      <tbody>{% for m in modules %}<tr><td>{{ m.label }}{% if m.edit_role %}<div class="by-role">Su rol ya permite editar</div>{% elif m.view_role %}<div class="by-role">Su rol ya permite ver</div>{% endif %}</td>
+        <td><input type="radio" name="mod_{{ m.key }}" value="none" {% if not m.view_direct and not m.edit_direct %}checked{% endif %} aria-label="{{ m.label }}: sin permiso adicional"></td>
+        <td><input type="radio" name="mod_{{ m.key }}" value="view" {% if m.view_direct and not m.edit_direct %}checked{% endif %} aria-label="{{ m.label }}: ver"></td>
+        <td><input type="radio" name="mod_{{ m.key }}" value="edit" {% if m.edit_direct %}checked{% endif %} aria-label="{{ m.label }}: editar"></td></tr>{% endfor %}</tbody>
+    </table></div>
+    <div class="ac-row" style="margin-top:16px"><button class="ac-btn is-primary" type="submit">Guardar permisos</button><span class="ac-muted">La persona recibirá un aviso con el cambio.</span></div>
+  </form>
+
+  <div class="ac-grid">
+    <form method="post" class="ac-panel">
+      {% csrf_token %}<input type="hidden" name="action" value="position">
+      <h2>Puesto en el organigrama</h2>
+      <p>{% if current %}Ocupa «{{ current.position.title }}» desde el {{ current.start_date|date:"d/m/Y" }}.{% else %}No ocupa ningún puesto.{% endif %}</p>
+      <div class="ac-field"><label for="position">Puesto</label>
+        <select id="position" name="position"><option value="">Sin puesto</option>
+          {% for p in positions %}<option value="{{ p.pk }}" {% if current and current.position_id == p.pk %}selected{% endif %}>{{ p.title }}{% if p.area %} ({{ p.area.name }}){% endif %}</option>{% endfor %}</select></div>
+      <button class="ac-btn" type="submit">Guardar puesto</button>
+    </form>
+    <form method="post" class="ac-panel" enctype="multipart/form-data">
+      {% csrf_token %}
+      <h2>Foto de perfil</h2>
+      <p>La persona recibirá un aviso si usted cambia su foto.</p>
+      <div class="ac-row">{% avatar u "lg" %}
+        <label class="ac-btn">Elegir foto<input type="file" name="photo" accept="image/jpeg,image/png,image/webp" hidden onchange="this.form.submit()"></label>
+        <input type="hidden" name="action" value="photo">
+        {% if u.photo %}<button class="ac-btn is-danger" name="action" value="remove_photo">Quitar foto</button>{% endif %}</div>
+    </form>
+    <form method="post" class="ac-panel" onsubmit="return confirm('Se generará una contraseña temporal nueva. La actual dejará de funcionar. ¿Continuar?')">
+      {% csrf_token %}<input type="hidden" name="action" value="credentials">
+      <h2>Credenciales</h2>
+      <p>{% if not u.has_usable_password %}Todavía no tiene credenciales.{% elif u.must_change_password %}Tiene una contraseña temporal sin cambiar.{% else %}Cambió su contraseña el {{ u.password_changed_at|date:"d/m/Y"|default:"—" }}.{% endif %}</p>
+      <button class="ac-btn" type="submit">{% if u.has_usable_password %}Restablecer contraseña{% else %}Generar credenciales{% endif %}</button>
+    </form>
+  </div>
+
+  <section class="ac-panel">
+    <h2>Conexiones recientes</h2>
+    <div class="ac-table-wrap"><table class="ac-table"><thead><tr><th>Inicio</th><th>Duración</th><th>Cierre</th><th class="hide-sm">Dirección IP</th></tr></thead>
+      <tbody>{% for s in sessions %}<tr><td>{{ s.started_at|date:"d/m/Y H:i" }}</td><td>{{ s.duration_text }}</td><td>{% if s.ended_at %}{{ s.get_ended_reason_display }}{% else %}<span class="ac-state on">En curso</span>{% endif %}</td><td class="hide-sm ac-muted">{{ s.ip_address|default:"—" }}</td></tr>
+      {% empty %}<tr><td colspan="4" class="ac-empty">Sin conexiones registradas.</td></tr>{% endfor %}</tbody></table></div>
+  </section>
+</div>
+{% endblock %}

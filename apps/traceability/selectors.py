@@ -6,7 +6,9 @@ from .services import risk_level
 
 def risk_rows(queryset):
     rows = []
-    for risk in queryset.prefetch_related("assessments", "processes", "treatments").select_related(
+    for risk in queryset.prefetch_related(
+        "assessments", "processes", "treatments__control", "treatments__responsible"
+    ).select_related(
         "owner", "owner_position"
     ):
         assessments = list(risk.assessments.all())

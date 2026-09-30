@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load static avatars %}
+{% block title %}Mi perfil | SGSI<script>document.addEventListener("change", (e) => { if (e.target.matches("[data-autosubmit]") && e.target.files.length) e.target.form.submit(); });</script>
+{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/access.css' %}">{% endblock %}
+{% block content %}
+<div class="ac">
+  <header class="ac-head ac-person" style="gap:16px">
+    {% avatar u "xl" %}
+    <div><h1>{{ u.get_full_name|default:u.username }}</h1>
+      <p style="margin-top:2px">{% if assignment %}{{ assignment.position.title }}{% if assignment.position.area %}, {{ assignment.position.area.name }}{% endif %}{% else %}{{ u.position|default:"Sin puesto en el organigrama" }}{% endif %}</p></div>
+  </header>
+
+  <form class="ac-panel ac-photo" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="ac-row" style="gap:16px">
+      {% avatar u "lg" %}
+      <div style="flex:1;min-width:220px"><h2>Foto de perfil</h2><p style="margin:2px 0 0">JPG, PNG o WebP de hasta 5 MB. Se recorta en cuadrado. Sin foto se muestran sus iniciales.</p></div>
+      <label class="ac-btn">Elegir foto<input type="file" name="photo" accept="image/jpeg,image/png,image/webp" hidden data-autosubmit></label>
+      {% if u.photo %}<button class="ac-btn is-danger" name="action" value="remove_photo">Quitar foto</button>{% endif %}
+    </div>
+  </form>
+
+  <div class="ac-grid">
+    <section class="ac-panel">
+      <h2>Datos</h2>
+      <dl class="ac-facts" style="margin-top:12px">
+        <div><dt>Usuario</dt><dd>{{ u.username }}</dd></div>
+        <div><dt>Correo</dt><dd>{{ u.email|default:"—" }}</dd></div>
+        <div><dt>Código de colaborador</dt><dd>{{ u.business_code }}</dd></div>
+        <div><dt>Área</dt><dd>{% if assignment and assignment.position.area %}{{ assignment.position.area.name }}{% else %}{{ u.area|default:"—" }}{% endif %}</dd></div>
+        <div><dt>Ingreso a la empresa</dt><dd>{{ u.employment_start|date:"d/m/Y"|default:"—" }}</dd></div>
+        <div><dt>Roles</dt><dd>{% for r in roles %}<span class="ac-role{% if r.name == 'Administrador SGSI' %} is-admin{% endif %}">{{ r.name }}</span>{% empty %}Sin rol{% endfor %}</dd></div>
+      </dl>
+    </section>
+    <section class="ac-panel">
+      <h2>Contraseña y conexión</h2>
+      <dl class="ac-facts" style="margin-top:12px">
+        <div><dt>Contraseña</dt><dd>{% if u.password_changed_at %}Cambiada el {{ u.password_changed_at|date:"d/m/Y" }}{% else %}Temporal{% endif %}</dd></div>
+        <div><dt>Conectado últimos 7 días</dt><dd>{{ time_7 }}</dd></div>
+        <div><dt>Conectado últimos 30 días</dt><dd>{{ time_30 }}</dd></div>
+      </dl>
+      <div class="ac-row" style="margin-top:16px">
+        {% if can_change %}<a class="ac-btn" href="{% url 'accounts:password_change' %}">Cambiar contraseña</a>
+        {% elif pending %}<span class="ac-state warn">Solicitud de cambio pendiente</span>
+        {% else %}<a class="ac-btn" href="{% url 'accounts:password_change' %}">Solicitar cambio de contraseña</a>{% endif %}
+      </div>
+    </section>
+  </div>
+
+  <section class="ac-panel">
+    <h2>Qué puede hacer en el sistema</h2>
+    <p>Según sus roles y los permisos que le asignaron. Si necesita más acceso, pídalo al Oficial de Seguridad de la Información.</p>
+    <div class="ac-table-wrap"><table class="ac-table">
+      <thead><tr><th>Módulo</th><th>Ver</th><th>Editar</th></tr></thead>
+      <tbody>{% for m in modules %}<tr><td>{{ m.label }}</td><td class="ac-state {% if m.view %}on{% else %}off{% endif %}">{% if m.view %}Sí{% else %}No{% endif %}</td><td class="ac-state {% if m.edit %}on{% else %}off{% endif %}">{% if m.edit %}Sí{% else %}No{% endif %}</td></tr>{% endfor %}</tbody>
+    </table></div>
+  </section>
+
+  <section class="ac-panel">
+    <h2>Sus últimas conexiones</h2>
+    <div class="ac-table-wrap"><table class="ac-table">
+      <thead><tr><th>Inicio</th><th>Duración</th><th>Cierre</th><th class="hide-sm">Dirección IP</th></tr></thead>
+      <tbody>{% for s in sessions %}<tr><td>{{ s.started_at|date:"d/m/Y H:i" }}</td><td>{{ s.duration_text }}</td>
+        <td>{% if s.ended_at %}{{ s.get_ended_reason_display }}{% else %}<span class="ac-state on">En curso</span>{% endif %}</td><td class="hide-sm ac-muted">{{ s.ip_address|default:"—" }}</td></tr>
+      {% empty %}<tr><td colspan="4" class="ac-empty">Todavía no hay conexiones registradas.</td></tr>{% endfor %}</tbody>
+    </table></div>
+  </section>
+</div>
+{% endblock %}

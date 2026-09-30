@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Revisión por la Dirección | SGSI{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/governance.css' %}">{% endblock %}
+{% block content %}
+<div class="ac">
+  <header class="ac-head"><h1>Revisión por la Dirección</h1>
+    <p>La Dirección revisa el SGSI a intervalos planificados (ISO/IEC 27001, 9.3). El sistema arma las entradas con los datos reales y registra las decisiones con su responsable y plazo.</p></header>
+
+  {% if can_edit %}
+  <form method="post" action="{% url 'governance:review_create' %}" class="ac-panel">
+    {% csrf_token %}
+    <h2>Preparar una revisión</h2>
+    <p>Se tomarán los datos actuales de indicadores, objetivos, riesgos, incidentes, auditorías y medidas correctivas.</p>
+    <div class="ac-row" style="align-items:flex-end">
+      <div class="ac-field" style="flex:2"><label for="t">Título</label><input id="t" name="title" placeholder="Revisión por la Dirección {{ today.year }}"></div>
+      <div class="ac-field"><label for="d">Fecha de la revisión</label><input id="d" type="date" name="review_date" value="{{ today|date:'Y-m-d' }}"></div>
+      <div class="ac-field"><label for="pf">Periodo desde</label><input id="pf" type="date" name="period_from"></div>
+      <div class="ac-field"><label for="pt">hasta</label><input id="pt" type="date" name="period_to"></div>
+    </div>
+    <button class="ac-btn is-primary" type="submit">Preparar revisión</button>
+  </form>
+  {% endif %}
+
+  <div class="ac-table-wrap"><table class="ac-table">
+    <thead><tr><th>Código</th><th>Revisión</th><th>Fecha</th><th>Decisiones</th><th>Estado</th></tr></thead>
+    <tbody>{% for r in reviews %}<tr>
+      <td><a class="gv-link" href="{% url 'governance:review_detail' r.pk %}">{{ r.code }}</a></td><td>{{ r.title }}</td><td>{{ r.review_date|date:"d/m/Y" }}</td>
+      <td>{{ r.decisions.all|length }}</td>
+      <td>{% if r.status == "approved" %}<span class="ac-state on">Aprobada el {{ r.approved_at|date:"d/m/Y" }}</span>{% else %}<span class="ac-state warn">En preparación</span>{% endif %}</td></tr>
+    {% empty %}<tr><td colspan="5" class="ac-empty">Todavía no hay revisiones registradas.{% if can_edit %} Prepare la primera con el formulario de arriba.{% endif %}</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+{% endblock %}

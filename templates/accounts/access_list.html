@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load static avatars %}
+{% block title %}Accesos y permisos | SGSI{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/access.css' %}">{% endblock %}
+{% block content %}
+<div class="ac">
+  <header class="ac-head"><h1>Accesos y permisos</h1>
+    <p>Quién puede ingresar al sistema, con qué rol y qué puede editar. Marque personas para generar sus credenciales: el sistema crea el usuario y una contraseña temporal que cambiarán al ingresar.</p></header>
+
+  <dl class="ac-facts ac-panel">
+    <div><dt>Personas</dt><dd>{{ stats.total }}</dd></div>
+    <div><dt>Con acceso activo</dt><dd>{{ stats.active }}</dd></div>
+    <div><dt>Activas sin credenciales</dt><dd>{{ stats.without_credentials }}</dd></div>
+    <div><dt>Conectadas ahora</dt><dd>{{ stats.online }}</dd></div>
+  </dl>
+
+  {% if requests %}
+  <section class="ac-panel" id="solicitudes">
+    <h2>Solicitudes de cambio de contraseña</h2>
+    <p>Si la aprueba, el sistema genera una contraseña temporal que usted entrega a la persona.</p>
+    <div class="ac-table-wrap"><table class="ac-table"><thead><tr><th>Persona</th><th>Motivo</th><th>Enviada</th><th></th></tr></thead><tbody>
+    {% for r in requests %}<tr><td>{{ r.user.get_full_name|default:r.user.username }}</td><td>{{ r.reason }}</td><td class="ac-muted">{{ r.created_at|date:"d/m/Y H:i" }}</td>
+      <td><form method="post" action="{% url 'accounts:password_request_resolve' r.pk %}" class="ac-row" style="justify-content:flex-end">{% csrf_token %}
+        <input name="note" placeholder="Nota (opcional)" style="padding:6px 8px;border:1px solid var(--hair-strong);border-radius:6px;font:inherit;font-size:12.5px;width:160px">
+        <button class="ac-btn is-small is-primary" name="decision" value="approve">Aprobar</button><button class="ac-btn is-small is-danger" name="decision" value="reject">Rechazar</button></form></td></tr>{% endfor %}
+    </tbody></table></div>
+  </section>
+  {% endif %}
+
+  <form method="get" class="ac-row"><input type="search" name="q" value="{{ q }}" placeholder="Buscar por nombre, usuario, correo o puesto" aria-label="Buscar" style="flex:1;max-width:420px;padding:9px 11px;border:1px solid var(--hair-strong);border-radius:6px;font:inherit;background:var(--surface);color:var(--text)"><button class="ac-btn" type="submit">Buscar</button></form>
+
+  <form method="post" action="{% url 'accounts:access_bulk' %}" data-bulk>
+    {% csrf_token %}
+    <div class="ac-row" style="margin-bottom:10px">
+      <span class="ac-muted" data-selected>Ninguna persona marcada</span>
+      <button class="ac-btn is-primary is-small" name="action" value="credentials" data-needs-selection disabled>Generar credenciales</button>
+      <button class="ac-btn is-small" name="action" value="activate" data-needs-selection disabled>Activar acceso</button>
+      <button class="ac-btn is-small is-danger" name="action" value="deactivate" data-needs-selection disabled>Desactivar acceso</button>
+    </div>
+    <div class="ac-table-wrap"><table class="ac-table">
+      <thead><tr><th style="width:34px"><input type="checkbox" data-check-all aria-label="Marcar todas"></th><th>Persona</th><th>Roles</th><th class="hide-sm">Acceso</th><th class="hide-sm">Conexión</th><th class="hide-sm">Últimos 30 días</th><th></th></tr></thead>
+      <tbody>{% for r in rows %}<tr>
+        <td><input type="checkbox" name="users" value="{{ r.u.pk }}" aria-label="Marcar a {{ r.u.get_full_name|default:r.u.username }}"></td>
+        <td><span class="ac-person"><span class="ac-presence{% if r.online %} is-on{% endif %}">{% avatar r.u %}</span><span><b>{{ r.u.get_full_name|default:r.u.username }}</b><small>{{ r.u.username }}{% if r.u.position %}, {{ r.u.position }}{% endif %}</small></span></span></td>
+        <td>{% for role in r.roles %}<span class="ac-role{% if role == admin_role %} is-admin{% endif %}">{{ role }}</span>{% empty %}<span class="ac-muted">Sin rol</span>{% endfor %}</td>
+        <td class="hide-sm">{% if not r.u.is_active %}<span class="ac-state off">Sin acceso</span>{% elif not r.has_password %}<span class="ac-state warn">Sin credenciales</span>{% elif r.u.must_change_password %}<span class="ac-state warn">Contraseña temporal</span>{% else %}<span class="ac-state on">Activo</span>{% endif %}</td>
+        <td class="hide-sm">{% if r.online %}<span class="ac-state on">Conectado</span>{% elif r.u.last_seen_at %}<span class="ac-muted">{{ r.u.last_seen_at|date:"d/m/Y H:i" }}</span>{% else %}<span class="ac-muted">Nunca</span>{% endif %}</td>
+        <td class="hide-sm ac-muted">{{ r.time_30 }}</td>
+        <td style="text-align:right"><a class="ac-btn is-small" href="{% url 'accounts:access_user' r.u.pk %}">Permisos</a></td></tr>
+      {% empty %}<tr><td colspan="7" class="ac-empty">No hay personas con ese criterio.</td></tr>{% endfor %}</tbody>
+    </table></div>
+  </form>
+</div>
+<script>
+(() => {
+  const form = document.querySelector("[data-bulk]"); if (!form) return;
+  const boxes = () => [...form.querySelectorAll('input[name="users"]')];
+  const update = () => {
+    const n = boxes().filter((b) => b.checked).length;
+    form.querySelector("[data-selected]").textContent = n ? `${n} persona${n > 1 ? "s" : ""} marcada${n > 1 ? "s" : ""}` : "Ninguna persona marcada";
+    form.querySelectorAll("[data-needs-selection]").forEach((b) => { b.disabled = !n; });
+  };
+  form.addEventListener("change", (e) => { if (e.target.matches("[data-check-all]")) boxes().forEach((b) => { b.checked = e.target.checked; }); update(); });
+  form.addEventListener("submit", (e) => {
+    const action = e.submitter?.value;
+    const n = boxes().filter((b) => b.checked).length;
+    if (action === "credentials" && !confirm(`Se generarán credenciales nuevas para ${n} persona(s). Si ya tenían contraseña, dejará de funcionar. ¿Continuar?`)) e.preventDefault();
+    if (action === "deactivate" && !confirm(`${n} persona(s) ya no podrán ingresar. ¿Continuar?`)) e.preventDefault();
+  });
+})();
+</script>
+{% endblock %}

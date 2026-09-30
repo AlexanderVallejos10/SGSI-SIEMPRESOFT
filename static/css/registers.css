@@ -1,0 +1,160 @@
+/* Registros del SGSI: la información de los Excel, en pantallas propias del sistema. */
+.rg-desc{margin:6px 0 0;max-width:90ch;font-size:13px;line-height:1.55;color:var(--muted)}
+.rg-head-actions{display:flex;gap:8px;flex-wrap:wrap}
+.rg-head-actions .ico{width:16px;height:16px}
+.breadcrumb a{color:inherit;text-decoration:none}
+.breadcrumb a:hover{text-decoration:underline}
+
+/* Años */
+.rg-years{display:flex;align-items:center;gap:6px;margin:0 0 12px}
+.rg-years a{padding:6px 14px;border:1px solid var(--line);border-radius:18px;background:var(--surface);color:var(--text);font-size:13px;font-weight:600;text-decoration:none;font-variant-numeric:tabular-nums;transition:border-color .15s,background .15s}
+.rg-years a:hover{border-color:light-dark(color-mix(in srgb,var(--accent) 24%,#fff),#4d6680)}
+.rg-years a.is-active{background:var(--brand-ink,#3a3f45);border-color:var(--brand-ink,#3a3f45);color:light-dark(#fff,#15191d)}
+.rg-newyear{display:flex;gap:4px;margin-left:6px}
+.rg-newyear input{width:96px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--text);font:inherit;font-size:12.5px}
+.rg-newyear button{padding:5px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--text);font:inherit;font-size:12.5px;cursor:pointer}
+
+/* Indicadores */
+.rg-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) minmax(0,1.4fr);gap:10px;margin-bottom:12px}
+.rg-kpi{display:grid;align-content:start;gap:2px;padding:12px 16px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.rg-kpi b{font-size:26px;font-weight:600;line-height:1.1;color:var(--ink);font-variant-numeric:tabular-nums}
+.rg-kpi b.is-bump{animation:rg-bump .4s ease-out}
+@keyframes rg-bump{40%{transform:scale(1.12);color:#5DAA3C}}
+.rg-kpi span{font-size:12.5px;color:var(--muted)}
+.rg-kpi small{font-size:12px;color:var(--muted)}
+.rg-kpi-progress{align-content:center;gap:6px}
+.rg-kpi-progress .nm-progress-bar i{width:var(--p);animation:none;transition:width .5s cubic-bezier(.2,.7,.2,1)}
+.rg-kpi-progress small b{font-size:15px}
+
+/* Temas por mes */
+.rg-heat{display:grid;grid-template-columns:repeat(12,1fr);gap:6px;margin-bottom:12px;padding:12px 14px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.rg-heat-col{display:grid;justify-items:center;gap:3px}
+.rg-heat-col i{display:block;width:100%;max-width:34px;height:46px;border-radius:4px;background:linear-gradient(to top,#5DAA3C var(--p),light-dark(#eef1f3,#1e252b) var(--p));transition:background .4s}
+.rg-heat-col b{font-size:12.5px;color:var(--ink);font-variant-numeric:tabular-nums}
+.rg-heat-col span{font-size:11px;color:var(--muted)}
+.rg-heat-col.is-now span{color:#D9731F;font-weight:700}
+
+/* Barra de herramientas */
+.rg-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:10px}
+.rg-tabs{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.rg-tabs button{padding:6px 14px;border:0;border-radius:6px;background:none;color:var(--muted);font:inherit;font-size:13px;cursor:pointer}
+.rg-tabs button span{margin-left:4px;font-size:11.5px}
+.rg-tabs button.is-active{background:light-dark(#eef1f4,#232a31);color:var(--ink);font-weight:600}
+.rg-search{width:240px;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--text);font:inherit;font-size:13px}
+
+/* Tabla */
+.rg-sheet{border:1px solid var(--line);border-radius:8px;background:var(--surface);overflow:hidden;animation:page-in .25s ease-out}
+.rg-scroll{overflow-x:auto}
+.rg-table{width:100%;border-collapse:collapse;font-size:13px}
+.rg-table thead th{position:sticky;top:0;z-index:1;padding:9px 10px;text-align:left;font-size:12px;font-weight:600;color:var(--ink);background:light-dark(#f6f7f8,#1a2025);border-bottom:1px solid var(--line);white-space:nowrap}
+.rg-table td{padding:7px 10px;border-bottom:1px solid light-dark(#eef1f3,#232a30);vertical-align:middle;color:var(--text)}
+.rg-row{transition:background .2s,opacity .2s}
+.rg-row:hover td{background:light-dark(#fafbfc,#181d22)}
+.rg-row.is-saving{opacity:.55}
+.rg-row.is-saved td{animation:rg-saved 1s ease-out}
+.rg-row.is-error td{animation:rg-error 1.2s ease-out}
+.rg-row.is-new td{animation:rg-saved 1.2s ease-out}
+.rg-row.is-leaving{opacity:0}
+@keyframes rg-saved{0%{background:light-dark(#e3f2da,#1f3322)}100%{background:transparent}}
+@keyframes rg-error{0%{background:light-dark(#fbe3dd,#3a1f1a)}100%{background:transparent}}
+.rg-group th{padding:10px 12px 6px;text-align:left;background:light-dark(#fbfbfc,#161b20);border-bottom:1px solid var(--line)}
+.rg-group span{font-size:13px;font-weight:700;color:var(--ink)}
+.rg-group small{margin-left:6px;padding:0 6px;border-radius:8px;background:light-dark(#eef1f4,#232a31);font-size:11px;color:var(--muted)}
+.rg-add-in{float:right;padding:2px 8px;border:0;border-radius:5px;background:none;color:light-dark(var(--accent),color-mix(in srgb,var(--accent) 62%,#fff));font:inherit;font-size:12px;cursor:pointer}
+.rg-add-in:hover{background:light-dark(#eef4fa,#1c2835)}
+.rg-empty{padding:28px !important;text-align:center;color:var(--muted)}
+.rg-nowrap{white-space:nowrap}
+.rg-num{width:56px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+.rg-group-row td{background:light-dark(#f6f7f8,#1a2025);font-weight:600;color:var(--ink)}
+.rg-act{width:36px;text-align:right}
+.rg-del{display:grid;place-items:center;width:26px;height:26px;border:0;border-radius:6px;background:none;color:var(--muted);cursor:pointer;opacity:0;transition:opacity .15s,background .15s,color .15s}
+.rg-row:hover .rg-del,.rg-del:focus-visible{opacity:1}
+.rg-del:hover{background:light-dark(#fbe3dd,#3a1f1a);color:light-dark(#a8432b,#f08c74)}
+.rg-del .ico{width:15px;height:15px}
+
+/* Celda editable */
+.rg-cell{display:block;min-height:20px;padding:2px 4px;margin:-2px -4px;border-radius:4px;line-height:1.45;cursor:default}
+.rg-cell[tabindex]{cursor:text}
+.rg-cell[tabindex]:hover{background:light-dark(#f1f5f9,#1f262e);box-shadow:inset 0 -1px 0 light-dark(color-mix(in srgb,var(--accent) 24%,#fff),#4d6680)}
+.rg-cell[tabindex]:focus-visible{outline:2px solid #5DAA3C;outline-offset:1px}
+.rg-strong{font-weight:600;color:var(--ink)}
+.rg-input{width:100%;min-width:140px;padding:5px 7px;border:1px solid #5DAA3C;border-radius:5px;background:var(--surface);color:var(--text);font:inherit;font-size:13px;box-shadow:0 0 0 3px light-dark(rgba(93,170,60,.15),rgba(93,170,60,.25));resize:vertical}
+
+/* Plan: meses como línea de tiempo */
+.rg-timeline .rg-topic{min-width:280px}
+.rg-month-head{width:38px;text-align:center !important;font-weight:500 !important;color:var(--muted) !important}
+.rg-month-head.is-now{color:#D9731F !important;font-weight:700 !important}
+.rg-month-cell{padding:4px 2px !important;text-align:center}
+.rg-month-cell.is-now{background:light-dark(rgba(217,115,31,.05),rgba(217,115,31,.08))}
+.rg-m{width:22px;height:22px;border:1.5px solid light-dark(#d5dde5,#3a444d);border-radius:50%;background:var(--surface);cursor:pointer;transition:transform .15s,background .15s,border-color .15s}
+.rg-m:hover:not(:disabled){transform:scale(1.12);border-color:#5DAA3C}
+.rg-m.is-on{background:#5DAA3C;border-color:#5DAA3C;box-shadow:inset 0 0 0 3px var(--surface)}
+.rg-m:disabled{cursor:default}
+.rg-meta{white-space:nowrap}
+.rg-select{max-width:180px;padding:4px 6px;border:1px solid transparent;border-radius:5px;background:none;color:var(--text);font:inherit;font-size:12.5px;cursor:pointer}
+.rg-select:hover:not(:disabled){border-color:var(--line)}
+
+/* Estado como píldora */
+.rg-pill{appearance:none;padding:3px 12px;border:0;border-radius:12px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;text-align:center}
+.rg-pill:disabled{cursor:default;opacity:1}
+.rg-pill.st-ok{background:light-dark(#eaf5ee,#16281c);color:light-dark(#2e6b3f,#8fd19e)}
+.rg-pill.st-plan{background:light-dark(#eef4fa,#1a2633);color:light-dark(var(--accent),#8fbbe6)}
+.rg-pill.st-warn{background:light-dark(#fbf3e4,#2c2415);color:light-dark(#8a5a14,#e8b86a)}
+.rg-pill.st-off{background:light-dark(#f1f2f4,#22272c);color:var(--muted)}
+.rg-pill.st-bad{background:light-dark(#fbe3dd,#3a1f1a);color:light-dark(#a8432b,#f08c74)}
+
+/* OSE: ¿cumple? segmentado */
+.rg-seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.rg-seg button{min-width:34px;padding:4px 8px;border:0;border-left:1px solid var(--line);background:var(--surface);color:var(--muted);font:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:background .15s,color .15s}
+.rg-seg button:first-child{border-left:0}
+.rg-seg button.is-ok{background:#5DAA3C;color:#fff}
+.rg-seg button.is-bad{background:#c2553b;color:#fff}
+.rg-seg button.is-plan{background:light-dark(#eef4fa,#1a2633);color:light-dark(var(--accent),#8fbbe6)}
+.rg-checklist td:nth-child(2){min-width:340px}
+
+/* Agregar */
+.rg-addbar{display:flex;gap:8px;align-items:center;padding:10px 12px;border-top:1px solid var(--line);background:light-dark(#fbfbfc,#161b20)}
+.rg-addbar input{flex:0 1 280px;padding:6px 9px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--text);font:inherit;font-size:13px}
+
+/* Importar */
+.rg-dialog{width:min(520px,92vw);padding:0;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--text);box-shadow:0 20px 50px rgba(0,0,0,.25)}
+.rg-dialog::backdrop{background:rgba(20,34,48,.4)}
+.rg-dialog[open]{animation:page-in .2s ease-out}
+.rg-dialog header,.rg-dialog footer{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.rg-dialog footer{justify-content:flex-end;border-top:1px solid var(--line);border-bottom:0}
+.rg-dialog header button{display:grid;place-items:center;width:30px;height:30px;border:0;border-radius:6px;background:none;color:var(--text);cursor:pointer}
+.rg-dialog-body{display:grid;gap:12px;padding:14px 16px;font-size:13px}
+.rg-dialog-body p{margin:0;color:var(--muted);line-height:1.5}
+.rg-field{display:grid;gap:4px;font-size:12.5px;font-weight:600;border:0;padding:0;margin:0}
+.rg-field legend{margin-bottom:4px}
+.rg-field input[type=number]{padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--text);font:inherit;width:120px}
+.rg-field small{font-weight:400;color:var(--muted)}
+.rg-field label{display:flex;gap:6px;align-items:center;font-weight:400}
+.rg-template{font-size:12.5px;color:light-dark(var(--accent),color-mix(in srgb,var(--accent) 62%,#fff))}
+
+/* Índice */
+.rg-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.rg-card{display:grid;gap:6px;padding:16px 18px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--text);text-decoration:none;transition:border-color .15s,box-shadow .2s,transform .2s}
+.rg-card:hover{border-color:light-dark(color-mix(in srgb,var(--accent) 24%,#fff),#4d6680);box-shadow:0 6px 18px light-dark(rgba(20,34,48,.08),rgba(0,0,0,.4));transform:translateY(-1px)}
+.rg-card-tag{justify-self:start;padding:1px 8px;border-radius:10px;background:light-dark(#eef4ec,#1b2a1d);color:light-dark(#3f7f33,#8fd19e);font-size:11.5px;font-weight:600}
+.rg-card h2{margin:0;font-size:15.5px;color:var(--ink)}
+.rg-card p{margin:0;font-size:12.5px;line-height:1.5;color:var(--muted)}
+.rg-card footer{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px;padding-top:8px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+.rg-card footer b{color:var(--ink)}
+@media (max-width:1000px){.rg-kpis{grid-template-columns:repeat(2,1fr)}.rg-heat{grid-template-columns:repeat(6,1fr)}}
+@media (prefers-reduced-motion:reduce){.rg-row,.rg-m,.rg-card{transition:none}.rg-row.is-saved td,.rg-row.is-new td,.rg-kpi b.is-bump{animation:none}}
+
+/* Meses dentro de una tabla (registro de claves) */
+.rg-mini-months{display:flex;gap:3px}
+.rg-mini-months .rg-m{display:grid;place-items:center;width:20px;height:20px}
+.rg-mini-months .rg-m span{font-size:9.5px;font-weight:600;color:var(--muted);line-height:1}
+.rg-mini-months .rg-m.is-on span{color:#fff}
+.rg-mini-months .rg-m.is-on{box-shadow:none}
+.rg-table td .rg-cell{white-space:pre-line}
+
+/* Índice agrupado */
+.rg-group-block{margin-bottom:18px}
+.rg-group-title{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:14px;color:var(--ink)}
+.rg-group-title small{padding:0 7px;border-radius:9px;background:light-dark(#eef1f4,#232a31);font-size:11px;color:var(--muted)}
+.rg-card h3{margin:0;font-size:15px;color:var(--ink)}
+.rg-count{font-size:12.5px;color:var(--muted)}

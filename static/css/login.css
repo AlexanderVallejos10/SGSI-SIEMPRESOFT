@@ -1,0 +1,46 @@
+/* Pantalla de ingreso (v28): composición de la v26 con movimiento de GSAP */
+body.lg{margin:0;min-height:100vh;display:grid;grid-template-columns:minmax(0,1.08fr) minmax(380px,.92fr);background:var(--bg);overflow-x:hidden}
+.lg-side{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;gap:28px;padding:44px 56px;border-right:1px solid var(--hair);background:var(--surface);isolation:isolate}
+.lg-stripe{position:absolute;inset:0 0 auto 0;height:4px;background:linear-gradient(90deg,#D9731F 0 33.3%,#E8C530 33.3% 66.6%,#5DAA3C 66.6%);transform-origin:left center}
+/* Isotipo grande de fondo */
+.lg-bg{position:absolute;z-index:-1;right:-9%;bottom:4%;width:min(62%,560px);height:auto;opacity:.17;pointer-events:none;overflow:visible}
+:root[data-theme="dark"] .lg-bg{opacity:.24}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .lg-bg{opacity:.24}}
+.lg-bg-line{fill:none;stroke:var(--muted);stroke-width:1.2;stroke-linecap:round}
+.lg-bg [data-bg-disc]{transform-box:fill-box;transform-origin:center}
+.lg-logo{width:190px;height:auto}
+.lg-logo.dark{display:none}
+:root[data-theme="dark"] .lg-logo.light{display:none}:root[data-theme="dark"] .lg-logo.dark{display:block}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .lg-logo.light{display:none}:root:not([data-theme="light"]) .lg-logo.dark{display:block}}
+.lg-title{max-width:15ch;margin:0;font-size:clamp(36px,4.4vw,62px);line-height:1.02;letter-spacing:-.035em;font-weight:700;color:var(--ink)}
+.lg-title .word{display:inline-block;will-change:transform}
+.lg-sub{max-width:46ch;margin:20px 0 0;font-size:15.5px;line-height:1.6;color:var(--muted)}
+.lg-class{display:grid;grid-template-columns:auto 1fr;gap:4px 18px;max-width:460px;margin:0;padding-top:18px;border-top:1px solid var(--hair);font-size:13px}
+.lg-class dt{color:var(--muted)}.lg-class dd{margin:0;color:var(--ink);font-weight:600}
+/* Formulario */
+.lg-main{display:flex;align-items:center;justify-content:center;padding:40px 28px}
+.lg-form{width:100%;max-width:360px}
+.lg-form,.lg-form *{box-sizing:border-box}
+.lg-form h2{margin:0;font-size:24px;letter-spacing:-.015em;color:var(--ink)}
+.lg-form>p{margin:6px 0 24px;color:var(--muted);font-size:14px;line-height:1.5}
+.lg-mark{position:relative;width:110px;height:74px;margin:0 0 18px -6px}
+.lg-mark svg,.lg-lottie{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.lg-lottie{display:none}
+.lg-mark.has-lottie .lg-lottie{display:block}.lg-mark.has-lottie .lg-discs{display:none}
+.lg-line{fill:none;stroke:var(--muted);stroke-opacity:.6;stroke-width:1.7;stroke-linecap:round}
+.lg-disc{transform-box:fill-box;transform-origin:center bottom}
+.lg-pass{position:relative}
+.lg-pass input{padding-right:78px!important}
+.lg-toggle{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--muted);font:600 12.5px var(--f-sans);cursor:pointer;padding:6px 8px;border-radius:4px}
+.lg-toggle:hover{color:var(--ink);background:var(--hover)}
+.lg-submit-wrap{margin-top:8px}
+.lg-submit{width:100%;padding:12px 16px;font-size:14.5px;will-change:transform}
+.lg-submit span{display:inline-block;pointer-events:none}
+.lg-help{margin-top:22px;font-size:13px;color:var(--muted);line-height:1.5}
+.lg-caps{display:none;margin-top:6px;font-size:12px;color:light-dark(#9a6414,#e8b86a)}
+.lg-caps.is-on{display:block}
+/* Estado inicial de la entrada (solo con JavaScript activo; si algo falla la página sigue visible) */
+.js-motion [data-in],.js-motion [data-in-form],.js-motion .lg-title{visibility:hidden}
+.js-motion.motion-ready [data-in],.js-motion.motion-ready [data-in-form],.js-motion.motion-ready .lg-title{visibility:visible}
+@media (max-width:860px){body.lg{grid-template-columns:1fr}.lg-side{padding:28px 24px;gap:20px;border-right:0;border-bottom:1px solid var(--hair)}.lg-title{font-size:34px}.lg-class{display:none}.lg-bg{width:70%;right:-18%;bottom:-10%}}
+@media (prefers-reduced-motion:reduce){.js-motion [data-in],.js-motion [data-in-form],.js-motion .lg-title{visibility:visible}}

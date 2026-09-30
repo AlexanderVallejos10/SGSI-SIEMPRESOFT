@@ -10,6 +10,8 @@ Organización | SIEMPRESOFT
     rel="stylesheet"
     href="{% static 'css/organization.css' %}"
 >
+<link rel="stylesheet" href="{% static 'css/organization_refresh.css' %}">
+<link rel="stylesheet" href="{% static 'css/org_chart.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -96,121 +98,66 @@ Organización | SIEMPRESOFT
 </div>
 {% endif %}
 
-<section class="org-toolbar">
-
-    <div class="org-legend">
-
-        <span>
-            <i class="legend-line">
-            </i>
-            Jerarquía
-        </span>
-
-        <span>
-            <i class="legend-assistant">
-            </i>
-            Asistente / staff
-        </span>
-
-        <span>
-            <i class="legend-vacant">
-            </i>
-            Vacante
-        </span>
-
-    </div>
-
-    <div class="zoom-controls">
-
-        <button
-            type="button"
-            data-zoom-out
-        >
-            −
-        </button>
-
-        <span data-zoom-label>
-            100%
-        </span>
-
-        <button
-            type="button"
-            data-zoom-in
-        >
-            +
-        </button>
-
-        <button
-            type="button"
-            data-zoom-reset
-        >
-            Centrar
-        </button>
-
-    </div>
-
-</section>
-
-<section class="org-canvas">
-
-    {% if roots %}
-
-    <div
-        class="org-tree-stage"
-        data-org-stage
-    >
-
-        <div class="org-tree">
-
-            <ul>
-
-                {% for node in roots %}
-
-                {% include "organization/_node.html" with node=node %}
-
-                {% endfor %}
-
-            </ul>
-
+<section class="oc" data-oc>
+    <div class="oc-viewport" data-oc-viewport tabindex="0" aria-label="Organigrama. Arrastre para moverse, use la rueda para acercar y haga clic en un puesto para ver su trazabilidad.">
+        {% if roots %}
+        <div class="oc-stage" data-oc-stage>
+            <div class="org-tree">
+                <ul>
+                    {% for node in roots %}
+                    {% include "organization/_node.html" with node=node %}
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
-
-    </div>
-
-    {% else %}
-
-    <div class="organization-empty">
-
-        <h2>
-            Todavía no hay puestos
-        </h2>
-
-        <p>
-            Cree el primer puesto raíz o
-            ejecute la carga inicial del
-            organigrama.
-        </p>
-
-        {% if can_change %}
-
-        <a
-            class="primary-btn"
-            href="{% url 'organization:position_create' %}"
-        >
-            Crear primer puesto
-        </a>
-
+        {% else %}
+        <div class="organization-empty">
+            <h2>Todavía no hay puestos</h2>
+            <p>Cree el primer puesto raíz o ejecute la carga inicial del organigrama.</p>
+            {% if can_change %}<a class="primary-btn" href="{% url 'organization:position_create' %}">Crear primer puesto</a>{% endif %}
+        </div>
         {% endif %}
-
     </div>
 
-    {% endif %}
+    <div class="oc-search">
+        <svg class="ico"><use href="#i-search"></use></svg>
+        <input type="search" placeholder="Buscar puesto o persona" data-oc-search aria-label="Buscar puesto o persona">
+        <select data-oc-area aria-label="Filtrar por área">
+            <option value="">Todas las áreas</option>
+            {% for area in areas %}<option value="{{ area.pk }}">{{ area.name }}</option>{% endfor %}
+        </select>
+        <span class="oc-result" data-oc-result></span>
+    </div>
 
+    <div class="oc-legend">
+        <span><i class="lg-line"></i>Jerarquía</span>
+        <span><i class="lg-staff"></i>Asistente / staff</span>
+        <span><i class="lg-vacant"></i>Vacante</span>
+    </div>
+
+    <div class="oc-controls" role="toolbar" aria-label="Vista del organigrama">
+        <button type="button" data-oc-zoom="-1" title="Alejar (−)"><svg class="ico"><use href="#i-minus"></use></svg></button>
+        <span class="oc-pct" data-oc-pct>100%</span>
+        <button type="button" data-oc-zoom="1" title="Acercar (+)"><svg class="ico"><use href="#i-plus"></use></svg></button>
+        <span class="oc-sep"></span>
+        <button type="button" data-oc-fit title="Encuadrar todo (0)"><svg class="ico"><use href="#i-fit"></use></svg></button>
+        <button type="button" data-oc-expand title="Expandir todas las ramas"><svg class="ico"><use href="#i-expand"></use></svg></button>
+    </div>
+
+    <p class="oc-hint">Rueda para acercar · Arrastre para moverse · Doble clic para encuadrar · Clic en un puesto para ver su trazabilidad</p>
+
+    <aside class="oc-panel" data-oc-panel aria-live="polite" hidden>
+        <header class="oc-panel-head">
+            <span>Trazabilidad del puesto</span>
+            <button type="button" data-oc-close title="Cerrar (Esc)"><svg class="ico"><use href="#i-close"></use></svg></button>
+        </header>
+        <div class="oc-panel-body" data-oc-body></div>
+    </aside>
 </section>
-
 {% endblock %}
 
 {% block extra_js %}
 <script
-    src="{% static 'js/organization.js' %}"
+    src="{% static 'js/org_chart.js' %}"
 ></script>
 {% endblock %}

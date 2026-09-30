@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Aceptación del riesgo residual | SGSI{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/governance.css' %}">{% endblock %}
+{% block content %}
+<div class="ac">
+  <header class="ac-head"><h1>Aceptación del riesgo residual</h1>
+    <p>Después del tratamiento, cada propietario acepta el riesgo que queda, o pide más tratamiento (ISO/IEC 27001 6.1.3 f). El nivel residual sale de la probabilidad y la consecuencia residuales del tratamiento, con la misma tabla de la metodología.</p></header>
+
+  <section class="ac-panel">
+    <h2>Quién acepta cada nivel</h2>
+    <p>Criterio propuesto. Debe confirmarse en la metodología de gestión de riesgos V0.10.</p>
+    <dl class="ac-facts">{% for level, rule in rules.items %}<div><dt><span class="gv-level lv-{{ level|slugify }}">{{ level }}</span></dt><dd>{{ rule.1 }}</dd></div>{% endfor %}</dl>
+  </section>
+
+  <nav class="gv-tabs" aria-label="Filtro">
+    <a href="?ver=pendientes" {% if show == "pendientes" %}aria-current="page"{% endif %}>Pendientes <b>{{ stats.pending }}</b></a>
+    <a href="?ver=todos" {% if show != "pendientes" %}aria-current="page"{% endif %}>Todos</a>
+  </nav>
+
+  <div class="gv-risks">
+  {% for row in rows %}
+    <article class="ac-panel gv-risk" id="{{ row.risk.code }}">
+      <header class="gv-risk-head">
+        <div><b class="gv-code">{{ row.risk.code }}</b> {{ row.risk.event|default:row.risk.scenario|truncatechars:160 }}
+          <small>{{ row.risk.process }}{% if row.risk.owner_position %}. Propietario: {{ row.risk.owner_position.title }}{% elif row.risk.owner %}. Propietario: {{ row.risk.owner.get_full_name }}{% endif %}</small></div>
+        <div class="gv-levels">
+          <span>Inherente <span class="gv-level lv-{{ row.inherent|slugify|default:'na' }}">{{ row.inherent|default:"Sin evaluar" }}</span></span>
+          <span>Residual <span class="gv-level lv-{{ row.residual|slugify|default:'na' }}">{{ row.residual|default:"Sin calcular" }}</span>{% if row.residual %} <small>P{{ row.residual_pc.0 }} × C{{ row.residual_pc.1 }}</small>{% endif %}</span>
+        </div>
+      </header>
+      {% if row.acceptance %}
+        <p class="gv-accepted {% if row.acceptance.decision == 'rejected' %}is-rejected{% endif %}"><b>{{ row.acceptance.get_decision_display }}</b> por {{ row.acceptance.decided_by.get_full_name|default:row.acceptance.decided_by.username }} el {{ row.acceptance.decided_at|date:"d/m/Y" }}. {{ row.acceptance.justification }}</p>
+      {% else %}
+        {% if row.outdated %}<p class="ac-state warn">La aceptación anterior venció: el nivel del riesgo cambió.</p>{% endif %}
+        {% if not row.residual %}<p class="ac-muted">Falta la probabilidad y la consecuencia residuales en el tratamiento. Sin ellas se decide sobre el nivel inherente.</p>{% endif %}
+        <form method="post" class="gv-accept">{% csrf_token %}<input type="hidden" name="risk" value="{{ row.risk.pk }}">
+          <div class="ac-field"><label for="j{{ row.risk.pk }}">Justificación</label><textarea id="j{{ row.risk.pk }}" name="justification" rows="2" required minlength="10" placeholder="Por qué el riesgo que queda es aceptable, o qué falta tratar."></textarea><small>{{ row.rule }}</small></div>
+          <div class="ac-row"><button class="ac-btn is-primary is-small" name="decision" value="accepted">Aceptar riesgo residual</button><button class="ac-btn is-small is-danger" name="decision" value="rejected">No aceptar: requiere más tratamiento</button></div>
+        </form>
+      {% endif %}
+    </article>
+  {% empty %}<div class="ac-panel ac-empty">No hay riesgos pendientes de aceptación.</div>{% endfor %}
+  </div>
+</div>
+{% endblock %}

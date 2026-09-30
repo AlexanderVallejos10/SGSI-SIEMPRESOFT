@@ -10,6 +10,13 @@ class ProcessCategoryKind(models.TextChoices):
     STRATEGIC = "strategic", "Proceso estratégico"
     OPERATIONAL = "operational", "Proceso operativo"
     SUPPORT = "support", "Proceso de apoyo"
+    INPUT = "input", "Parte interesada (entrada)"
+    OUTPUT = "output", "Parte interesada (salida)"
+
+
+# Franjas del mapa en orden vertical. Las partes interesadas van en las columnas laterales.
+LANE_KINDS = (ProcessCategoryKind.STRATEGIC, ProcessCategoryKind.OPERATIONAL, ProcessCategoryKind.SUPPORT)
+PARTY_KINDS = (ProcessCategoryKind.INPUT, ProcessCategoryKind.OUTPUT)
 
 
 class ProcessRelationType(models.TextChoices):
@@ -108,8 +115,10 @@ class ProcessNode(TraceableModel):
         related_name="processes",
     )
 
+    # x: posición horizontal dentro del mapa. y: distancia desde el borde superior de su franja,
+    # así un proceso que cambia de categoría conserva su lugar relativo y la franja crece sola.
     x = models.PositiveSmallIntegerField(default=100)
-    y = models.PositiveSmallIntegerField(default=100)
+    y = models.PositiveSmallIntegerField(default=40)
 
     is_in_scope = models.BooleanField(default=True, db_index=True)
     is_active = models.BooleanField(default=True, db_index=True)

@@ -1,0 +1,92 @@
+/* Mapa de procesos con el aspecto del documento V0.15 (Calibri, cajas rectas, marco rojo del alcance). */
+.map-sizer{position:relative;margin:14px auto 18px}
+.process-stage.map-v2{
+  position:absolute;left:0;top:0;width:auto;height:auto;margin:0;border:0;background:light-dark(#fff, #121619);
+  transform-origin:0 0;font-family:Calibri,Carlito,"Segoe UI",Arial,sans-serif;color:light-dark(#1d1d1d, #e4e6e9)}
+.map-v2 .map-v2-title{position:absolute;left:0;right:0;top:12px;text-align:center;font-size:20px;font-weight:700;letter-spacing:.2px}
+.map-v2 .map-v2-note{position:absolute;right:16px;top:8px;font-size:11px;color:light-dark(#555, #b0b7be)}
+.map-v2 .map-v2-box{position:absolute;border:2px solid light-dark(#1d1d1d, #b6bdc3);box-sizing:border-box;z-index:1;pointer-events:none}
+
+/* Franjas */
+.map-v2 .map-v2-lanes{position:absolute;inset:0;z-index:3;pointer-events:none}
+.map-v2 .map-v2-lane{position:absolute;box-sizing:border-box;transition:background-color .12s}
+.map-v2 .map-v2-lane.is-drop-target{background:color-mix(in srgb,var(--accent) 7%,transparent)}
+.map-v2 .map-v2-rule{position:absolute;left:0;right:0;top:0;border-top:1.5px solid light-dark(#1d1d1d, #b6bdc3)}
+.map-v2 .map-v2-tab{position:absolute;left:0;top:0;padding:6px 14px 5px;min-width:220px;box-sizing:border-box;background:light-dark(#a4c8ea, #34495c);color:light-dark(#1f2d3a, #d3d9df);font-size:15px;font-weight:400}
+
+/* Alcance del SGSI */
+.map-v2 .map-v2-scope{position:absolute;z-index:2;box-sizing:border-box;border:2px solid #e3342f;background:light-dark(#f9e2d4, #3b281d);pointer-events:none}
+.map-v2 .map-v2-scope strong{position:absolute;left:0;right:0;top:-24px;text-align:center;color:light-dark(#e3261f, #ea8986);font-size:16px;font-weight:700;white-space:nowrap}
+
+/* Líneas y flechas */
+.map-v2 .process-lines{position:absolute;left:0;top:0;width:auto;height:auto;inset:auto;z-index:5;pointer-events:none;overflow:visible}
+.map-v2 .process-lines #map-arrow path{fill:light-dark(#1d1d1d, #505050)}
+.map-v2 .process-lines path[data-dynamic-line]{fill:none;stroke:light-dark(#1d1d1d, #b6bdc3);stroke-width:1.3;marker-start:none;marker-end:url(#map-arrow)}
+.map-v2 .process-lines path.is-both{marker-start:url(#map-arrow)}
+.map-v2 .process-lines path.relation-support{stroke:light-dark(#4f7a3c, #b7caaf);stroke-dasharray:6 4}
+.map-v2 .process-lines path.relation-governance{stroke:light-dark(#5a6570, #b8bdc1)}
+.map-v2 .process-lines path.relation-reference{stroke:light-dark(#7f8a94, #b6bdc3);stroke-dasharray:2 4}
+.map-v2 .process-lines path.map-v2-twin{stroke:transparent;marker-start:none;marker-end:none}
+.map-v2 .map-v2-block{fill:light-dark(#bddca6, #4b5d3e);stroke:light-dark(#6b9a55, #b9c8b1);stroke-width:1.2}
+
+/* Procesos */
+.map-v2 .process-node{
+  position:absolute;z-index:10;box-sizing:border-box;min-height:48px;padding:6px 10px;
+  display:grid;place-items:center;background:light-dark(#fff, #121619);border:1.5px solid light-dark(#3a3a3a, #b6bdc3);border-radius:0;box-shadow:none;
+  font:inherit;font-size:13px;font-weight:400;line-height:1.2;text-align:center;text-transform:uppercase;color:light-dark(#1d1d1d, #e4e6e9);cursor:pointer}
+.map-v2 .process-node.is-external{border-style:dashed}
+.map-v2 .process-node:hover{border-color:var(--accent)}
+.map-v2 .process-node.selected{outline:2px solid var(--accent);outline-offset:2px;border-color:var(--accent)}
+.map-v2 .process-node:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.map-v2 .process-node.dragging{z-index:40;opacity:.9;box-shadow:0 6px 16px light-dark(rgba(20,40,60,.22), rgba(169,189,209,0.22))}
+.map-v2 .process-node-title{pointer-events:none}
+.map-v2 .drag-handle{
+  position:absolute;left:0;top:0;bottom:0;width:14px;cursor:grab;opacity:0;touch-action:none;
+  background:radial-gradient(circle,light-dark(#6b7c8d, #6e7f91) 1.2px,transparent 1.6px) center/6px 6px repeat-y;transition:opacity .12s}
+.map-v2 .process-node:hover .drag-handle,.map-v2 .process-node.dragging .drag-handle{opacity:1}
+.map-v2 .process-node.dragging .drag-handle{cursor:grabbing}
+
+/* Partes interesadas */
+.map-v2 .process-node.process-party{
+  padding:10px 0;border:2px solid light-dark(#1d1d1d, #b6bdc3);font-size:22px;letter-spacing:.5px;
+  writing-mode:vertical-rl;transform:rotate(180deg);min-height:0}
+.map-v2 .process-node.process-party.selected{outline-offset:2px}
+
+/* Leyenda */
+.map-v2 .map-v2-legend{position:absolute;display:flex;gap:42px;align-items:center;font-size:14px;color:light-dark(#1d1d1d, #e4e6e9)}
+.map-v2 .map-v2-legend span{display:flex;align-items:center;gap:10px}
+.map-v2 .map-v2-legend i{display:inline-block;width:92px;height:22px;box-sizing:border-box;background:light-dark(#fff, #121619)}
+.map-v2 .legend-scope{border:2px solid #e3342f}
+.map-v2 .legend-external{border:1.5px dashed light-dark(#3a3a3a, #b6bdc3)}
+.map-v2 .legend-internal{border:1px solid light-dark(#d6d6d6, #46525d)}
+
+/* Estado de guardado */
+[data-map-save-state][data-tone="pending"]{color:light-dark(#9a6a22, #e5c18a)}
+[data-map-save-state][data-tone="saved"]{color:light-dark(#3f7756, #a5bfaf)}
+[data-map-save-state][data-tone="error"]{color:light-dark(#a94747, #b08282)}
+
+@media (prefers-reduced-motion:reduce){.map-v2 .map-v2-lane,.map-v2 .drag-handle{transition:none}}
+.map-v2 .process-node-title{font-weight:400;font-size:13px;line-height:1.2}
+
+/* Crear relaciones: punto de conexión en el borde de cada caja */
+.map-v2 .connect-port{
+  position:absolute;right:-7px;top:50%;width:12px;height:12px;margin-top:-6px;box-sizing:border-box;
+  border:2px solid var(--accent);border-radius:50%;background:light-dark(#fff, #121619);cursor:crosshair;opacity:0;z-index:2;touch-action:none;transition:opacity .12s}
+.map-v2 .process-node:hover .connect-port,.map-v2.is-linking .connect-port{opacity:1}
+.map-v2 .connect-port:hover{background:var(--accent)}
+.map-v2 .process-party.kind-input .connect-port,.map-v2 .process-party[data-kind="input"] .connect-port{right:auto;left:-7px}
+.map-v2 .process-party[data-kind="output"] .connect-port{right:-7px}
+.map-v2.is-linking .process-node{cursor:crosshair}
+.map-v2 .process-node.is-link-target{border-color:var(--accent);outline:2px dashed var(--accent);outline-offset:3px}
+.map-v2 .map-v2-draft{fill:none;stroke:var(--accent);stroke-width:1.6;stroke-dasharray:5 4;pointer-events:none}
+
+/* Clic sobre una relación para retirarla */
+.map-v2 .process-lines .map-v2-hit{fill:none;stroke:transparent;stroke-width:12;pointer-events:stroke;cursor:pointer}
+.map-v2 .process-lines .map-v2-hit:hover{stroke:color-mix(in srgb,var(--accent) 18%,transparent)}
+.map-v2 .map-v2-popover{
+  position:absolute;z-index:60;min-width:220px;padding:10px 12px;background:light-dark(#fff, #121619);border:1px solid light-dark(#c9d4de, #4b545b);
+  box-shadow:0 6px 18px light-dark(rgba(20,40,60,.18), rgba(169,189,209,0.18));font-family:"Segoe UI",Arial,sans-serif;font-size:12px;color:light-dark(#223b50, #c4cfd9)}
+.map-v2 .map-v2-popover strong{display:block;margin-bottom:8px;font-weight:600}
+.map-v2 .map-v2-popover div{display:flex;gap:6px}
+.map-v2-add-link{margin-top:8px}
+.map-v2 .process-party .process-node-title{font-size:22px;letter-spacing:.5px}

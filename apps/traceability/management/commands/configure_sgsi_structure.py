@@ -13,20 +13,44 @@ AREAS = [
     ("PROD", "Producción", ["ORG-APROD", "ORG-PLAT"]),
     ("ADM", "Administración", ["ORG-AADM"]),
 ]
+# Mapa V0.15. y es la distancia desde el borde superior de la franja.
+# (código, nombre, categoría, x, y, dentro del alcance, externo)
 MAP = [
-    ("PROC-RD", "Revisión por la Dirección", "strategic", 500, 74, False, True),
-    ("PROC-VENTAS", "Gestión Comercial", "operational", 105, 305, True, False),
-    ("PROC-OSE", "Validación de comprobantes OSE", "operational", 500, 190, True, False),
-    ("PROC-SOPORTE", "Gestión del Éxito y Atención del Cliente", "operational", 500, 305, True, False),
-    ("PROC-DES", "Ingeniería y Calidad de Software", "operational", 500, 420, True, False),
-    ("PROC-PROD", "Gestión de Operaciones", "operational", 865, 420, True, False),
-    ("PROC-RRHH", "Recursos Humanos", "support", 80, 542, True, False),
-    ("PROC-FC", "Facturación y Cobranza", "support", 295, 542, True, False),
-    ("PROC-LOG", "Logística", "support", 515, 542, True, False),
-    ("PROC-INFRA", "Infraestructura Tecnológica", "support", 735, 542, True, False),
-    ("PROC-MKT", "Marketing", "support", 950, 542, True, False),
-    ("PROC-CONT", "Contabilidad", "support", 500, 630, False, True),
+    ("PROC-RD", "Revisión por la Dirección", "strategic", 470, 24, False, True),
+    ("PROC-OSE", "Validación de comprobantes OSE", "operational", 470, 72, True, False),
+    ("PROC-VENTAS", "Gestión Comercial", "operational", 40, 168, True, False),
+    ("PROC-SOPORTE", "Gestión del Éxito y Atención del Cliente", "operational", 470, 168, True, False),
+    ("PROC-DES", "Ingeniería y Calidad de Software", "operational", 470, 264, True, False),
+    ("PROC-PROD", "Gestión de Operaciones", "operational", 790, 264, True, False),
+    ("PROC-RRHH", "Recursos Humanos", "support", 40, 44, True, False),
+    ("PROC-FC", "Facturación y Cobranza", "support", 255, 44, True, False),
+    ("PROC-LOG", "Logística", "support", 470, 44, True, False),
+    ("PROC-INFRA", "Infraestructura Tecnológica", "support", 685, 44, True, False),
+    ("PROC-MKT", "Marketing", "support", 900, 44, True, False),
+    ("PROC-CONT", "Contabilidad", "support", 470, 150, False, True),
+    ("PARTE-CLIENTE-PSE", "Cliente / PSE", "input", 0, 0, False, True),
+    ("PARTE-CLIENTE-SUNAT", "Cliente / PSE / SUNAT", "output", 0, 0, False, True),
 ]
+# Flujos del PDF. Las dos relaciones entre Ingeniería y Operaciones se dibujan como una flecha doble.
+MAP_RELATIONS = [
+    ("PARTE-CLIENTE-PSE", "PROC-OSE"),
+    ("PARTE-CLIENTE-PSE", "PROC-VENTAS"),
+    ("PROC-VENTAS", "PROC-SOPORTE"),
+    ("PROC-SOPORTE", "PROC-OSE"),
+    ("PROC-SOPORTE", "PROC-DES"),
+    ("PROC-DES", "PROC-PROD"),
+    ("PROC-PROD", "PROC-DES"),
+    ("PROC-OSE", "PARTE-CLIENTE-SUNAT"),
+    ("PROC-SOPORTE", "PARTE-CLIENTE-SUNAT"),
+    ("PROC-PROD", "PARTE-CLIENTE-SUNAT"),
+]
+CATEGORY_NAMES = {
+    "strategic": ("Procesos estratégicos", 10),
+    "operational": ("Procesos operativos", 20),
+    "support": ("Procesos de apoyo", 30),
+    "input": ("Partes interesadas (entrada)", 5),
+    "output": ("Partes interesadas (salida)", 95),
+}
 
 
 class Command(BaseCommand):
@@ -58,11 +82,8 @@ class Command(BaseCommand):
                     kind=kind,
                     defaults={
                         "code": "PROC-" + kind.upper(),
-                        "name": {
-                            "strategic": "Procesos estratégicos",
-                            "operational": "Procesos operativos",
-                            "support": "Procesos de apoyo",
-                        }[kind],
+                        "name": CATEGORY_NAMES[kind][0],
+                        "sort_order": CATEGORY_NAMES[kind][1],
                     },
                 )
                 process, created = ProcessNode.objects.get_or_create(
@@ -83,13 +104,7 @@ class Command(BaseCommand):
             for relation in ProcessRelation.objects.filter(source__code__in=codes, target__code__in=codes):
                 relation.is_active = False
                 relation.save()
-            for source, target in [
-                ("PROC-VENTAS", "PROC-SOPORTE"),
-                ("PROC-SOPORTE", "PROC-OSE"),
-                ("PROC-SOPORTE", "PROC-DES"),
-                ("PROC-DES", "PROC-PROD"),
-                ("PROC-PROD", "PROC-DES"),
-            ]:
+            for source, target in MAP_RELATIONS:
                 relation, _ = ProcessRelation.objects.get_or_create(
                     source=ProcessNode.objects.get(code=source),
                     target=ProcessNode.objects.get(code=target),

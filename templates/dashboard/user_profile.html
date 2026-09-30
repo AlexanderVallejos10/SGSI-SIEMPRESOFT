@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static avatars %}
 
 {% block title %}
 {{ profile_user.get_full_name|default:profile_user.username }} | Usuario
@@ -24,10 +24,7 @@
 
     <div class="user-profile-identity">
 
-        <div class="user-initials">
-            {{ profile_user.first_name|first|default:profile_user.username|first }}
-            {{ profile_user.last_name|first }}
-        </div>
+        {% avatar profile_user "xl" %}
 
         <div>
             <div class="profile-title-row">

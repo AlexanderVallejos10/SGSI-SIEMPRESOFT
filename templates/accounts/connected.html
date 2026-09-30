@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load static avatars %}
+{% block title %}Conectados | SGSI{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/access.css' %}">{% endblock %}
+{% block content %}
+<div class="ac">
+  <header class="ac-head"><h1>Conectados ahora</h1><p>Personas con actividad en los últimos 2 minutos. La lista se actualiza sola.</p></header>
+  <div class="ac-table-wrap"><table class="ac-table">
+    <thead><tr><th>Persona</th><th class="hide-sm">Puesto</th><th>Conectado desde hace</th></tr></thead>
+    <tbody data-online-table>{% for p in people %}<tr><td><span class="ac-person"><span class="ac-presence is-on">{% avatar p %}</span><b>{{ p.get_full_name|default:p.username }}</b></span></td><td class="hide-sm ac-muted">{{ p.position|default:"—" }}</td><td>{{ p.since_text }}</td></tr>
+    {% empty %}<tr><td colspan="3" class="ac-empty">No hay nadie más conectado.</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% if recent %}
+  <section><h2 style="font-size:16px;margin:0 0 10px">Última actividad</h2>
+  <div class="ac-table-wrap"><table class="ac-table"><thead><tr><th>Persona</th><th>Última vez</th></tr></thead>
+    <tbody>{% for u in recent %}<tr><td><span class="ac-person">{% avatar u %}<b>{{ u.get_full_name|default:u.username }}</b></span></td><td class="ac-muted">{{ u.last_seen_at|date:"d/m/Y H:i" }}</td></tr>{% endfor %}</tbody></table></div></section>
+  {% endif %}
+</div>
+{% endblock %}

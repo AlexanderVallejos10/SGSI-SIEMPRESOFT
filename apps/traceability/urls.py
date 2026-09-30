@@ -6,6 +6,7 @@ app_name = "traceability"
 urlpatterns = [
     path("riesgos/vincular/", views.risk_link_many, name="risk_link_many"),
     path("riesgos/", views.risks, name="risks"),
+    path("riesgos/exportar/", views.risks_export, name="risks_export"),
     path("riesgos/nuevo/", views.risk_edit, name="risk_new"),
     path("riesgos/<uuid:pk>/", views.risk_edit, name="risk_edit"),
     path("documentos/", views.links, name="links"),

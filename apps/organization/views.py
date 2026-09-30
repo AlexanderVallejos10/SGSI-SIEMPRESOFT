@@ -108,6 +108,7 @@ def chart(request):
             .count()
         ),
         "unassigned_count": Position.objects.filter(is_active=True, area__isnull=True).count(),
+        "areas": OrganizationalArea.objects.filter(is_active=True).order_by("name"),
         "can_change": _can_change(request),
     }
 
@@ -715,4 +716,104 @@ def area_detail(request, pk):
         "vacant_count": sum(not position.active_assignments for position in active),
         "subareas": area.children.order_by("sort_order", "name"),
         "can_change": _can_change(request),
+    })
+
+
+def _safe_reverse(name, *args):
+    from django.urls import NoReverseMatch
+
+    try:
+        return reverse(name, args=args)
+    except NoReverseMatch:
+        return ""
+
+
+@login_required
+def position_trace(request, pk):
+    """Trazabilidad del puesto: cadena de mando, personas y de qué es responsable en el SGSI."""
+    from django.http import JsonResponse
+
+    from apps.processes.models import ProcessNode
+    from apps.risks.models import Risk, RiskTreatment
+    from apps.traceability.models import DocumentLink
+
+    position = get_object_or_404(Position.objects.select_related("area", "parent"), pk=pk)
+    assignments = list(position.assignments.filter(end_date__isnull=True).select_related("user"))
+    users = [a.user for a in assignments]
+
+    chain = []
+    parent = position.parent
+    while parent is not None and len(chain) < 20:
+        chain.append({"id": str(parent.pk), "title": parent.title})
+        parent = parent.parent
+
+    owned = ProcessNode.objects.filter(owner_position=position).order_by("code")
+    involved = ProcessNode.objects.filter(involved_positions=position).exclude(owner_position=position).order_by("code")
+    map_url = _safe_reverse("processes:map")
+    risks = (
+        Risk.objects.filter(Q(owner_position=position) | Q(owner__in=users), is_active=True)
+        .distinct()
+        .order_by("code")
+    )
+    treatments = (
+        RiskTreatment.objects.filter(responsible__in=users).select_related("risk").order_by("risk__code")
+        if users else RiskTreatment.objects.none()
+    )
+    links = (
+        DocumentLink.objects.filter(Q(position=position) | Q(user__in=users), is_active=True)
+        .select_related("document")
+        .order_by("kind", "source_title")
+    )
+
+    def doc_item(link):
+        doc = link.document
+        return {
+            "title": doc.title if doc else link.source_title,
+            "url": _safe_reverse("dashboard:document_detail", doc.pk) if doc else "",
+            "verified": link.verified,
+        }
+
+    return JsonResponse({
+        "id": str(position.pk),
+        "title": position.title,
+        "code": position.code,
+        "area": position.area.name if position.area else "",
+        "critical": position.is_critical,
+        "chain": chain,
+        "people": [
+            {
+                "name": a.user.get_full_name() or a.user.username,
+                "code": getattr(a.user, "business_code", "") or a.user.username,
+                "since": a.start_date.strftime("%d/%m/%Y") if a.start_date else "",
+                "url": _safe_reverse("dashboard:user_profile", a.user.pk),
+            }
+            for a in assignments
+        ],
+        "reports": [
+            {"id": str(c.pk), "title": c.title}
+            for c in position.children.filter(is_active=True).order_by("sort_order", "title")
+        ],
+        "processes": [
+            {"code": p.code, "name": p.name, "role": "Dueño", "url": map_url}
+            for p in owned
+        ] + [
+            {"code": p.code, "name": p.name, "role": "Participa", "url": map_url}
+            for p in involved
+        ],
+        "risks": [
+            {
+                "code": r.code,
+                "name": (r.scenario or r.event or "")[:140],
+                "process": r.process,
+                "url": _safe_reverse("traceability:risk_edit", r.pk),
+            }
+            for r in risks[:60]
+        ],
+        "risk_total": risks.count(),
+        "treatments": [
+            {"risk": t.risk.code, "action": t.action[:140], "status": t.status, "due": t.due_date.strftime("%d/%m/%Y") if t.due_date else ""}
+            for t in treatments[:60]
+        ],
+        "documents_owned": [doc_item(l) for l in links if l.kind == "owner"],
+        "documents_access": [doc_item(l) for l in links if l.kind == "access"],
     })

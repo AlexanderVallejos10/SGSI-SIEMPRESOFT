@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Declaración de Aplicabilidad | SGSI{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/governance.css' %}">{% endblock %}
+{% block content %}
+<div class="ac gv-doc gv-wide{% if print %} is-print{% endif %}">
+  <section class="gv-sheet">
+    <div class="gv-sheet-top"><span>Siempresoft EIRL</span><span>Documento para: SGSI. Uso interno.</span></div>
+    <div class="gv-sheet-head">
+      <div><h1>Declaración de Aplicabilidad</h1>
+        <p>Controles del Anexo A de la NTP ISO/IEC 27001:2022, con su aplicabilidad, justificación, estado de implementación, riesgos que tratan y documentos que los sustentan (6.1.3 d).</p></div>
+      <div class="gv-status"><span class="ac-muted">Emitida el {{ today|date:"d/m/Y" }}{% if manual %}. Manual del SGSI v{{ manual.version }} ({{ manual.status|lower }}){% endif %}</span></div>
+    </div>
+    <dl class="ac-facts gv-facts">
+      <div><dt>Controles</dt><dd>{{ stats.total }}</dd></div>
+      <div><dt>Aplicables</dt><dd>{{ stats.applicable }}</dd></div>
+      <div><dt>No aplicables</dt><dd>{{ stats.not_applicable }}</dd></div>
+      <div><dt>Por evaluar</dt><dd>{{ stats.pending }}</dd></div>
+      <div><dt>Implementados</dt><dd>{{ stats.implemented }}</dd></div>
+      <div><dt>En proceso</dt><dd>{{ stats.in_progress }}</dd></div>
+    </dl>
+    <div class="ac-row gv-noprint" style="margin-top:12px"><a class="ac-btn is-small" href="?imprimir=1" target="_blank" rel="noopener">Imprimir o guardar en PDF</a></div>
+  </section>
+
+  <div class="ac-table-wrap"><table class="ac-table gv-soa">
+    <thead><tr><th>Control</th><th>Aplicable</th><th>Justificación</th><th>Implementación</th><th>Riesgos</th><th>Documentos</th></tr></thead>
+    <tbody>{% for row in rows %}{% with c=row.c %}<tr>
+      <td><b>{{ c.code }}</b> {{ c.name }}</td>
+      <td class="ac-state {% if c.applicability == 'applicable' %}on{% elif c.applicability == 'pending' %}warn{% else %}off{% endif %}">{{ c.get_applicability_display }}</td>
+      <td>{{ c.justification|default:"—" }}</td>
+      <td>{{ c.get_implementation_status_display }}{% if c.maturity_level %}<small class="ac-muted"> Madurez {{ c.maturity_level }}</small>{% endif %}</td>
+      <td>{{ row.risks|join:", "|default:"—" }}</td>
+      <td>{{ row.documents|join:"; "|default:"—" }}</td>
+    </tr>{% endwith %}{% empty %}<tr><td colspan="6" class="ac-empty">No hay controles del Anexo A cargados.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+{% if print %}<script>window.addEventListener("load", () => setTimeout(() => window.print(), 300));</script>{% endif %}
+{% endblock %}

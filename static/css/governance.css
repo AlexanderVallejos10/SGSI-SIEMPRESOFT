@@ -1,0 +1,46 @@
+/* Gobierno del SGSI: revisión por la Dirección, aceptación de riesgos, revisión de accesos y SoA */
+.gv-wide{max-width:none}
+.gv-link{color:var(--accent);font-weight:600;text-decoration:none}
+.gv-sheet{border:1px solid var(--hair);border-radius:10px;background:var(--surface);overflow:hidden;padding:0 22px 18px}
+.gv-sheet::before{content:"";display:block;height:3px;margin:0 -22px;background:linear-gradient(90deg,#D9731F 0 33.3%,#E8C530 33.3% 66.6%,#5DAA3C 66.6%)}
+.gv-sheet-top{display:flex;justify-content:space-between;margin:0 -22px 14px;padding:8px 22px;border-bottom:1px solid var(--hair);font-size:12.5px;color:var(--muted)}
+.gv-sheet-head{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap}
+.gv-sheet-head h1{margin:0;font-size:clamp(22px,2.4vw,28px);letter-spacing:-.02em;color:var(--ink)}
+.gv-sheet-head p{margin:4px 0 0;max-width:72ch;color:var(--muted);font-size:13.5px}
+.gv-facts{margin-top:14px}
+.gv-sub{margin:18px 0 8px;font-size:14px;color:var(--ink)}
+.gv-pre{white-space:pre-line;margin:0;color:var(--text)}
+.gv-bad{color:light-dark(#b8412f,#ee7461)!important}
+.gv-inline select{padding:5px 8px;border:1px solid var(--hair-strong);border-radius:6px;font:inherit;font-size:13px;background:var(--surface);color:var(--text)}
+.gv-decision-form{margin-top:14px;padding-top:14px;border-top:1px solid var(--hair)}
+.gv-tabs{display:flex;gap:4px}
+.gv-tabs a{padding:7px 12px;border-radius:6px;color:var(--muted);font-weight:600;font-size:13.5px;text-decoration:none}
+.gv-tabs a[aria-current]{background:var(--hover);color:var(--ink);box-shadow:inset 0 0 0 1px var(--hair)}
+.gv-tabs b{margin-left:4px;color:var(--accent)}
+.gv-risks{display:grid;gap:12px}
+.gv-risk-head{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.gv-risk-head small{display:block;margin-top:3px;color:var(--muted);font-size:12.5px}
+.gv-code{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
+.gv-levels{display:flex;gap:16px;align-items:center;font-size:12.5px;color:var(--muted)}
+.gv-level{display:inline-block;margin-left:4px;padding:2px 8px;border-radius:4px;font-weight:600;font-size:12px;background:var(--hover);color:var(--ink)}
+.gv-level.lv-muy-alto{background:light-dark(#f4d4d1,#4a1f1c);color:light-dark(#7a1f1a,#f3a39b)}
+.gv-level.lv-alto{background:light-dark(#fbe0da,#3f2420);color:light-dark(#a8432b,#f19783)}
+.gv-level.lv-medio{background:light-dark(#fbefd5,#3b311d);color:light-dark(#8a5a14,#e7b34a)}
+.gv-level.lv-bajo{background:light-dark(#e2f1dd,#1f3321);color:light-dark(#2f6f2b,#7fcf78)}
+.gv-level.lv-muy-bajo{background:light-dark(#eef6ea,#1c2a1d);color:light-dark(#4b7d44,#9bd394)}
+.gv-accepted{margin:12px 0 0;padding:10px 12px;border-left:3px solid var(--accent);border-radius:0 6px 6px 0;background:var(--hover);font-size:13.5px}
+.gv-accepted.is-rejected{border-left-color:light-dark(#b8412f,#ee7461)}
+.gv-accept{margin-top:12px}
+.gv-review{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.gv-review input{flex:1;min-width:180px;padding:6px 9px;border:1px solid var(--hair-strong);border-radius:6px;font:inherit;font-size:13px;background:var(--surface);color:var(--text)}
+.gv-search{flex:1;max-width:380px;padding:9px 11px;border:1px solid var(--hair-strong);border-radius:6px;font:inherit;background:var(--surface);color:var(--text)}
+.gv-soa td{vertical-align:top}
+.gv-soa td:first-child{min-width:240px}
+/* Impresión: documento limpio, sin menú ni controles */
+@media print{
+  .sgsi-sidebar,.page-column .topbar,.gv-noprint,.breadcrumb,.messages-stack,.tb-toasts,form button,.gv-decision-form{display:none!important}
+  .app-shell{display:block!important}.main-content{padding:0!important}
+  .ac-panel,.gv-sheet,.ac-table-wrap{break-inside:avoid;border-color:#bbb!important}
+  body{background:#fff!important;color:#000!important}
+}
+.is-print textarea,.is-print select,.is-print input{border:0;padding:0;resize:none}

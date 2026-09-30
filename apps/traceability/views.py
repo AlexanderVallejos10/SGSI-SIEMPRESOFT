@@ -14,7 +14,7 @@ from django.views.decorators.http import require_POST
 
 from apps.organization.models import OrganizationalArea
 from apps.processes.models import ProcessNode
-from apps.risks.models import Risk, RiskAssessment
+from apps.risks.models import IdentificationType, Risk, RiskAssessment
 
 from .forms import HandoverForm, LinkForm, RiskForm, WorkbookForm
 from .importer import import_workbook
@@ -54,6 +54,9 @@ def risks(request):
         )
     if request.GET.get("pending"):
         qs = qs.filter(processes__isnull=True)
+    selected_type = request.GET.get("tipo", "")
+    if selected_type in IdentificationType.values:
+        qs = qs.filter(identification_type=selected_type)
     rows = risk_rows(qs.distinct().order_by("code"))
     return render(
         request,
@@ -67,6 +70,8 @@ def risks(request):
             "can_add": request.user.has_perm("risks.add_risk"),
             "selected_area": request.GET.get("area", ""),
             "pending": bool(request.GET.get("pending")),
+            "id_types": IdentificationType.choices,
+            "selected_type": selected_type,
         },
     )
 
@@ -356,3 +361,14 @@ def risk_link_many(request):
         request, f"{len(risks)} riesgos vinculados a {process.name}. Se conservaron sus otros procesos."
     )
     return redirect(reverse("traceability:risks") + f"?process={process.pk}")
+
+
+@permitted("risks.view_risk")
+def risks_export(request):
+    """Matriz de riesgos en el formato de la plantilla del Oficial de Seguridad (se puede volver a importar)."""
+    from apps.core.exports import excel_download
+
+    from .exporter import build_risk_matrix
+
+    return excel_download(request, build_risk_matrix(), "Matriz_de_riesgos_SiempreSoft", module="risks", entity="Risk")
+

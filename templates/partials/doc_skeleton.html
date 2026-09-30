@@ -1,0 +1,9 @@
+{# Página de documento en esqueleto mientras el visor carga el PDF. #}
+<div class="skel-doc" aria-hidden="true">
+    <div class="skel-page">
+        <i class="skel-l h"></i>
+        <i class="skel-l w90"></i><i class="skel-l"></i><i class="skel-l w75"></i>
+        <i class="skel-l gap w90"></i><i class="skel-l w60"></i><i class="skel-l"></i><i class="skel-l w40"></i>
+    </div>
+    {% include "partials/sgsi_loader.html" with text=text|default:"Abriendo documento" %}
+</div>

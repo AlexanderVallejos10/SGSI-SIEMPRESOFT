@@ -1,0 +1,508 @@
+{
+ "documentos": [
+  {
+   "numerales": [
+    "3.1",
+    "5.2",
+    "5.3",
+    "7.3"
+   ],
+   "titulo": "Política de Seguridad de la Información",
+   "archivo": "02 - Politica_de_seguridad_de_la_informacion_V0.12.pdf",
+   "version": "0.12",
+   "estado": "active",
+   "origen": "OneDrive_2026-09-30__1_.zip / Uso interno/Documentos vigentes/02 - Politica_de_seguridad_de_la_informacion_V0.12.pdf"
+  },
+  {
+   "numerales": [
+    "4.3"
+   ],
+   "titulo": "Documento sobre el alcance del SGSI",
+   "archivo": "01 - Documento_sobre_el_alcance_del_SGSI_V0.13.pdf",
+   "version": "0.13",
+   "estado": "active",
+   "origen": "OneDrive_2026-09-30__1_.zip / Uso interno/Documentos vigentes/01 - Documento_sobre_el_alcance_del_SGSI_V0.13.pdf"
+  },
+  {
+   "numerales": [
+    "4.3"
+   ],
+   "titulo": "Mapa de procesos",
+   "archivo": "02 - MAPA DE PROCESOS SIEMPRESOFT_V0.14.pdf",
+   "version": "0.14",
+   "estado": "active",
+   "origen": "01_siempresoft.zip / 01 - Siempresoft/Uso Interno/Documentos vigentes/02 - MAPA DE PROCESOS SIEMPRESOFT_V0.14.pdf"
+  },
+  {
+   "numerales": [
+    "5.1"
+   ],
+   "titulo": "Responsabilidad de la Alta Gerencia",
+   "archivo": "03 - Responsabilidad de la Alta Gerencia.pdf",
+   "version": "1.0",
+   "estado": "active",
+   "origen": "01_siempresoft.zip / 01 - Siempresoft/Anexos/03 - Responsabilidad de la Alta Gerencia.pdf"
+  },
+  {
+   "numerales": [
+    "6.1"
+   ],
+   "titulo": "Metodología para la evaluación y tratamiento de Riesgos",
+   "archivo": "Metodologia_de_evaluacion_y_tratamiento_de_riesgos_V0.10.pdf",
+   "version": "0.10",
+   "estado": "active",
+   "origen": "OneDrive_2026-09-30.zip / Gestión de Riesgos/Vigentes/Metodologia_de_evaluacion_y_tratamiento_de_riesgos_V0.10.pdf"
+  },
+  {
+   "numerales": [
+    "6.1"
+   ],
+   "titulo": "Declaración de Aplicabilidad",
+   "archivo": "Declaracion_de_aplicabilidad_v0.10.pdf",
+   "version": "0.10",
+   "estado": "active",
+   "origen": "OneDrive_2026-09-30.zip / Gestión de Riesgos/Vigentes/Declaracion_de_aplicabilidad_v0.10.pdf"
+  },
+  {
+   "numerales": [
+    "6.2",
+    "8.1"
+   ],
+   "titulo": "Plan de acción de los OSI",
+   "archivo": "Plan de acción_OSI_2025.pdf",
+   "version": "2025",
+   "estado": "active",
+   "origen": "OneDrive_2026-09-16.zip / 01 - Siempresoft/Registros/2025/Plan de acción_OSI_2025.pdf"
+  },
+  {
+   "numerales": [
+    "7.2"
+   ],
+   "titulo": "Procedimiento de selección, capacitación, inducción del personal",
+   "archivo": "Procedimiento de seleccion, capacitacion, inducción y evaluación del personal - V0.10.pdf",
+   "version": "0.10",
+   "estado": "active",
+   "origen": "07_aredeadministracion.zip / 07 - Área de Administración/01 - Recursos Humanos/Uso interno/Documentos vigentes/Procedimiento de seleccion, capacitacion, inducción y evaluación del personal - V0.10.pdf"
+  },
+  {
+   "numerales": [
+    "7.4"
+   ],
+   "titulo": "Autorización de comunicación con las partes interesadas",
+   "archivo": "18_-_Autorización_de_comunicación_con_las_partes_interesadas.xlsx",
+   "version": "0.1",
+   "estado": "active",
+   "origen": "(suelto) / 18_-_Autorización_de_comunicación_con_las_partes_interesadas.xlsx"
+  },
+  {
+   "numerales": [
+    "7.4"
+   ],
+   "titulo": "Decisión acerca de cómo se puede intercambiar cada tipo de datos",
+   "archivo": "04_-_Decisión_acerca_de_como_se_puede_intercambiar_cada_tipo_de_dato.xlsx",
+   "version": "0.1",
+   "estado": "active",
+   "origen": "(suelto) / 04_-_Decisión_acerca_de_como_se_puede_intercambiar_cada_tipo_de_dato.xlsx"
+  },
+  {
+   "numerales": [
+    "7.5"
+   ],
+   "titulo": "Procedimiento para control de documentos y registros",
+   "archivo": "04 - Procedimiento_para_control_de_documentos_y_registros_V0.10.pdf",
+   "version": "0.10",
+   "estado": "active",
+   "origen": "01_siempresoft.zip / 01 - Siempresoft/Uso Interno/Documentos vigentes/04 - Procedimiento_para_control_de_documentos_y_registros_V0.10.pdf"
+  },
+  {
+   "numerales": [
+    "8.1"
+   ],
+   "titulo": "Plan de tratamiento de riesgos y oportunidades",
+   "archivo": "03 - Plan de tratamiento de riesgos_2025.pdf",
+   "version": "2025",
+   "estado": "active",
+   "origen": "OneDrive_2026-09-30.zip / Gestión de Riesgos/Vigentes/2025/03 - Plan de tratamiento de riesgos_2025.pdf"
+  },
+  {
+   "numerales": [
+    "8.2",
+    "8.3"
+   ],
+   "titulo": "Proceso de gestión de riesgos",
+   "archivo": "01 - Proceso de gestión de riesgos_2026.xlsx",
+   "version": "2026",
+   "estado": "active",
+   "origen": "OneDrive_2026-09-30.zip / Gestión de Riesgos/Vigentes/2026/01 - Proceso de gestión de riesgos_2026.xlsx"
+  },
+  {
+   "numerales": [
+    "8.3"
+   ],
+   "titulo": "Informe sobre evaluación y tratamiento de riesgos",
+   "archivo": "Apendice_3_Informe_sobre_evaluacion_y_tratamiento_V0.8.pdf",
+   "version": "0.8",
+   "estado": "active",
+   "origen": "OneDrive_2026-09-30.zip / Gestión de Riesgos/Vigentes/2025/Apendice_3_Informe_sobre_evaluacion_y_tratamiento_V0.8.pdf"
+  },
+  {
+   "numerales": [
+    "9.1"
+   ],
+   "titulo": "Dashboard SGSI de SIEMPRESOFT",
+   "archivo": "Dashboard SGSI de SIEMPRESOFT_2026.xlsx",
+   "version": "2026",
+   "estado": "active",
+   "origen": "OneDrive_2026-09-16.zip / 01 - Siempresoft/Registros/2026/Dashboard SGSI de SIEMPRESOFT_2026.xlsx"
+  },
+  {
+   "numerales": [
+    "9.1"
+   ],
+   "titulo": "Medición de Indicadores",
+   "archivo": "Indicadores.xlsx",
+   "version": "2024",
+   "estado": "review",
+   "origen": "OneDrive_2026-09-16.zip / 01 - Siempresoft/Borradores/Indicadores.xlsx"
+  },
+  {
+   "numerales": [
+    "9.2"
+   ],
+   "titulo": "Procedimiento para auditoría interna",
+   "archivo": "02 - Procedimiento_para_auditoria_interna_V0.9.pdf",
+   "version": "0.9",
+   "estado": "active",
+   "origen": "Restringida.zip / Restringida/Documentos vigentes/02 - Procedimiento_para_auditoria_interna_V0.9.pdf"
+  },
+  {
+   "numerales": [
+    "9.2"
+   ],
+   "titulo": "Programa anual de auditoría interna 2026",
+   "archivo": "03 - Apendice_1_Programa_anual_de_auditoria_interna_V0.9_2026.pdf",
+   "version": "0.9",
+   "estado": "active",
+   "origen": "Restringida.zip / Restringida/Documentos vigentes/03 - Apendice_1_Programa_anual_de_auditoria_interna_V0.9_2026.pdf"
+  },
+  {
+   "numerales": [
+    "10.2"
+   ],
+   "titulo": "Procedimiento para medidas correctivas preventivas y de mejora",
+   "archivo": "06 - Procedimiento_para_medidas_correctivas_V0.9.pdf",
+   "version": "0.9",
+   "estado": "active",
+   "origen": "01_siempresoft.zip / 01 - Siempresoft/Uso Interno/Documentos vigentes/06 - Procedimiento_para_medidas_correctivas_V0.9.pdf"
+  },
+  {
+   "numerales": [
+    "7.2"
+   ],
+   "titulo": "Perfil de puesto – Gerente General",
+   "archivo": "01 Gerente General.pdf",
+   "version": "1.0",
+   "estado": "active",
+   "origen": "07_aredeadministracion.zip / 07 - Área de Administración/01 - Recursos Humanos/Uso interno/Documentos vigentes/01 Perfiles de Puesto/01 Gerente General.pdf"
+  },
+  {
+   "numerales": [
+    "7.2"
+   ],
+   "titulo": "Perfil de puesto – Jefe de Ventas",
+   "archivo": "03 Jefe de Ventas.pdf",
+   "version": "1.0",
+   "estado": "active",
+   "origen": "07_aredeadministracion.zip / 07 - Área de Administración/01 - Recursos Humanos/Uso interno/Documentos vigentes/01 Perfiles de Puesto/03 Jefe de Ventas.pdf"
+  },
+  {
+   "numerales": [
+    "7.2"
+   ],
+   "titulo": "Perfil de puesto – Asistente de Ventas",
+   "archivo": "04 Asistente de Ventas.pdf",
+   "version": "1.0",
+   "estado": "active",
+   "origen": "07_aredeadministracion.zip / 07 - Área de Administración/01 - Recursos Humanos/Uso interno/Documentos vigentes/01 Perfiles de Puesto/04 Asistente de Ventas.pdf"
+  },
+  {
+   "numerales": [
+    "7.2"
+   ],
+   "titulo": "Perfil de puesto – Jefe de Consultoría",
+   "archivo": "05 Jefe de Consultoría .pdf",
+   "version": "1.0",
+   "estado": "active",
+   "origen": "07_aredeadministracion.zip / 07 - Área de Administración/01 - Recursos Humanos/Uso interno/Documentos vigentes/01 Perfiles de Puesto/05 Jefe de Consultoría .pdf"
+  },
+  {
+   "numerales": [
+    "7.2"
+   ],
+   "titulo": "Perfil de puesto – Consultor",
+   "archivo": "06 Consultor.pdf",
+   "version": "1.0",
+   "estado": "active",
+   "origen": "07_aredeadministracion.zip / 07 - Área de Administración/01 - Recursos Humanos/Uso interno/Documentos vigentes/01 Perfiles de Puesto/06 Consultor.pdf"
+  },
+  {
+   "numerales": [
+    "7.2"
+   ],
+   "titulo": "Perfil de puesto – Jefe de Desarrollo",
+   "archivo": "07 Jefe de Desarrollo.pdf",
+   "version": "1.0",
+   "estado": "active",
+   "origen": "07_aredeadministracion.zip / 07 - Área de Administración/01 - Recursos Humanos/Uso interno/Documentos vigentes/01 Perfiles de Puesto/07 Jefe de Desarrollo.pdf"
+  },
+  {
+   "numerales": [
+    "7.2"
+   ],
+   "titulo": "Perfil de puesto – Coordinador de Desarrollo",
+   "archivo": "08 Coordinador de Desarrollo.pdf",
+   "version": "1.0",
+   "estado": "active",
+   "origen": "07_aredeadministracion.zip / 07 - Área de Administración/01 - Recursos Humanos/Uso interno/Documentos vigentes/01 Perfiles de Puesto/08 Coordinador de Desarrollo.pdf"
+  },
+  {
+   "numerales": [
+    "7.2"
+   ],
+   "titulo": "Perfil de puesto – Desarrollador",
+   "archivo": "09 Desarrollador.pdf",
+   "version": "1.0",
+   "estado": "active",
+   "origen": "07_aredeadministracion.zip / 07 - Área de Administración/01 - Recursos Humanos/Uso interno/Documentos vigentes/01 Perfiles de Puesto/09 Desarrollador.pdf"
+  },
+  {
+   "numerales": [
+    "7.2"
+   ],
+   "titulo": "Perfil de puesto – Jefe de Producción",
+   "archivo": "10 Jefe de Producción.pdf",
+   "version": "1.0",
+   "estado": "active",
+   "origen": "07_aredeadministracion.zip / 07 - Área de Administración/01 - Recursos Humanos/Uso interno/Documentos vigentes/01 Perfiles de Puesto/10 Jefe de Producción.pdf"
+  },
+  {
+   "numerales": [
+    "7.2"
+   ],
+   "titulo": "Perfil de puesto – Asistente de Producción",
+   "archivo": "11 Asistente de Producción .pdf",
+   "version": "1.0",
+   "estado": "active",
+   "origen": "07_aredeadministracion.zip / 07 - Área de Administración/01 - Recursos Humanos/Uso interno/Documentos vigentes/01 Perfiles de Puesto/11 Asistente de Producción .pdf"
+  },
+  {
+   "numerales": [
+    "7.2"
+   ],
+   "titulo": "Perfil de puesto – Analista QA",
+   "archivo": "12 Analista QA.pdf",
+   "version": "1.0",
+   "estado": "active",
+   "origen": "07_aredeadministracion.zip / 07 - Área de Administración/01 - Recursos Humanos/Uso interno/Documentos vigentes/01 Perfiles de Puesto/12 Analista QA.pdf"
+  },
+  {
+   "numerales": [
+    "7.2"
+   ],
+   "titulo": "Perfil de puesto – Jefe de control de calidad",
+   "archivo": "13 Jefe de control de calidad.pdf",
+   "version": "1.0",
+   "estado": "active",
+   "origen": "07_aredeadministracion.zip / 07 - Área de Administración/01 - Recursos Humanos/Uso interno/Documentos vigentes/01 Perfiles de Puesto/13 Jefe de control de calidad.pdf"
+  },
+  {
+   "numerales": [
+    "7.2"
+   ],
+   "titulo": "Perfil de puesto – Ingeniero de Soporte",
+   "archivo": "14 Ingeniero de Soporte.pdf",
+   "version": "1.0",
+   "estado": "active",
+   "origen": "07_aredeadministracion.zip / 07 - Área de Administración/01 - Recursos Humanos/Uso interno/Documentos vigentes/01 Perfiles de Puesto/14 Ingeniero de Soporte.pdf"
+  },
+  {
+   "numerales": [
+    "7.2"
+   ],
+   "titulo": "Perfil de puesto – Oficial de Seguridad de la Información",
+   "archivo": "15 Oficial de Seguridad de la Información .pdf",
+   "version": "1.0",
+   "estado": "active",
+   "origen": "07_aredeadministracion.zip / 07 - Área de Administración/01 - Recursos Humanos/Uso interno/Documentos vigentes/01 Perfiles de Puesto/15 Oficial de Seguridad de la Información .pdf"
+  },
+  {
+   "numerales": [
+    "7.2"
+   ],
+   "titulo": "Perfil de puesto – Responsable de la Infraestructura Tecnológica",
+   "archivo": "16 Responsable de la Infraestructura Tecnológica .pdf",
+   "version": "1.0",
+   "estado": "active",
+   "origen": "07_aredeadministracion.zip / 07 - Área de Administración/01 - Recursos Humanos/Uso interno/Documentos vigentes/01 Perfiles de Puesto/16 Responsable de la Infraestructura Tecnológica .pdf"
+  },
+  {
+   "numerales": [
+    "7.2"
+   ],
+   "titulo": "Perfil de puesto – Asistente Administrativo",
+   "archivo": "17 Asistente Administrativo.pdf",
+   "version": "1.0",
+   "estado": "active",
+   "origen": "07_aredeadministracion.zip / 07 - Área de Administración/01 - Recursos Humanos/Uso interno/Documentos vigentes/01 Perfiles de Puesto/17 Asistente Administrativo.pdf"
+  },
+  {
+   "numerales": [
+    "7.2"
+   ],
+   "titulo": "Perfil de puesto – Jefe de Ingeniería de Soporte",
+   "archivo": "20 Jefe de Ingeniería de Soporte.pdf",
+   "version": "1.0",
+   "estado": "active",
+   "origen": "07_aredeadministracion.zip / 07 - Área de Administración/01 - Recursos Humanos/Uso interno/Documentos vigentes/01 Perfiles de Puesto/20 Jefe de Ingeniería de Soporte.pdf"
+  },
+  {
+   "numerales": [
+    "7.2"
+   ],
+   "titulo": "Perfil de puesto – Analista de Help Desk",
+   "archivo": "21 Analista de Help Desk.pdf",
+   "version": "1.0",
+   "estado": "active",
+   "origen": "07_aredeadministracion.zip / 07 - Área de Administración/01 - Recursos Humanos/Uso interno/Documentos vigentes/01 Perfiles de Puesto/21 Analista de Help Desk.pdf"
+  },
+  {
+   "numerales": [
+    "7.2"
+   ],
+   "titulo": "Perfil de puesto – Responsable del Servicio de SST",
+   "archivo": "22 Responsable del Servicio de SST.pdf",
+   "version": "1.0",
+   "estado": "active",
+   "origen": "07_aredeadministracion.zip / 07 - Área de Administración/01 - Recursos Humanos/Uso interno/Documentos vigentes/01 Perfiles de Puesto/22 Responsable del Servicio de SST.pdf"
+  },
+  {
+   "numerales": [
+    "7.2"
+   ],
+   "titulo": "Perfil de puesto – Supervisor de SST",
+   "archivo": "23 Supervisor de SST.pdf",
+   "version": "1.0",
+   "estado": "active",
+   "origen": "07_aredeadministracion.zip / 07 - Área de Administración/01 - Recursos Humanos/Uso interno/Documentos vigentes/01 Perfiles de Puesto/23 Supervisor de SST.pdf"
+  },
+  {
+   "numerales": [
+    "7.2"
+   ],
+   "titulo": "Perfil de puesto – Responsable de Ventas y Marketing",
+   "archivo": "24 Responsable de Ventas y Marketing.pdf",
+   "version": "1.0",
+   "estado": "active",
+   "origen": "07_aredeadministracion.zip / 07 - Área de Administración/01 - Recursos Humanos/Uso interno/Documentos vigentes/01 Perfiles de Puesto/24 Responsable de Ventas y Marketing.pdf"
+  },
+  {
+   "numerales": [
+    "7.2"
+   ],
+   "titulo": "Perfil de puesto – Oficial de Datos Personales",
+   "archivo": "25 Oficial de Datos Personales.pdf",
+   "version": "1.0",
+   "estado": "active",
+   "origen": "07_aredeadministracion.zip / 07 - Área de Administración/01 - Recursos Humanos/Uso interno/Documentos vigentes/01 Perfiles de Puesto/25 Oficial de Datos Personales.pdf"
+  },
+  {
+   "numerales": [
+    "7.2"
+   ],
+   "titulo": "Perfil de puesto – Jefe de Help Desk",
+   "archivo": "26  Jefe de Help Desk.pdf",
+   "version": "1.0",
+   "estado": "active",
+   "origen": "07_aredeadministracion.zip / 07 - Área de Administración/01 - Recursos Humanos/Uso interno/Documentos vigentes/01 Perfiles de Puesto/26  Jefe de Help Desk.pdf"
+  },
+  {
+   "numerales": [
+    "7.2"
+   ],
+   "titulo": "Perfil de puesto – Responsable de Consultoria",
+   "archivo": "27 Responsable de Consultoria.pdf",
+   "version": "1.0",
+   "estado": "active",
+   "origen": "07_aredeadministracion.zip / 07 - Área de Administración/01 - Recursos Humanos/Uso interno/Documentos vigentes/01 Perfiles de Puesto/27 Responsable de Consultoria.pdf"
+  },
+  {
+   "numerales": [
+    "7.2"
+   ],
+   "titulo": "Perfil de puesto – Consultor Junior",
+   "archivo": "28 Consultor Junior.pdf",
+   "version": "1.0",
+   "estado": "active",
+   "origen": "07_aredeadministracion.zip / 07 - Área de Administración/01 - Recursos Humanos/Uso interno/Documentos vigentes/01 Perfiles de Puesto/28 Consultor Junior.pdf"
+  },
+  {
+   "numerales": [
+    "7.2"
+   ],
+   "titulo": "Perfil de puesto – Consultor Senior",
+   "archivo": "29 Consultor Senior.pdf",
+   "version": "1.0",
+   "estado": "active",
+   "origen": "07_aredeadministracion.zip / 07 - Área de Administración/01 - Recursos Humanos/Uso interno/Documentos vigentes/01 Perfiles de Puesto/29 Consultor Senior.pdf"
+  }
+ ],
+ "contexto": [
+  {
+   "archivo": "01 - Misión y Visión - FODA.pdf",
+   "origen": "01_siempresoft.zip / 01 - Siempresoft/Uso Interno/Documentos vigentes/01 - Misión y Visión - FODA.pdf"
+  },
+  {
+   "archivo": "ORGANIGRAMA V. 21.pdf",
+   "origen": "07_aredeadministracion.zip / 07 - Área de Administración/01 - Recursos Humanos/Uso interno/Documentos vigentes/ORGANIGRAMA V. 21.pdf"
+  },
+  {
+   "archivo": "03 - Lista_de_requisitos_legales_normativos_contractuales_V0.15.xlsm",
+   "origen": "01_siempresoft.zip / 01 - Siempresoft/Uso Interno/Documentos vigentes/03 - Lista_de_requisitos_legales_normativos_contractuales_V0.15.xlsm"
+  },
+  {
+   "archivo": "07 - Partes Interesadas_V0.4.xlsx",
+   "origen": "01_siempresoft.zip / 01 - Siempresoft/Uso Interno/Documentos vigentes/07 - Partes Interesadas_V0.4.xlsx"
+  }
+ ],
+ "faltan": [
+  {
+   "numerales": [
+    "3.1",
+    "7.3"
+   ],
+   "documento": "Política para el uso y gestión de la Inteligencia Artificial",
+   "motivo": "No está en ningún archivo enviado (es nueva en el Manual v0.7)."
+  },
+  {
+   "numerales": [
+    "7.1"
+   ],
+   "documento": "Presupuesto anual",
+   "motivo": "No está en ningún archivo enviado."
+  },
+  {
+   "numerales": [
+    "9.3"
+   ],
+   "documento": "Informe de revisión por parte de la Dirección",
+   "motivo": "La carpeta «Informe de revisión por parte de la Dirección» no se descargó de OneDrive."
+  },
+  {
+   "numerales": [
+    "9.3"
+   ],
+   "documento": "Minutas de reunión (revisión por la Dirección)",
+   "motivo": "La carpeta «Minutas de reunión» no se descargó de OneDrive; las actas de reunión están en Registros del SGSI."
+  }
+ ]
+}

@@ -153,8 +153,25 @@ class TraceabilityFlows(TestCase):
         book = Workbook()
         s = book.active
         s.title = "Matriz de riesgos"
-        for _ in range(4):
-            s.append(["header"])
+        for _ in range(3):
+            s.append(["título"])
+        s.append(
+            [
+                "ID",
+                "Proceso",
+                "Origen del riesgo",
+                "Categoría de riesgo",
+                "Fuente de riesgo (causa u origen específico)",
+                "Evento",
+                "Estado final deseado / Motivación (DES)",
+                "Escenario estratégico",
+                "Consecuencia",
+                "Probabilidad",
+                "Nivel de riesgo",
+                "Controles existentes",
+                "Propietario del riesgo",
+            ]
+        )
         s.append(
             [
                 "R01",

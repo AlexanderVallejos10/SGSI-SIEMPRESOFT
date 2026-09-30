@@ -10,21 +10,21 @@
     flex-wrap: wrap;
     padding: 9px 12px;
     margin-bottom: 10px;
-    background: #fff;
-    border: 1px solid #dfe6ec;
+    background: light-dark(#fff, #121619);
+    border: 1px solid light-dark(#dfe6ec, #3e454c);
     border-radius: 5px;
-    color: #6d7f90;
+    color: light-dark(#6d7f90, #8b949c);
     font-size: 9px;
 }
 
 .context41-overview span + span {
     padding-left: 18px;
-    border-left: 1px solid #dfe5ea;
+    border-left: 1px solid light-dark(#dfe5ea, #40464b);
 }
 
 .context41-card {
-    background: #fff;
-    border: 1px solid #d7e0e7;
+    background: light-dark(#fff, #121619);
+    border: 1px solid light-dark(#d7e0e7, #434b51);
     border-radius: 6px;
     margin-bottom: 10px;
     overflow: hidden;
@@ -38,7 +38,7 @@
     padding: 14px 16px;
     list-style: none;
     cursor: pointer;
-    background: #fbfcfd;
+    background: light-dark(#fbfcfd, #15181c);
 }
 
 .context41-card > summary::-webkit-details-marker {
@@ -46,8 +46,8 @@
 }
 
 .context41-card[open] > summary {
-    border-bottom: 1px solid #dfe6ec;
-    background: #f6f9fb;
+    border-bottom: 1px solid light-dark(#dfe6ec, #3e454c);
+    background: light-dark(#f6f9fb, #171c20);
 }
 
 .context41-card > summary > div {
@@ -62,13 +62,13 @@
 }
 
 .context41-card summary strong {
-    color: #233c52;
+    color: light-dark(#233c52, #c2ced8);
     font-size: 12px;
 }
 
 .context41-card summary small {
     margin-top: 3px;
-    color: #8392a0;
+    color: light-dark(#8392a0, #7a848c);
     font-size: 9px;
 }
 
@@ -77,16 +77,16 @@
     height: 32px;
     display: grid;
     place-items: center;
-    border: 1px solid #ccd8e2;
+    border: 1px solid light-dark(#ccd8e2, #485159);
     border-radius: 4px;
-    color: #35658c;
+    color: light-dark(#35658c, #97bbd8);
     font-size: 9px;
     font-weight: 700;
-    background: #fff;
+    background: light-dark(#fff, #121619);
 }
 
 .summary-action {
-    color: #176db8;
+    color: light-dark(var(--accent), color-mix(in srgb,var(--accent) 62%,#fff));
     font-size: 9px;
     white-space: nowrap;
 }
@@ -109,13 +109,13 @@
 }
 
 .document-toolbar b {
-    color: #2a4359;
+    color: light-dark(#2a4359, #bcc8d2);
     font-size: 10px;
 }
 
 .document-toolbar span {
     margin-top: 3px;
-    color: #8392a0;
+    color: light-dark(#8392a0, #7a848c);
     font-size: 9px;
 }
 
@@ -128,9 +128,9 @@
 
 .pdf-frame {
     height: 620px;
-    border: 1px solid #d6e0e8;
+    border: 1px solid light-dark(#d6e0e8, #424b52);
     border-radius: 5px;
-    background: #f4f6f8;
+    background: light-dark(#f4f6f8, #1b1e21);
     overflow: hidden;
 }
 
@@ -138,25 +138,25 @@
     width: 100%;
     height: 100%;
     border: 0;
-    background: white;
+    background: light-dark(white, #121619);
 }
 
 .version-history {
     margin-top: 12px;
-    border-top: 1px solid #e2e8ed;
+    border-top: 1px solid light-dark(#e2e8ed, #3d444a);
     padding-top: 9px;
 }
 
 .version-history > summary {
     cursor: pointer;
-    color: #516a80;
+    color: light-dark(#516a80, #9ba7b1);
     font-size: 9px;
     font-weight: 600;
 }
 
 .version-history > div {
     margin-top: 7px;
-    border: 1px solid #e0e6eb;
+    border: 1px solid light-dark(#e0e6eb, #3f454b);
     border-radius: 4px;
 }
 
@@ -166,7 +166,7 @@
     gap: 10px;
     align-items: center;
     padding: 8px 10px;
-    border-bottom: 1px solid #edf1f4;
+    border-bottom: 1px solid light-dark(#edf1f4, #363d42);
     font-size: 9px;
 }
 
@@ -175,7 +175,7 @@
 }
 
 .version-row a {
-    color: #176db8;
+    color: light-dark(var(--accent), color-mix(in srgb,var(--accent) 62%,#fff));
     text-decoration: none;
     font-weight: 600;
 }
@@ -183,20 +183,19 @@
 .embedded-organization {
     overflow: auto;
     min-height: 460px;
-    max-height: 690px;
     background:
         linear-gradient(
             90deg,
-            rgba(226,233,240,.35) 1px,
+            light-dark(rgba(226,233,240,.35), rgba(36,41,47,0.35)) 1px,
             transparent 1px
         ),
         linear-gradient(
-            rgba(226,233,240,.35) 1px,
+            light-dark(rgba(226,233,240,.35), rgba(36,41,47,0.35)) 1px,
             transparent 1px
         ),
-        #fbfcfd;
+        light-dark(#fbfcfd, #15181c);
     background-size: 22px 22px;
-    border: 1px solid #dbe3ea;
+    border: 1px solid light-dark(#dbe3ea, #40484f);
     border-radius: 5px;
     padding: 22px;
 }
@@ -216,25 +215,24 @@
 .legal-filterbar input,
 .legal-filterbar select {
     min-height: 35px;
-    border: 1px solid #ccd7e1;
+    border: 1px solid light-dark(#ccd7e1, #485159);
     border-radius: 4px;
-    background: #fff;
-    color: #455d73;
+    background: light-dark(#fff, #121619);
+    color: light-dark(#455d73, #a6b1bc);
     padding: 7px 8px;
     font-size: 9px;
 }
 
 .legal-visible-count {
-    color: #748698;
+    color: light-dark(#748698, #848d96);
     font-size: 9px;
     text-align: right;
     white-space: nowrap;
 }
 
 .legal-table-wrap {
-    max-height: 650px;
-    overflow: auto;
-    border: 1px solid #d4dde5;
+    overflow-x: auto;
+    border: 1px solid light-dark(#d4dde5, #454c54);
     border-radius: 5px;
 }
 
@@ -242,7 +240,7 @@
     width: 100%;
     min-width: 1380px;
     border-collapse: collapse;
-    background: #fff;
+    background: light-dark(#fff, #121619);
 }
 
 .legal-table th,
@@ -250,8 +248,8 @@
     padding: 9px 10px;
     text-align: left;
     vertical-align: top;
-    border-bottom: 1px solid #e4e9ed;
-    border-right: 1px solid #edf0f3;
+    border-bottom: 1px solid light-dark(#e4e9ed, #3d4348);
+    border-right: 1px solid light-dark(#edf0f3, #383c41);
     font-size: 9px;
     line-height: 1.42;
 }
@@ -260,13 +258,13 @@
     position: sticky;
     top: 0;
     z-index: 3;
-    background: #e7eef4;
-    color: #354f67;
+    background: light-dark(#e7eef4, #1f262c);
+    color: light-dark(#354f67, #b1bdc8);
     font-weight: 700;
 }
 
 .legal-table tr:nth-child(even) td {
-    background: #fbfcfd;
+    background: light-dark(#fbfcfd, #15181c);
 }
 
 .legal-number {
@@ -278,12 +276,12 @@
 .legal-requirement {
     min-width: 340px;
     font-weight: 550;
-    color: #243d53;
+    color: light-dark(#243d53, #c1cdd7);
 }
 
 .legal-location {
     min-width: 280px;
-    color: #64798c;
+    color: light-dark(#64798c, #9099a2);
 }
 
 .legal-parties {
@@ -294,8 +292,8 @@
     display: inline-block;
     padding: 4px 7px;
     border-radius: 999px;
-    background: #e8f4ec;
-    color: #397253;
+    background: light-dark(#e8f4ec, #1f2b23);
+    color: light-dark(#397253, #a9c4b5);
     white-space: nowrap;
     font-weight: 600;
 }
@@ -308,18 +306,18 @@
 .version-policy {
     margin-bottom: 14px;
     padding: 12px;
-    background: #f5f8fa;
-    border-left: 3px solid #6f92ad;
+    background: light-dark(#f5f8fa, #181d21);
+    border-left: 3px solid light-dark(#6f92ad, #b2bec8);
 }
 
 .version-policy strong {
-    color: #2e4a62;
+    color: light-dark(#2e4a62, #b6c3ce);
     font-size: 10px;
 }
 
 .version-policy p {
     margin: 4px 0 0;
-    color: #64798d;
+    color: light-dark(#64798d, #8f99a2);
     font-size: 9px;
     line-height: 1.45;
 }
@@ -327,7 +325,7 @@
 .context-empty {
     padding: 25px;
     text-align: center;
-    color: #8393a1;
+    color: light-dark(#8393a1, #7a848c);
     font-size: 10px;
 }
 
@@ -366,15 +364,15 @@
     gap: 10px;
     margin: -2px 0 10px;
     padding: 9px 12px;
-    background: #f6f9fb;
-    border-left: 3px solid #6f91aa;
-    color: #617589;
+    background: light-dark(#f6f9fb, #171c20);
+    border-left: 3px solid light-dark(#6f91aa, #b2bec7);
+    color: light-dark(#617589, #929ca5);
     font-size: 9px;
     line-height: 1.4;
 }
 
 .context41-auto-note strong {
-    color: #304b62;
+    color: light-dark(#304b62, #b5c2cd);
     white-space: nowrap;
 }
 
@@ -382,7 +380,7 @@
     display: block;
     max-width: 680px;
     margin-top: 5px;
-    color: #8b98a4;
+    color: light-dark(#8b98a4, #767f87);
     font-size: 8px;
     line-height: 1.4;
 }

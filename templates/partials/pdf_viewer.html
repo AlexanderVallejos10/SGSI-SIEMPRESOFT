@@ -1,0 +1,25 @@
+{# Visor de PDF con PDF.js. Uso: {% include "partials/pdf_viewer.html" with url=... download=... title=... %} #}
+<div class="pv" data-pdf-viewer data-src="{{ url }}" data-download="{{ download|default:url }}" data-title="{{ title }}">
+    <div class="pv-bar">
+        <span class="pv-title" title="{{ title }}">{{ title }}</span>
+        <div class="pv-group" data-pv-nav>
+            <button type="button" data-pv-prev title="Página anterior"><svg class="ico"><use href="#i-prev"></use></svg></button>
+            <span class="pv-page"><input type="text" inputmode="numeric" value="1" data-pv-page aria-label="Página"> <span>de <b data-pv-count>–</b></span></span>
+            <button type="button" data-pv-next title="Página siguiente"><svg class="ico"><use href="#i-chevron"></use></svg></button>
+        </div>
+        <div class="pv-group" data-pv-zoomset>
+            <button type="button" data-pv-zoom="-1" title="Alejar"><svg class="ico"><use href="#i-minus"></use></svg></button>
+            <span class="pv-scale" data-pv-scale>100%</span>
+            <button type="button" data-pv-zoom="1" title="Acercar"><svg class="ico"><use href="#i-plus"></use></svg></button>
+            <button type="button" data-pv-fit title="Ajustar al ancho"><svg class="ico"><use href="#i-width"></use></svg></button>
+        </div>
+        <div class="pv-group">
+            <a href="{{ url }}" target="_blank" rel="noopener" title="Abrir en pestaña nueva"><svg class="ico"><use href="#i-external"></use></svg></a>
+            <a href="{{ download|default:url }}" data-no-loader title="Descargar"><svg class="ico"><use href="#i-download"></use></svg></a>
+            <button type="button" data-pv-full title="Pantalla completa"><svg class="ico"><use href="#i-fit"></use></svg></button>
+        </div>
+    </div>
+    <div class="pv-pages" data-pv-pages>
+        {% include "partials/doc_skeleton.html" %}
+    </div>
+</div>
