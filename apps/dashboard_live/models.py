@@ -72,6 +72,9 @@ class DashboardMetric(TraceableModel):
     source_compliance = models.CharField(max_length=20, blank=True)
     action_plan = models.TextField(blank=True)
 
+    is_active = models.BooleanField("Vigente", default=True, db_index=True)
+    created_in_system = models.BooleanField("Creado en el sistema", default=False)
+
     class Meta:
         ordering = ("metric_id",)
         constraints = [
@@ -107,6 +110,9 @@ class OesiMetric(TraceableModel):
     source_compliance = models.CharField(max_length=20, blank=True)
     record_label = models.CharField(max_length=255, blank=True)
 
+    is_active = models.BooleanField("Vigente", default=True, db_index=True)
+    created_in_system = models.BooleanField("Creado en el sistema", default=False)
+
     class Meta:
         ordering = ("metric_id",)
         constraints = [
@@ -126,6 +132,9 @@ class StrategicObjective(TraceableModel):
     description = models.TextField()
     source_row = models.PositiveSmallIntegerField()
 
+    is_active = models.BooleanField("Vigente", default=True, db_index=True)
+    created_in_system = models.BooleanField("Creado en el sistema", default=False)
+
     class Meta:
         ordering = ("source_row",)
         constraints = [
@@ -142,6 +151,9 @@ class SecurityObjective(TraceableModel):
     description = models.TextField()
     source_column = models.CharField(max_length=4)
     sort_order = models.PositiveSmallIntegerField(default=100)
+
+    is_active = models.BooleanField("Vigente", default=True, db_index=True)
+    created_in_system = models.BooleanField("Creado en el sistema", default=False)
 
     class Meta:
         ordering = ("sort_order",)
@@ -174,6 +186,9 @@ class StakeholderRequirement(TraceableModel):
     source_row = models.PositiveSmallIntegerField()
     stakeholder = models.CharField(max_length=220, blank=True)
     requirement = models.TextField()
+
+    is_active = models.BooleanField("Vigente", default=True, db_index=True)
+    created_in_system = models.BooleanField("Creado en el sistema", default=False)
 
     class Meta:
         ordering = ("source_row",)
@@ -209,6 +224,9 @@ class StrategicFactor(TraceableModel):
     description = models.TextField()
     weight = models.DecimalField(max_digits=8, decimal_places=4)
     classification = models.PositiveSmallIntegerField()
+
+    is_active = models.BooleanField("Vigente", default=True, db_index=True)
+    created_in_system = models.BooleanField("Creado en el sistema", default=False)
 
     class Meta:
         ordering = ("matrix_type", "source_row")

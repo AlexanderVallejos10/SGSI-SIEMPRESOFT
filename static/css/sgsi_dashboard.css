@@ -269,3 +269,8 @@ button.sd-cell:hover{transform:scale(1.08);box-shadow:0 0 0 2px var(--accent-sof
 /* Total sobre las barras de partes */
 .sd-total{margin:0 0 10px;font-size:13px;color:var(--muted)}
 .sd-total b{margin-right:4px;font-size:22px;font-weight:700;letter-spacing:-.02em;color:var(--ink);font-variant-numeric:tabular-nums}
+
+.sd-gestiones{display:inline-flex;gap:6px;margin-left:auto;margin-right:10px}
+.sd-gestion{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border:1px solid var(--hair);border-radius:6px;color:var(--ink);font-size:12px;font-weight:600;text-decoration:none}
+.sd-gestion:hover{background:var(--hover,rgba(0,0,0,.05))}
+.sd-gestion .ico{width:13px;height:13px}

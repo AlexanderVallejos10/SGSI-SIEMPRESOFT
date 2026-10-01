@@ -3,7 +3,7 @@
 {% block title %}{{ title }} | Dashboard SGSI{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard_live_v72.css' %}">{% endblock %}
 {% block content %}
-<div class="breadcrumb">Inicio / <a href="{{ return_url }}">Dashboard SGSI</a> / {{ title }}</div>
+<div class="breadcrumb"><a href="/">Inicio</a> / <a href="/">Tablero del SGSI</a> / {{ title }}</div>
 <div class="page-head"><div><h1>{{ title }}</h1><p>{{ subtitle }}</p></div></div>
 <div class="edit-layout">
   <section class="mock-panel dashboard-edit-card">
@@ -14,6 +14,6 @@
       <div class="form-actions"><a class="outline-btn" href="{{ return_url }}">Cancelar</a><button class="primary-btn" type="submit">Guardar cambios</button></div>
     </form>
   </section>
-  <aside class="trace-side-panel"><h2>Trazabilidad</h2><p>Estos campos provienen del Excel fuente.</p>{% for item in trace %}<div><b>{{ item.field_name }}</b><span>{{ item.source_sheet }}!{{ item.source_cell }}</span>{% if item.source_formula %}<code>={{ item.source_formula }}</code>{% endif %}</div>{% endfor %}</aside>
+  {% if trace %}<aside class="trace-side-panel"><h2>Trazabilidad</h2><p>Estos campos provienen del Excel fuente.</p>{% for item in trace %}<div><b>{{ item.field_name }}</b><span>{{ item.source_sheet }}!{{ item.source_cell }}</span>{% if item.source_formula %}<code>={{ item.source_formula }}</code>{% endif %}</div>{% endfor %}</aside>{% endif %}
 </div>
 {% endblock %}

@@ -12,6 +12,10 @@ urlpatterns = [
     path("dashboard-sgsi/factor/<uuid:pk>/editar/", views.edit_factor, name="edit_factor"),
     path("dashboard-sgsi/oee-osi/<uuid:pk>/toggle/", views.toggle_oee_alignment, name="toggle_oee_alignment"),
     path("dashboard-sgsi/req-osi/<uuid:pk>/toggle/", views.toggle_req_alignment, name="toggle_req_alignment"),
+    path("dashboard-sgsi/gestionar/<slug:tipo>/", views.gestionar, name="gestionar"),
+    path("dashboard-sgsi/gestionar/<slug:tipo>/nuevo/", views.crear_elemento, name="crear_elemento"),
+    path("dashboard-sgsi/gestionar/<slug:tipo>/<uuid:pk>/editar/", views.editar_elemento, name="editar_elemento"),
+    path("dashboard-sgsi/gestionar/<slug:tipo>/<uuid:pk>/vigencia/", views.vigencia_elemento, name="vigencia_elemento"),
     path("dashboard-sgsi/descargar/", views.download_updated_workbook, name="download"),
     path("dashboard-sgsi/subir/", views.upload_workbook, name="upload"),
 ]

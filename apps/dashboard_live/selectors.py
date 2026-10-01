@@ -36,14 +36,14 @@ def build_dashboard_context():
     if dataset is None:
         return {"dataset": None}
 
-    sgsi_metrics = list(dataset.sgsi_metrics.select_related("responsible_position").order_by("metric_id"))
-    oesi_metrics = list(dataset.oesi_metrics.select_related("responsible_position").order_by("metric_id"))
-    strategic = list(dataset.strategic_objectives.all())
-    security = list(dataset.security_objectives.all())
-    oee_alignments = list(dataset.oee_osi_alignments.select_related("strategic_objective", "security_objective"))
-    requirements = list(dataset.stakeholder_requirements.all())
-    req_alignments = list(dataset.requirement_osi_alignments.select_related("requirement", "security_objective"))
-    factors = list(dataset.strategic_factors.all())
+    sgsi_metrics = list(dataset.sgsi_metrics.filter(is_active=True).select_related("responsible_position").order_by("metric_id"))
+    oesi_metrics = list(dataset.oesi_metrics.filter(is_active=True).select_related("responsible_position").order_by("metric_id"))
+    strategic = list(dataset.strategic_objectives.filter(is_active=True))
+    security = list(dataset.security_objectives.filter(is_active=True))
+    oee_alignments = list(dataset.oee_osi_alignments.filter(strategic_objective__is_active=True, security_objective__is_active=True).select_related("strategic_objective", "security_objective"))
+    requirements = list(dataset.stakeholder_requirements.filter(is_active=True))
+    req_alignments = list(dataset.requirement_osi_alignments.filter(requirement__is_active=True, security_objective__is_active=True).select_related("requirement", "security_objective"))
+    factors = list(dataset.strategic_factors.filter(is_active=True))
 
     meta = dataset_meta(dataset)
     averaged = meta.get("ponderacion") == "promedio por grupo"

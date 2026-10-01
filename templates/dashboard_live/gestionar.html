@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ config.titulo }} | Tablero del SGSI{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/gestion_tablero.css' %}">{% endblock %}
+{% block content %}
+<div class="breadcrumb"><a href="/">Inicio</a> / <a href="{{ volver_tablero }}">Tablero del SGSI</a> / Gestionar</div>
+<div class="gt">
+  <header class="gt-cabecera">
+    <div>
+      <h1>{{ config.titulo }}</h1>
+      <p>{{ vigentes }} vigente{{ vigentes|pluralize }}. Los retirados no se borran: dejan de contar en el tablero y su historial se conserva.</p>
+    </div>
+    <div class="gt-acciones">
+      <a class="sd-btn sd-press" href="{{ volver_tablero }}">Volver al tablero</a>
+      {% if puede_crear %}<a class="sd-btn is-solid sd-press" href="{% url 'dashboard_live:crear_elemento' tipo %}"><svg class="ico" aria-hidden="true"><use href="#i-plus"></use></svg>Nuevo {{ config.singular }}</a>{% endif %}
+    </div>
+  </header>
+  <nav class="gt-tipos" aria-label="Elementos del tablero">
+    {% for t in tipos %}<a href="{% url 'dashboard_live:gestionar' t.clave %}"{% if t.activo %} aria-current="page" class="is-on"{% endif %}>{{ t.titulo }}</a>{% endfor %}
+  </nav>
+  {% if excel_del_sistema %}<p class="gt-nota"><svg class="ico" aria-hidden="true"><use href="#i-file-check"></use></svg>El tablero ya tiene elementos agregados o retirados en el sistema: «Descargar Excel» genera el libro completo con estos datos.</p>{% endif %}
+  <div class="gt-tabla-envoltura">
+    <table class="gt-tabla">
+      <thead><tr><th>Código</th><th>Descripción</th><th>Estado</th>{% if puede_cambiar %}<th class="gt-acc">Acciones</th>{% endif %}</tr></thead>
+      <tbody>
+        {% for f in filas %}
+        <tr class="{% if not f.obj.is_active %}is-retirado{% endif %}">
+          <td class="gt-codigo">{{ f.codigo }}{% if f.obj.created_in_system %}<small>Agregado en el sistema</small>{% endif %}</td>
+          <td>{{ f.texto }}</td>
+          <td><span class="gt-estado {% if f.obj.is_active %}is-vigente{% endif %}">{% if f.obj.is_active %}Vigente{% else %}Retirado{% endif %}</span></td>
+          {% if puede_cambiar %}
+          <td class="gt-acc">
+            <a class="sd-btn sd-press is-small" href="{{ f.editar }}">Editar</a>
+            <form method="post" action="{{ f.vigencia }}" {% if f.obj.is_active %}data-confirmar-titulo="Retirar {{ config.singular }} {{ f.codigo }}" data-confirmar="Deja de contar en el tablero y en los cálculos. Podrá restaurarlo cuando quiera; el historial se conserva." data-confirmar-accion="Retirar" data-confirmar-peligro{% endif %}>
+              {% csrf_token %}<input type="hidden" name="vigente" value="{% if f.obj.is_active %}0{% else %}1{% endif %}">
+              <button class="sd-btn sd-press is-small{% if f.obj.is_active %} is-quiet{% endif %}">{% if f.obj.is_active %}Retirar{% else %}Restaurar{% endif %}</button>
+            </form>
+          </td>
+          {% endif %}
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="gt-vacio">Todavía no hay elementos. {% if puede_crear %}Agregue el primero con «Nuevo {{ config.singular }}».{% endif %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

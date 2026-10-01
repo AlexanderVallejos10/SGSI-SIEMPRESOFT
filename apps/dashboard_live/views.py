@@ -5,7 +5,7 @@ from pathlib import Path
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -13,6 +13,8 @@ from django.views.decorators.http import require_POST
 
 from .change_log import log_changes
 from .exporter import export_workbook
+from .exporter_sistema import exportar_desde_sistema
+from .gestion import TIPOS, cambiar_vigencia, crear, elementos, estructura_modificada
 from .forms import DashboardMetricForm, DashboardUploadForm, OesiMetricForm, StrategicFactorForm
 from .importer import import_workbook
 from .models import (
@@ -89,6 +91,7 @@ def dashboard_payload(request, refresh=False):
         "can_change": can_change,
         "overview": system_overview(refresh=refresh),
         "links": {
+            "gestionar": {clave: reverse("dashboard_live:gestionar", args=[clave]) for clave in TIPOS} if can_change else {},
             "risks": reverse("traceability:risks"),
             "incidents": reverse("registers:detail", args=["registro-incidentes"]),
             "corrective": reverse("registers:detail", args=["medidas-correctivas"]),
@@ -371,7 +374,7 @@ def download_updated_workbook(request):
         messages.error(request, "No existe un Dashboard vigente.")
         return redirect("/")
 
-    content = export_workbook(dataset)
+    content = exportar_desde_sistema() if estructura_modificada(dataset) else export_workbook(dataset)
     filename = f"Dashboard_SGSI_SIEMPRESOFT_{dataset.version_label or 'actualizado'}.xlsx"
     response = HttpResponse(
         content,
@@ -428,3 +431,108 @@ def upload_workbook(request):
         form = DashboardUploadForm()
 
     return render(request, "dashboard_live/upload.html", {"form": form})
+
+
+def _tipo(tipo):
+    if tipo not in TIPOS:
+        raise Http404("Tipo no válido.")
+    return TIPOS[tipo]
+
+
+def _permiso(request, model, accion):
+    return request.user.is_superuser or request.user.has_perm(f"{model._meta.app_label}.{accion}_{model._meta.model_name}")
+
+
+def _volver(tipo):
+    return f"{reverse('dashboard_live:gestionar', args=[tipo])}"
+
+
+@login_required
+def gestionar(request, tipo):
+    config = _tipo(tipo)
+    dataset = current_dataset()
+    if dataset is None:
+        messages.error(request, "Primero suba el tablero del SGSI.")
+        return redirect("/")
+    if not _permiso(request, config["model"], "view") and not _can_change(request):
+        raise PermissionDenied
+    filas = [{
+        "obj": obj,
+        "codigo": config["codigo"](obj),
+        "texto": config["texto"](obj),
+        "editar": reverse("dashboard_live:editar_elemento", args=[tipo, obj.pk]),
+        "vigencia": reverse("dashboard_live:vigencia_elemento", args=[tipo, obj.pk]),
+    } for obj in elementos(dataset, tipo)]
+    return render(request, "dashboard_live/gestionar.html", {
+        "tipos": [{"clave": k, "titulo": v["titulo"], "activo": k == tipo} for k, v in TIPOS.items()],
+        "tipo": tipo,
+        "config": config,
+        "filas": filas,
+        "vigentes": sum(1 for f in filas if f["obj"].is_active),
+        "puede_crear": _permiso(request, config["model"], "add"),
+        "puede_cambiar": _permiso(request, config["model"], "change"),
+        "volver_tablero": f"{reverse('dashboard_live:home')}#{config['seccion']}",
+        "excel_del_sistema": estructura_modificada(dataset),
+    })
+
+
+def _formulario(request, tipo, obj=None):
+    config = _tipo(tipo)
+    dataset = current_dataset()
+    if dataset is None:
+        raise Http404("No hay tablero vigente.")
+    accion = "change" if obj else "add"
+    if not _permiso(request, config["model"], accion):
+        raise PermissionDenied
+    form_class = config["form"]
+    if request.method == "POST":
+        form = form_class(request.POST, instance=obj, dataset=dataset)
+        if form.is_valid():
+            if obj is None:
+                creado = crear(dataset, tipo, form, request.user)
+                messages.success(request, f"Se agregó {config['singular']} {config['codigo'](creado)}.")
+            else:
+                antes = {campo: getattr(obj, campo) for campo in form_class.Meta.fields}
+                guardado = form.save(commit=False)
+                guardado.updated_by = request.user
+                guardado.save()
+                log_changes(dataset=dataset, entity_type=tipo, entity_key=str(obj.pk), before=antes,
+                            after={campo: getattr(guardado, campo) for campo in form_class.Meta.fields},
+                            actor=request.user, trace_lookup=_trace_lookup(dataset, tipo, str(obj.pk)))
+                messages.success(request, "Cambios guardados.")
+            return redirect(_volver(tipo))
+    else:
+        form = form_class(instance=obj, dataset=dataset, initial=None if obj else config["inicial"](dataset))
+    titulo = f"Editar {config['singular']} {config['codigo'](obj)}" if obj else f"Nuevo {config['singular']}"
+    return render(request, "dashboard_live/edit_form.html", {
+        "title": titulo,
+        "subtitle": config["titulo"],
+        "form": form,
+        "return_url": _volver(tipo),
+        "trace": [],
+    })
+
+
+@login_required
+def crear_elemento(request, tipo):
+    return _formulario(request, tipo)
+
+
+@login_required
+def editar_elemento(request, tipo, pk):
+    config = _tipo(tipo)
+    obj = get_object_or_404(config["model"], pk=pk, dataset__is_current=True)
+    return _formulario(request, tipo, obj)
+
+
+@login_required
+@require_POST
+def vigencia_elemento(request, tipo, pk):
+    config = _tipo(tipo)
+    obj = get_object_or_404(config["model"], pk=pk, dataset__is_current=True)
+    if not _permiso(request, config["model"], "change"):
+        raise PermissionDenied
+    vigente = request.POST.get("vigente") == "1"
+    cambiar_vigencia(obj, tipo, vigente, request.user)
+    messages.success(request, f"{config['codigo'](obj)} {'vuelve a estar vigente' if vigente else 'quedó retirado; su historial se conserva'}.")
+    return redirect(_volver(tipo))

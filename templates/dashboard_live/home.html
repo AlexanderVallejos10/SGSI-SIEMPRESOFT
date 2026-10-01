@@ -28,7 +28,8 @@
     </div>
     <div class="sd-hero-actions">
       <a class="sd-btn sd-press" href="{% url 'dashboard_live:download' %}" data-no-loader>Descargar Excel</a>
-      {% if can_change %}<a class="sd-btn is-solid sd-press" href="{% url 'dashboard_live:upload' %}">Subir nueva versión</a>{% endif %}
+      {% if can_change %}<a class="sd-btn sd-press" href="{% url 'dashboard_live:gestionar' 'objetivos-estrategicos' %}">Gestionar tablero</a>
+      <a class="sd-btn is-solid sd-press" href="{% url 'dashboard_live:upload' %}">Subir nueva versión</a>{% endif %}
     </div>
 
     <div class="sd-kpis" data-render="kpis">

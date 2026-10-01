@@ -490,7 +490,10 @@
 
   function matrix(el, title, rows, security, kind) {
     const sum = state.data.summary[kind];
-    el.innerHTML = `<div class="sd-card-head"><h3>${esc(title)}</h3><span class="sd-state t-info">${sum[0]} de ${sum[1]} puntos mínimos</span></div>
+    const g = (state.data.links && state.data.links.gestionar) || {};
+    const gestion = [kind === "oee" ? ["objetivos-estrategicos", "Objetivos estratégicos"] : ["expectativas", "Expectativas"], ["objetivos-seguridad", "Objetivos de seguridad"]]
+      .filter(([k]) => g[k]).map(([k, t]) => `<a class="sd-gestion" href="${esc(g[k])}"><svg class="ico" aria-hidden="true"><use href="#i-plus"></use></svg>${esc(t)}</a>`).join("");
+    el.innerHTML = `<div class="sd-card-head"><h3>${esc(title)}</h3>${gestion ? `<span class="sd-gestiones">${gestion}</span>` : ""}<span class="sd-state t-info">${sum[0]} de ${sum[1]} puntos mínimos</span></div>
       <div class="sd-matrix-wrap"><table class="sd-matrix"><thead><tr><th></th>${security.map((s, j) => `<th data-col="${j}" title="${esc(s.description)}">${esc(s.code)}</th>`).join("")}</tr></thead>
       <tbody>${rows.map((r, i) => `<tr data-row="${i}"><th title="${esc(r.text)}"><b>${i && rows[i - 1].code === r.code ? "" : esc(r.code)}</b>${esc(r.text)}</th>${r.cells.map((c, j) => `<td>${c
         ? (c.url ? `<button type="button" class="sd-cell r-${(c.rel || "n").toLowerCase()}" data-url="${esc(c.url)}" data-i="${i}" data-j="${j}">${esc(c.rel || "·")}</button>`
