@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="{% static 'css/access.css' %}">
     <link rel="stylesheet" href="{% static 'css/sd_system.css' %}">
     <link rel="stylesheet" href="{% static 'css/avisos.css' %}">
+    <link rel="stylesheet" href="{% static 'css/busqueda.css' %}">
 </head>
 <body>
 <script>try{if(localStorage.getItem("sgsi-nav")==="collapsed"&&window.innerWidth>900)document.body.classList.add("nav-collapsed")}catch(e){}</script>
@@ -88,6 +89,15 @@
                 <svg class="ico"><use href="#i-menu"></use></svg>
             </button>
             <div class="platform-title"><b>SGSI</b> Siempresoft E.I.R.L.</div>
+            <div class="bq" data-busqueda data-sugerencias="{% url 'core:sugerencias' %}">
+                <button type="button" class="tb-btn tb-icon bq-abrir" data-bq-abrir aria-label="Buscar en el SGSI" title="Buscar (Ctrl + K)"><svg class="ico"><use href="#i-search"></use></svg></button>
+                <form class="bq-form" action="{% url 'core:buscar' %}" method="get" role="search" data-bq-form>
+                    <svg class="ico bq-lupa" aria-hidden="true"><use href="#i-search"></use></svg>
+                    <input type="search" name="q" class="bq-input" data-bq-input placeholder="Buscar personas, activos, procesos, documentos…" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="bq-panel" aria-label="Buscar en el SGSI" value="{{ q|default:'' }}">
+                    <kbd class="bq-atajo" aria-hidden="true">Ctrl K</kbd>
+                </form>
+                <div class="bq-panel" id="bq-panel" role="listbox" data-bq-panel hidden></div>
+            </div>
             <div class="top-actions">
                 <div class="tb-pop" data-pop>
                     <button type="button" class="tb-btn" data-pop-toggle aria-expanded="false" title="Personas conectadas">
@@ -153,6 +163,7 @@
     </section>
 </div>
 <script src="{% static 'js/sgsi_avisos.js' %}"></script>
+<script src="{% static 'js/sgsi_busqueda.js' %}" defer></script>
 <script src="{% static 'js/mockup_sgsi.js' %}"></script>
 {% if rive_aviso %}<div hidden data-avisos-config data-rive-lib="{% static 'vendor/rive/rive.js' %}" data-rive-wasm="{% static 'vendor/rive/rive.wasm' %}" data-rive-escudo="{% static 'rive/sgsi_escudo.riv' %}"></div>{% endif %}
 <div hidden data-sgsi-loader-config data-lottie-lib="{% static 'vendor/lottie_light.min.js' %}" data-lottie-src="{% static 'lottie/sgsi-loader.json' %}" data-pdfjs-local="{% static 'vendor/pdfjs/pdf.min.js' %}" data-pdfjs-worker-local="{% static 'vendor/pdfjs/pdf.worker.min.js' %}"></div>

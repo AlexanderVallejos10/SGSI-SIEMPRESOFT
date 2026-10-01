@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Buscar{% if q %}: {{ q }}{% endif %}{% endblock %}
+{% block content %}
+<div class="breadcrumb"><a href="/">Inicio</a> / Búsqueda{% if solo_titulo %} / {{ solo_titulo }}{% endif %}</div>
+<div class="bq-pagina">
+  <header class="bq-cabecera">
+    <h1>{% if q %}Resultados para «{{ q }}»{% else %}Buscar en el SGSI{% endif %}</h1>
+    <p>{% if q %}{{ total }} resultado{{ total|pluralize }}{% if solo_titulo %} en {{ solo_titulo }}{% endif %}.{% if solo %} <a href="?q={{ q|urlencode }}">Ver en todo el sistema</a>{% endif %}{% else %}Escriba en la barra superior: personas, activos, procesos, riesgos, documentos, archivos Excel o PDF y filas de los registros.{% endif %}</p>
+  </header>
+  {% for grupo in grupos %}
+  <section class="bq-seccion">
+    <h2><svg class="ico" aria-hidden="true"><use href="#{{ grupo.icono }}"></use></svg>{{ grupo.titulo }}<span>{{ grupo.items|length }}</span></h2>
+    <ul>
+      {% for item in grupo.items %}
+      <li><a href="{{ item.url }}"><span class="bq-r-texto">{{ item.texto }}</span>{% if item.detalle %}<span class="bq-r-detalle">{{ item.detalle }}</span>{% endif %}{% if item.codigo %}<code>{{ item.codigo }}</code>{% endif %}</a></li>
+      {% endfor %}
+    </ul>
+    {% if not solo and grupo.items|length >= 8 %}<a class="bq-mas" href="?q={{ q|urlencode }}&en={{ grupo.clave }}">Ver todos en {{ grupo.titulo }}</a>{% endif %}
+  </section>
+  {% empty %}
+  {% if q %}<p class="bq-vacio">No se encontró nada con «{{ q }}». Pruebe con otra palabra, un código o parte de un nombre.</p>{% endif %}
+  {% endfor %}
+</div>
+{% endblock %}

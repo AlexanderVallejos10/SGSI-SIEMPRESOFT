@@ -4,6 +4,7 @@ from django.urls import include, path
 from apps.traceability.media import protected_media
 
 urlpatterns = [
+    path("buscar/", include("apps.core.urls")),
     path("trazabilidad/", include("apps.traceability.urls")),
     path("registros/", include("apps.registers.urls")),
     path("activos/", include("apps.assets.urls")),
