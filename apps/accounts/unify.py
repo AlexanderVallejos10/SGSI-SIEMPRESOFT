@@ -3,7 +3,7 @@
 Dos cuentas son la misma persona si comparten correo, o el primer nombre y al menos un apellido
 («Milton Guevara» = «Milton Guevara Santisteban»). La cuenta que queda es la que tiene más uso real;
 todo lo que apuntaba a la duplicada (puestos, activos, movimientos, riesgos, auditoría, sesiones, roles)
-pasa a ella y la duplicada se elimina. Los casos dudosos no se tocan: se informan."""
+pasa a ella y la duplicada queda desactivada como historial (nunca se borra). Los casos dudosos no se tocan: se informan."""
 
 import re
 import unicodedata
@@ -13,6 +13,9 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from apps.auditlog.services import register_audit_event
+from apps.core.merging import MERGED_SUFFIX
+
+KEEP_HISTORY = {"auditlog.auditlog"}
 
 PARTICLES = {"de", "del", "la", "las", "los", "y", "ing", "lic", "dr", "dra", "mg"}
 
@@ -55,7 +58,7 @@ def score(user):
 def duplicate_groups():
     """Grupos de cuentas que son la misma persona. Devuelve [(canónica, [duplicadas], dudoso)]."""
     User = get_user_model()
-    users = list(User.objects.all().prefetch_related("groups"))
+    users = list(User.objects.exclude(username__endswith=MERGED_SUFFIX).prefetch_related("groups"))
     parent = {u.pk: u.pk for u in users}
 
     def find(x):
@@ -93,6 +96,8 @@ def _move_relations(dup, keep):
     failed = []
     for rel in User._meta.related_objects:
         model = rel.related_model
+        if model._meta.label_lower in KEEP_HISTORY:
+            continue
         if rel.many_to_many:
             accessor = rel.get_accessor_name()
             for obj in getattr(dup, accessor).all():
@@ -134,6 +139,20 @@ def _merge_fields(dup, keep):
         keep.is_active = True
 
 
+def _retire_user(dup):
+    from .models import UserStatus
+
+    dup.is_active = False
+    dup.status = UserStatus.INACTIVE
+    dup.status_as_of = timezone.localdate()
+    if not dup.username.endswith(MERGED_SUFFIX):
+        dup.username = f"{dup.username[:150 - len(MERGED_SUFFIX)]}{MERGED_SUFFIX}"
+    if dup.business_code and not dup.business_code.endswith("-DUP"):
+        dup.business_code = f"{dup.business_code[:26]}-DUP"
+    dup.set_unusable_password()
+    dup.save()
+
+
 @transaction.atomic
 def merge(keep, dups, actor=None):
     report = []
@@ -145,16 +164,12 @@ def merge(keep, dups, actor=None):
                              before={"duplicada": str(dup.pk), "codigo": dup.business_code, "usuario": dup.username},
                              after={"codigo": keep.business_code, "usuario": keep.username},
                              reason="Unificación de personas duplicadas")
+        code = dup.business_code
+        _retire_user(dup)
         if failed:
-            dup.is_active = False
-            dup.username = f"{dup.username}__dup"[:150]
-            dup.business_code = f"{dup.business_code}-DUP"[:30]
-            dup.save()
             report.append(f"{dup.username}: desactivada (no se pudo mover: {', '.join(failed)})")
         else:
-            code = dup.business_code
-            dup.delete()
-            report.append(f"{code}: unificada")
+            report.append(f"{code}: unificada (la cuenta duplicada queda desactivada)")
     return report
 
 
@@ -169,7 +184,7 @@ def duplicate_assets():
     from apps.assets.models import Asset
 
     groups = {}
-    for asset in Asset.objects.all().order_by("created_at"):
+    for asset in Asset.objects.exclude(code__endswith=MERGED_SUFFIX).order_by("created_at"):
         groups.setdefault(asset_key(asset.code), []).append(asset)
     out = []
     for members in groups.values():
@@ -194,4 +209,7 @@ def merge_assets(keep, dups, actor=None):
         keep.save()
         register_audit_event(user=actor, module="assets", action="merge_asset", entity="Asset", entity_id=keep.pk,
                              before={"duplicado": dup.code}, after={"codigo": keep.code}, reason="Unificación de activos duplicados")
-        dup.delete()
+        dup.code = f"{dup.code[:50 - len(MERGED_SUFFIX)]}{MERGED_SUFFIX}"
+        dup.status = "retired"
+        dup.custodian = None
+        dup.save()

@@ -41,7 +41,11 @@ class UnaPersonaUnCodigo(TestCase):
         self.assertEqual(self.real.last_name, "Guevara Santisteban")  # se completa el apellido
         self.assertEqual(self.real.position, "Gerente General")
         self.assertEqual(self.real.business_code, "EMP-001")          # el código de la cuenta que queda
-        self.assertFalse(get_user_model().objects.filter(pk=self.dup.pk).exists())
+        self.dup.refresh_from_db()
+        self.assertFalse(self.dup.is_active)
+        self.assertTrue(self.dup.username.endswith("__dup"))
+        self.assertFalse(self.dup.has_usable_password())
+        self.assertEqual(duplicate_groups(), [])
 
     def test_dos_cuentas_con_contrasena_y_correos_distintos_no_se_tocan(self):
         User = get_user_model()
@@ -56,6 +60,15 @@ class UnaPersonaUnCodigo(TestCase):
         self.assertTrue(get_user_model().objects.filter(pk=self.dup.pk).exists())
 
 
+    def test_la_bitacora_conserva_a_quien_hizo_cada_accion(self):
+        from apps.auditlog.models import AuditLog
+        from apps.auditlog.services import register_audit_event
+
+        register_audit_event(user=self.dup, module="accounts", action="prueba", entity="User", entity_id=self.dup.pk)
+        merge(self.real, [self.dup])
+        self.assertTrue(AuditLog.objects.filter(user=self.dup, action="prueba").exists())
+
+
 class UnActivoUnCodigo(TestCase):
     def test_codigos_equivalentes(self):
         self.assertEqual(asset_key("SS1-CPU-012"), asset_key("ss1 cpu 12"))
@@ -65,3 +78,14 @@ class UnActivoUnCodigo(TestCase):
         Asset.objects.create(code="SS1-CPU-012", asset_type="CPU", name="Computadora")
         Asset.objects.create(code="SS1-CPU-12", asset_type="CPU", name="Computadora")
         self.assertEqual(len(duplicate_assets()), 1)
+
+    def test_el_activo_duplicado_se_retira_sin_borrarse(self):
+        from apps.accounts.unify import merge_assets
+
+        keep = Asset.objects.create(code="SS1-CPU-012", asset_type="CPU", name="Computadora")
+        dup = Asset.objects.create(code="SS1-CPU-12", asset_type="CPU", name="Computadora")
+        merge_assets(keep, [dup])
+        dup.refresh_from_db()
+        self.assertEqual(dup.status, "retired")
+        self.assertTrue(dup.code.endswith("__dup"))
+        self.assertEqual(duplicate_assets(), [])

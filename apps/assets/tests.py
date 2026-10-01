@@ -6,9 +6,11 @@ from django.test import TestCase
 from django.urls import reverse
 
 from apps.assets.models import Asset, AssetClass, AssetMovement, AssetStatus, Maintenance, MovementType
+from apps.core.testing import ACTIVOS, REGISTROS, requiere_datos_reales
 from apps.registers.models import RegisterEntry
 
 
+@requiere_datos_reales(ACTIVOS, REGISTROS)
 class CargaRealDeSiempresoft(TestCase):
     """Carga el paquete real (apps/assets/data y apps/registers/data) y revisa casos concretos."""
 

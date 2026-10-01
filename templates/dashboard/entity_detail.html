@@ -7,7 +7,7 @@
 {% block content %}
 
 <div class="breadcrumb">
-    ⌂ / Gestión /
+    <a href="/">Inicio</a> / Gestión del SGSI /
     <a href="{% url 'dashboard:entity_list' entity_key %}">
         {{ entity.title }}
     </a>
@@ -18,12 +18,12 @@
 
     <div>
         <h1>
-            {{ entity.icon }}
+            <svg class="ico" aria-hidden="true"><use href="#{{ entity.icon }}"></use></svg>
             {{ object_label }}
         </h1>
 
         <p>
-            Ficha relacional del registro.
+            Ficha del registro y todo lo que está vinculado a él.
         </p>
     </div>
 
@@ -48,7 +48,7 @@
         class="{% if tab.active %}active{% endif %}"
         href="{% url 'dashboard:entity_list' tab.entity %}"
     >
-        {{ tab.icon }}
+        <svg class="ico" aria-hidden="true"><use href="#{{ tab.icon }}"></use></svg>
         {{ tab.title }}
     </a>
 

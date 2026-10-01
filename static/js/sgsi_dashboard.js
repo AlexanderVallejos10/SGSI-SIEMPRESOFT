@@ -53,16 +53,11 @@
   };
   const hideTip = () => { tip.hidden = true; };
 
+  const avisos = () => window.SGSI && window.SGSI.avisos;
   const toast = (html, tone = "info") => {
-    const box = $("[data-toasts]");
-    const el = document.createElement("div");
-    el.className = `sd-toast t-${tone}`; el.innerHTML = html;
-    box.appendChild(el);
-    if (!reduce) el.animate([{ opacity: 0, transform: "translateY(12px)" }, { opacity: 1, transform: "none" }], { duration: 260, easing: "ease-out" });
-    setTimeout(() => {
-      const out = reduce ? null : el.animate([{ opacity: 1 }, { opacity: 0, transform: "translateY(6px)" }], { duration: 220 });
-      if (out) out.onfinish = () => el.remove(); else el.remove();
-    }, 4200);
+    const av = avisos();
+    if (!av) return;
+    if (tone === "bad") av.error(html.replace(/<[^>]+>/g, "")); else av.info(html);
   };
 
   // Aparición escalonada (Web Animations API)
@@ -121,7 +116,7 @@
     return msgs;
   };
 
-  async function load({ force = false } = {}) {
+  async function load({ force = false, quiet = false } = {}) {
     const refreshBtn = $("[data-refresh]");
     refreshBtn?.classList.add("is-spinning");
     setLive("busy", "Consultando…");
@@ -134,13 +129,12 @@
       const data = await res.json();
       lastOk = Date.now();
       setLive("on", "Actualizado recién");
-      if (data.unchanged) { if (force) toast("Todo está al día.", "ok"); return; }
+      if (data.unchanged) return;
       const msgs = diffMessages(state.data, data);
       state.data = data; state.version = data.version;
       paintLead();
       redrawAll();
-      msgs.forEach(([m, t]) => toast(m, t));
-      if (force && !msgs.length) toast("Datos recalculados.", "ok");
+      if (msgs.length && !quiet) toast(msgs.length === 1 ? msgs[0][0] : `${msgs[0][0]} y ${msgs.length - 1} cambio${msgs.length > 2 ? "s" : ""} más.`, msgs[0][1]);
     } catch (e) {
       setLive("off", "Sin conexión con el servidor");
     } finally {
@@ -514,24 +508,53 @@
   renderers["oee-matrix"] = (el, d) => (d.dataset ? matrix(el, "Objetivos estratégicos vs objetivos de seguridad", d.oee_matrix, d.security, "oee") : empty(el, "Matriz OEE vs OSI", "Sin tablero cargado."));
   renderers["req-matrix"] = (el, d) => (d.dataset ? matrix(el, "Expectativas de partes interesadas vs objetivos de seguridad", d.req_matrix, d.security, "req") : empty(el, "Matriz EPI vs OSI", "Sin tablero cargado."));
 
-  root.addEventListener("click", async (ev) => { // cambio de P → S → vacío, con respuesta inmediata
-    const cell = ev.target.closest("button.sd-cell[data-url]");
-    if (!cell) return;
-    const prev = cell.textContent.trim();
-    const next = { P: "S", S: "" }[prev] ?? "P";
-    cell.textContent = next || "·"; cell.className = `sd-cell r-${(next || "n").toLowerCase()} is-pending`;
-    if (!reduce) cell.animate([{ transform: "scale(.85)" }, { transform: "scale(1.08)" }, { transform: "scale(1)" }], { duration: 260 });
+  const setCell = (cell, rel) => { cell.textContent = rel || "·"; cell.className = `sd-cell r-${(rel || "n").toLowerCase()}`; };
+  const cellByUrl = (url) => root.querySelector(`button.sd-cell[data-url="${CSS.escape(url)}"]`);
+  const postRelation = async (url, rel) => {
+    const body = new FormData();
+    if (rel !== undefined) body.append("relation", rel);
+    const res = await fetch(url, { method: "POST", credentials: "same-origin", headers: { "X-CSRFToken": csrf, Accept: "application/json" }, body });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || res.status);
+    return data;
+  };
+  const applyChanged = (changed) => (changed || []).forEach((c) => {
+    const el = cellByUrl(c.url);
+    if (!el) return;
+    setCell(el, c.relation);
+    avisos()?.marcar(el);
+  });
+  async function undoChanges(changed) {
+    const av = avisos();
+    av?.guardando("Deshaciendo…");
     try {
-      const res = await fetch(cell.dataset.url, { method: "POST", credentials: "same-origin", headers: { "X-CSRFToken": csrf } });
-      const data = await res.json();
-      if (!res.ok || !data.ok) throw new Error();
-      cell.textContent = data.relation || "·"; cell.className = `sd-cell r-${(data.relation || "n").toLowerCase()}`;
-      const col = state.data.security[Number(cell.dataset.j)]?.code || "";
-      toast(`<b>${esc(col)}</b>: relación ${data.relation ? `«${data.relation}»` : "retirada"}.`, "ok");
-      load({ force: true }); // recalcula puntajes e indicador M1 (y el primario anterior, si cambió)
+      for (const c of changed) applyChanged((await postRelation(c.url, c.previous)).changed);
+      av?.guardado({ texto: "Cambio deshecho" });
     } catch (e) {
-      cell.textContent = prev; cell.className = `sd-cell r-${(prev === "·" ? "n" : prev).toLowerCase()}`;
-      toast("No se pudo guardar el cambio.", "bad");
+      av?.error("No se pudo deshacer el cambio");
+    }
+    load({ force: true, quiet: true });
+  }
+
+  root.addEventListener("click", async (ev) => {
+    const cell = ev.target.closest("button.sd-cell[data-url]");
+    if (!cell || cell.classList.contains("is-pending")) return;
+    const av = avisos();
+    const prev = cell.textContent.trim().replace("·", "");
+    setCell(cell, { "": "S", S: "P", P: "" }[prev] ?? "");
+    cell.classList.add("is-pending");
+    av?.guardando();
+    try {
+      const data = await postRelation(cell.dataset.url);
+      cell.classList.remove("is-pending");
+      applyChanged(data.changed);
+      const col = state.data.security[Number(cell.dataset.j)]?.code || "";
+      av?.guardado({ texto: `${col}: ${data.relation ? `relación «${data.relation}»` : "relación retirada"}`, deshacer: () => undoChanges(data.changed) });
+      load({ force: true, quiet: true });
+    } catch (e) {
+      setCell(cell, prev);
+      av?.marcar(cell, "error");
+      av?.error("No se pudo guardar el cambio", { reintentar: () => cell.click() });
     }
   });
 

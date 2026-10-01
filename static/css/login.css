@@ -27,6 +27,8 @@ body.lg{margin:0;min-height:100vh;display:grid;grid-template-columns:minmax(0,1.
 .lg-mark svg,.lg-lottie{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .lg-lottie{display:none}
 .lg-mark.has-lottie .lg-lottie{display:block}.lg-mark.has-lottie .lg-discs{display:none}
+.lg-rive{display:none;position:absolute;inset:0;width:100%;height:100%}
+.lg-mark.has-rive .lg-rive{display:block}.lg-mark.has-rive .lg-discs,.lg-mark.has-rive .lg-lottie{display:none}
 .lg-line{fill:none;stroke:var(--muted);stroke-opacity:.6;stroke-width:1.7;stroke-linecap:round}
 .lg-disc{transform-box:fill-box;transform-origin:center bottom}
 .lg-pass{position:relative}

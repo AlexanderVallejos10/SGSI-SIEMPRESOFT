@@ -2,6 +2,8 @@ from pathlib import Path
 
 from django import forms
 
+from apps.core.etiquetas import traducir_formulario
+
 from .models import DashboardMetric, OesiMetric, StrategicFactor
 
 
@@ -31,6 +33,7 @@ class DashboardMetricForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        traducir_formulario(self)
         for field in self.fields.values():
             field.widget.attrs.setdefault("class", "form-control")
         if self.instance and self.instance.metric_id in {1, 2}:
@@ -60,6 +63,7 @@ class OesiMetricForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        traducir_formulario(self)
         for field in self.fields.values():
             field.widget.attrs.setdefault("class", "form-control")
 
@@ -78,6 +82,7 @@ class StrategicFactorForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        traducir_formulario(self)
         for field in self.fields.values():
             field.widget.attrs.setdefault("class", "form-control")
         self.fields["classification"].widget = forms.Select(

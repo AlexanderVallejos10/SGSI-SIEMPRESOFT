@@ -4,6 +4,7 @@
 
 - GSAP 3.13 (gratuito, incluidos sus complementos) con SplitText y DrawSVG: animación de la pantalla de ingreso.
 - Lottie 5.12.2 (versión ligera): animación oficial del isotipo de SiempreSoft.
+- Rive 2.44.0 (canvas-lite): motor del escudo animado (static/rive/sgsi_escudo.riv) del ingreso y de los avisos de guardado.
 
 Versiones fijas. La huella SHA-256 de cada archivo queda en static/vendor/recursos.json; si alguien altera
 un archivo, el comando lo detecta la próxima vez. Después de descargarlas el sistema funciona sin internet."""
@@ -17,16 +18,19 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 CDN = "https://cdnjs.cloudflare.com/ajax/libs"
+NPM = "https://cdn.jsdelivr.net/npm"
 FILES = {
     "vendor/gsap/gsap.min.js": f"{CDN}/gsap/3.13.0/gsap.min.js",
     "vendor/gsap/SplitText.min.js": f"{CDN}/gsap/3.13.0/SplitText.min.js",
     "vendor/gsap/DrawSVGPlugin.min.js": f"{CDN}/gsap/3.13.0/DrawSVGPlugin.min.js",
     "vendor/lottie_light.min.js": f"{CDN}/lottie-web/5.12.2/lottie_light.min.js",
+    "vendor/rive/rive.js": f"{NPM}/@rive-app/canvas-lite@2.44.0/rive.js",
+    "vendor/rive/rive.wasm": f"{NPM}/@rive-app/canvas-lite@2.44.0/rive.wasm",
 }
 
 
 class Command(BaseCommand):
-    help = "Descarga GSAP y Lottie en static/vendor/ (una sola vez)."
+    help = "Descarga GSAP, Lottie y Rive en static/vendor/ (una sola vez)."
 
     def add_arguments(self, parser):
         parser.add_argument("--forzar", action="store_true", help="Vuelve a descargar aunque ya existan.")
@@ -49,7 +53,7 @@ class Command(BaseCommand):
             except Exception as exc:
                 raise CommandError(f"No se pudo descargar {url}: {exc}")
             if len(data) < 2000 or b"<html" in data[:500].lower():
-                raise CommandError(f"La descarga de {url} no parece un archivo JavaScript válido.")
+                raise CommandError(f"La descarga de {url} no parece un archivo válido.")
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(data)
             registry[rel] = {"url": url, "sha256": hashlib.sha256(data).hexdigest(), "bytes": len(data)}

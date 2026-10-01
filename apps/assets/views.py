@@ -7,6 +7,8 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Max, Q
 from django.shortcuts import get_object_or_404, render
 
+from apps.core.merging import MERGED_SUFFIX
+
 from .models import Asset, AssetClass, AssetStatus, MovementType
 
 MOVEMENT_ICON = {
@@ -44,10 +46,10 @@ def asset_list(request):
     status = request.GET.get("estado", "")
     area = request.GET.get("area", "")
 
-    counts = dict(Asset.objects.values_list("asset_class").annotate(n=Count("id")))
+    counts = dict(Asset.objects.exclude(code__endswith=MERGED_SUFFIX).values_list("asset_class").annotate(n=Count("id")))
     tabs = [{"key": k, "label": label, "count": counts.get(k, 0)} for k, label in AssetClass.choices]
 
-    qs = Asset.objects.filter(asset_class=klass).select_related("custodian").annotate(
+    qs = Asset.objects.exclude(code__endswith=MERGED_SUFFIX).filter(asset_class=klass).select_related("custodian").annotate(
         last_move=Max("movements__occurred_at"), last_review=Max("maintenances__performed_at"),
         reviews=Count("maintenances", distinct=True), moves=Count("movements", distinct=True),
     )
@@ -67,7 +69,7 @@ def asset_list(request):
         last = max([d for d in (a.last_move, a.last_review) if d], default=None)
         rows.append({"a": a, "responsible": _responsible(a), "last": last, "tone": STATUS_TONE.get(a.status, "plan")})
 
-    in_class = Asset.objects.filter(asset_class=klass)
+    in_class = Asset.objects.exclude(code__endswith=MERGED_SUFFIX).filter(asset_class=klass)
     by_status = Counter(in_class.values_list("status", flat=True))
     kpis = [
         {"label": "Activos", "value": in_class.count()},
@@ -120,7 +122,7 @@ def asset_detail(request, code):
     kit = []
     if asset.asset_class == AssetClass.EQUIPMENT and (asset.custodian_id or asset.custodian_name):
         same = Q(custodian=asset.custodian) if asset.custodian_id else Q(custodian_name=asset.custodian_name)
-        kit = Asset.objects.filter(same, asset_class=AssetClass.EQUIPMENT).exclude(pk=asset.pk).order_by("code")
+        kit = Asset.objects.exclude(code__endswith=MERGED_SUFFIX).filter(same, asset_class=AssetClass.EQUIPMENT).exclude(pk=asset.pk).order_by("code")
 
     risks = list(asset.affected_by_risks.all()[:30]) + list(asset.risks.all()[:30])
     counts = Counter(e["kind"] for e in events)

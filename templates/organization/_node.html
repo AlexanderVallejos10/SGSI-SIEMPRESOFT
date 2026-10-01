@@ -119,11 +119,10 @@
                     <form
                         method="post"
                         action="{% url 'organization:position_archive' node.position.pk %}"
-                        onsubmit="
-                        return confirm(
-                        '¿Desactivar este puesto? Se conservará el historial.'
-                        );
-                        "
+                        data-confirmar-titulo="Desactivar puesto"
+                        data-confirmar="El puesto deja de estar disponible en el organigrama. Su historial se conserva."
+                        data-confirmar-accion="Desactivar puesto"
+                        data-confirmar-peligro
                     >
 
                         {% csrf_token %}
@@ -167,11 +166,9 @@
                 <form
                     method="post"
                     action="{% url 'organization:assignment_close' assignment.pk %}"
-                    onsubmit="
-                    return confirm(
-                    '¿Cerrar esta asignación y dejar el puesto disponible?'
-                    );
-                    "
+                    data-confirmar-titulo="Cerrar asignación"
+                    data-confirmar="La persona deja este puesto y el puesto queda disponible. La asignación queda en el historial."
+                    data-confirmar-accion="Cerrar asignación"
                 >
 
                     {% csrf_token %}

@@ -5,7 +5,7 @@ import os
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse, Http404, JsonResponse
 from django.views.decorators.clickjacking import xframe_options_sameorigin
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from apps.controls.models import Control
@@ -341,23 +341,42 @@ def artifact_table(request, artifact_id):
     return render(request, "dashboard/artifact_table.html", context)
 
 
+def _modulo_actual(entity, pk=None, nuevo=False):
+    if entity == "activos" and not nuevo:
+        if pk is None:
+            return redirect("assets:list")
+        from apps.assets.models import Asset
+
+        asset = get_object_or_404(Asset, pk=pk)
+        return redirect("assets:detail", code=asset.code)
+    if entity == "riesgos":
+        if nuevo:
+            return redirect("traceability:risk_new")
+        if pk is None:
+            return redirect("traceability:risks")
+        return redirect("traceability:risk_edit", pk=pk)
+    return None
+
+
 @login_required
 def entity_list(request, entity):
-    return entity_list_view(request, entity)
+    return _modulo_actual(entity) or entity_list_view(request, entity)
 
 
 @login_required
 def entity_detail(request, entity, pk):
-    return entity_detail_view(request, entity, pk)
+    return _modulo_actual(entity, pk) or entity_detail_view(request, entity, pk)
 
 
 @login_required
 def entity_add(request, entity):
-    return entity_form_view(request, entity, None)
+    return _modulo_actual(entity, nuevo=True) or entity_form_view(request, entity, None)
 
 
 @login_required
 def entity_edit(request, entity, pk):
+    if entity == "riesgos":
+        return _modulo_actual(entity, pk)
     return entity_form_view(request, entity, pk)
 
 

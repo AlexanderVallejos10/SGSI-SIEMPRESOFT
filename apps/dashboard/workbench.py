@@ -51,38 +51,39 @@ from apps.risks.models import (
     RiskAssessment,
     RiskTreatment,
 )
+from apps.core.etiquetas import etiqueta_campo, etiqueta_modelo, traducir_formulario
 from .product_contexts import organization_board_context
 
 
 User = get_user_model()
 
 ENTITY_REGISTRY = {
-    "usuarios": {"model": User, "title": "Usuarios y accesos", "icon": "♟", "group": "Identidades y accesos"},
-    "sistemas": {"model": CorporateSystem, "title": "Sistemas corporativos", "icon": "▦", "group": "Identidades y accesos"},
-    "accesos": {"model": SystemAccess, "title": "Accesos a sistemas", "icon": "↔", "group": "Identidades y accesos"},
-    "revisiones-acceso": {"model": AccessReview, "title": "Revisiones de acceso", "icon": "✓", "group": "Identidades y accesos"},
-    "activos": {"model": Asset, "title": "Activos y equipos", "icon": "▣", "group": "Activos y equipos"},
-    "movimientos-activo": {"model": AssetMovement, "title": "Movimientos de activos", "icon": "⇄", "group": "Activos y equipos"},
-    "mantenimientos": {"model": Maintenance, "title": "Mantenimientos", "icon": "⚒", "group": "Activos y equipos"},
-    "riesgos": {"model": Risk, "title": "Riesgos", "icon": "▲", "group": "Riesgos"},
-    "evaluaciones-riesgo": {"model": RiskAssessment, "title": "Evaluaciones de riesgo", "icon": "◇", "group": "Riesgos"},
-    "tratamientos-riesgo": {"model": RiskTreatment, "title": "Tratamientos de riesgo", "icon": "✓", "group": "Riesgos"},
-    "incidentes": {"model": Incident, "title": "Incidentes", "icon": "▲", "group": "Incidentes y vulnerabilidades"},
-    "eventos-incidente": {"model": IncidentEvent, "title": "Eventos de incidente", "icon": "•", "group": "Incidentes y vulnerabilidades"},
-    "vulnerabilidades": {"model": Vulnerability, "title": "Vulnerabilidades", "icon": "◉", "group": "Incidentes y vulnerabilidades"},
-    "documentos": {"model": Document, "title": "Documentos", "icon": "▧", "group": "Documentos y evidencias"},
-    "evidencias": {"model": Evidence, "title": "Evidencias", "icon": "◆", "group": "Documentos y evidencias"},
-    "controles": {"model": Control, "title": "Controles ISO 27001", "icon": "✓", "group": "Anexo A"},
-    "evidencia-control": {"model": ControlEvidence, "title": "Evidencias por control", "icon": "◆", "group": "Anexo A"},
-    "requisitos-iso": {"model": ISORequirement, "title": "Requisitos ISO / Sustentos", "icon": "▤", "group": "Norma ISO"},
-    "clausulas-iso": {"model": ISOClause, "title": "Cláusulas ISO", "icon": "§", "group": "Norma ISO"},
-    "auditorias": {"model": Audit, "title": "Auditorías", "icon": "▣", "group": "Auditoría y mejora"},
-    "hallazgos": {"model": Finding, "title": "Hallazgos", "icon": "!", "group": "Auditoría y mejora"},
-    "acciones-mejora": {"model": ImprovementAction, "title": "Acciones de mejora", "icon": "↗", "group": "Auditoría y mejora"},
-    "metricas-sgsi": {"model": SGSIMetric, "title": "Métricas SGSI", "icon": "▥", "group": "Reportes y métricas"},
-    "objetivos-oesi": {"model": SecurityObjective, "title": "Objetivos OESI", "icon": "◎", "group": "Reportes y métricas"},
-    "alineamientos": {"model": ObjectiveAlignment, "title": "Alineamientos estratégicos", "icon": "⊞", "group": "Reportes y métricas"},
-    "factores-estrategicos": {"model": StrategicFactor, "title": "MEFI / MEFE", "icon": "▦", "group": "Reportes y métricas"},
+    "usuarios": {"model": User, "title": "Colaboradores", "icon": "i-users", "group": "Identidades y accesos"},
+    "sistemas": {"model": CorporateSystem, "title": "Sistemas corporativos", "icon": "i-monitor", "group": "Identidades y accesos"},
+    "accesos": {"model": SystemAccess, "title": "Accesos a sistemas", "icon": "i-key", "group": "Identidades y accesos"},
+    "revisiones-acceso": {"model": AccessReview, "title": "Revisiones de acceso", "icon": "i-file-check", "group": "Identidades y accesos"},
+    "activos": {"model": Asset, "title": "Activos y equipos", "icon": "i-assets", "group": "Activos y equipos"},
+    "movimientos-activo": {"model": AssetMovement, "title": "Movimientos de activos", "icon": "i-process", "group": "Activos y equipos"},
+    "mantenimientos": {"model": Maintenance, "title": "Mantenimientos", "icon": "i-controls", "group": "Activos y equipos"},
+    "riesgos": {"model": Risk, "title": "Riesgos", "icon": "i-risk", "group": "Riesgos"},
+    "evaluaciones-riesgo": {"model": RiskAssessment, "title": "Evaluaciones de riesgo", "icon": "i-risk", "group": "Riesgos"},
+    "tratamientos-riesgo": {"model": RiskTreatment, "title": "Tratamientos de riesgo", "icon": "i-file-check", "group": "Riesgos"},
+    "incidentes": {"model": Incident, "title": "Incidentes", "icon": "i-incident", "group": "Incidentes y vulnerabilidades"},
+    "eventos-incidente": {"model": IncidentEvent, "title": "Eventos de incidente", "icon": "i-incident", "group": "Incidentes y vulnerabilidades"},
+    "vulnerabilidades": {"model": Vulnerability, "title": "Vulnerabilidades", "icon": "i-vuln", "group": "Incidentes y vulnerabilidades"},
+    "documentos": {"model": Document, "title": "Documentos", "icon": "i-docs", "group": "Documentos y evidencias"},
+    "evidencias": {"model": Evidence, "title": "Evidencias", "icon": "i-file-check", "group": "Documentos y evidencias"},
+    "controles": {"model": Control, "title": "Controles ISO 27001", "icon": "i-controls", "group": "Anexo A"},
+    "evidencia-control": {"model": ControlEvidence, "title": "Evidencias por control", "icon": "i-file-check", "group": "Anexo A"},
+    "requisitos-iso": {"model": ISORequirement, "title": "Requisitos ISO / Sustentos", "icon": "i-book", "group": "Norma ISO"},
+    "clausulas-iso": {"model": ISOClause, "title": "Cláusulas ISO", "icon": "i-book", "group": "Norma ISO"},
+    "auditorias": {"model": Audit, "title": "Auditorías", "icon": "i-audit", "group": "Auditoría y mejora"},
+    "hallazgos": {"model": Finding, "title": "Hallazgos", "icon": "i-file-missing", "group": "Auditoría y mejora"},
+    "acciones-mejora": {"model": ImprovementAction, "title": "Acciones de mejora", "icon": "i-file-check", "group": "Auditoría y mejora"},
+    "metricas-sgsi": {"model": SGSIMetric, "title": "Métricas SGSI", "icon": "i-reports", "group": "Reportes y métricas"},
+    "objetivos-oesi": {"model": SecurityObjective, "title": "Objetivos OESI", "icon": "i-reports", "group": "Reportes y métricas"},
+    "alineamientos": {"model": ObjectiveAlignment, "title": "Alineamientos estratégicos", "icon": "i-reports", "group": "Reportes y métricas"},
+    "factores-estrategicos": {"model": StrategicFactor, "title": "MEFI / MEFE", "icon": "i-reports", "group": "Reportes y métricas"},
 }
 
 MODEL_TO_ENTITY = {cfg["model"]._meta.label_lower: key for key, cfg in ENTITY_REGISTRY.items()}
@@ -216,6 +217,7 @@ def _build_form(model):
     class StyledForm(modelform_factory(model, fields=fields)):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
+            traducir_formulario(self)
             for name, field in self.fields.items():
                 field.widget.attrs.setdefault("class", "form-control")
                 if getattr(field.widget, "input_type", "") == "checkbox":
@@ -233,7 +235,7 @@ def _field_cards(obj):
             value, url = _display_value(obj, field)
         except Exception:
             continue
-        output.append({"label": str(getattr(field, "verbose_name", field.name)).title(), "value": value, "url": url})
+        output.append({"label": etiqueta_campo(field), "value": value, "url": url})
     return output
 
 def _reverse_relations(obj):
@@ -252,7 +254,7 @@ def _reverse_relations(obj):
         if not items:
             continue
         rows = [{"label": _object_label(item), "url": object_url_for_model(item)} for item in items]
-        blocks.append({"title": str(rel.related_model._meta.verbose_name_plural).title(), "count": count, "rows": rows})
+        blocks.append({"title": etiqueta_modelo(rel.related_model, plural=True), "count": count, "rows": rows})
     return blocks
 
 def entity_list_context(request, entity):
@@ -283,7 +285,7 @@ def entity_list_context(request, entity):
     return {
         "entity_key": entity,
         "entity": cfg,
-        "columns": [{"name": field.name, "label": str(field.verbose_name).title()} for field in fields],
+        "columns": [{"name": field.name, "label": etiqueta_campo(field)} for field in fields],
         "rows": rows,
         "search": search,
         "group_links": get_group_links(entity),

@@ -8,7 +8,7 @@ Editar {{ entity.title }} | SGSI
 {% block content %}
 
 <div class="breadcrumb">
-    ⌂ / Gestión /
+    <a href="/">Inicio</a> / Gestión del SGSI /
     <a
         href="{% url 'dashboard:entity_list' entity_key %}"
     >
@@ -29,9 +29,8 @@ Editar {{ entity.title }} | SGSI
         </h1>
 
         <p>
-            Los cambios se guardan directamente
-            en PostgreSQL y conservan la
-            trazabilidad del SGSI.
+            Al guardar, el cambio queda registrado
+            en la bitácora de auditoría del SGSI.
         </p>
     </div>
 

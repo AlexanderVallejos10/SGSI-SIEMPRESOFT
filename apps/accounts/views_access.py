@@ -17,6 +17,9 @@ from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
 
+from apps.core.merging import MERGED_SUFFIX
+from apps.core.visual import rive_disponible
+
 from .models import LoginAttempt, Notification, PasswordChangeRequest, UserSession
 from .presence import close_stale_sessions, connected_time, human, online_users, touch
 from .security import (
@@ -78,6 +81,7 @@ class SgsiLoginView(LoginView):
         ctx["motion"] = {key: bool(finders.find(path)) for key, path in (
             ("gsap", "vendor/gsap/gsap.min.js"), ("split", "vendor/gsap/SplitText.min.js"),
             ("draw", "vendor/gsap/DrawSVGPlugin.min.js"), ("lottie", "vendor/lottie_light.min.js"))}
+        ctx["motion"]["rive"] = rive_disponible()
         return ctx
 
     def post(self, request, *args, **kwargs):
@@ -240,7 +244,7 @@ def access_list(request):
     close_stale_sessions()
     User = get_user_model()
     q = request.GET.get("q", "").strip()
-    users = User.objects.all().prefetch_related("groups").order_by("-is_active", "first_name", "last_name")
+    users = User.objects.exclude(username__endswith=MERGED_SUFFIX).prefetch_related("groups").order_by("-is_active", "first_name", "last_name")
     if q:
         users = users.filter(Q(first_name__icontains=q) | Q(last_name__icontains=q) | Q(username__icontains=q) | Q(email__icontains=q) | Q(position__icontains=q))
     online_ids = {p.pk for p in online_users()}

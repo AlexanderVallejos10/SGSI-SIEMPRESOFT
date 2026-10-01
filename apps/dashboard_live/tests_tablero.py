@@ -6,12 +6,14 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
+from apps.core.testing import TABLERO_2026, requiere_datos_reales
 from apps.dashboard_live.importer import import_workbook
 from apps.dashboard_live.selectors import build_dashboard_context
 
 EXCEL_2026 = Path(settings.BASE_DIR) / "apps" / "dashboard" / "data" / "documentos" / "Dashboard SGSI de SIEMPRESOFT_2026.xlsx"
 
 
+@requiere_datos_reales(TABLERO_2026)
 @override_settings(MEDIA_ROOT=tempfile.mkdtemp(prefix="sgsi-test-dash-"))
 class TableroConElExcel2026(TestCase):
     @classmethod

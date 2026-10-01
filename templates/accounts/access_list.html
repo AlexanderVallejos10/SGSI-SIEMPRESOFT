@@ -61,11 +61,13 @@
     form.querySelectorAll("[data-needs-selection]").forEach((b) => { b.disabled = !n; });
   };
   form.addEventListener("change", (e) => { if (e.target.matches("[data-check-all]")) boxes().forEach((b) => { b.checked = e.target.checked; }); update(); });
-  form.addEventListener("submit", (e) => {
-    const action = e.submitter?.value;
-    const n = boxes().filter((b) => b.checked).length;
-    if (action === "credentials" && !confirm(`Se generarán credenciales nuevas para ${n} persona(s). Si ya tenían contraseña, dejará de funcionar. ¿Continuar?`)) e.preventDefault();
-    if (action === "deactivate" && !confirm(`${n} persona(s) ya no podrán ingresar. ¿Continuar?`)) e.preventDefault();
+  form.addEventListener("click", (e) => {
+    const b = e.target.closest("button[type=submit][value]");
+    if (!b) return;
+    const n = boxes().filter((x) => x.checked).length;
+    const quien = `${n} persona${n === 1 ? "" : "s"}`;
+    if (b.value === "credentials") Object.assign(b.dataset, { confirmarTitulo: "Generar credenciales", confirmar: `Se generarán credenciales nuevas para ${quien}. Si ya tenían contraseña, dejará de funcionar.`, confirmarAccion: "Generar credenciales", confirmarPeligro: "" });
+    if (b.value === "deactivate") Object.assign(b.dataset, { confirmarTitulo: "Quitar acceso", confirmar: `${quien} ya no podrá${n === 1 ? "" : "n"} ingresar al sistema.`, confirmarAccion: "Quitar acceso", confirmarPeligro: "" });
   });
 })();
 </script>

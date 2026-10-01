@@ -169,34 +169,27 @@ def ensure_source_artifact_from_upload(uploaded):
 
 
 def import_legal_rows(version):
-    # Las filas de versiones anteriores NO se borran.
-    # Solo se reemplazan las filas asociadas a ESTA misma versión,
-    # lo que mantiene completamente el histórico.
-    LegalRequirement.objects.filter(
-        version=version
-    ).delete()
-
     rows = parse_legal_requirements(
         version.source_artifact.file.path
     )
-
-    LegalRequirement.objects.bulk_create(
-        [
-            LegalRequirement(
-                version=version,
-                source_row=row["source_row"],
-                number=row["number"],
-                requirement=row["requirement"],
-                promulgated_by=row["promulgated_by"],
-                location=row["location"],
-                responsible=row["responsible"],
-                interested_parties=row["interested_parties"],
-                status=row["status"],
-            )
-            for row in rows
-        ]
-    )
-
+    fields = ("number", "requirement", "promulgated_by", "location", "responsible", "interested_parties", "status")
+    existing = {
+        item.source_row: item
+        for item in LegalRequirement.objects.filter(version=version)
+    }
+    to_create, to_update = [], []
+    for row in rows:
+        item = existing.get(row["source_row"])
+        if item is None:
+            to_create.append(LegalRequirement(version=version, source_row=row["source_row"], **{f: row[f] for f in fields}))
+        elif any(getattr(item, f) != row[f] for f in fields):
+            for f in fields:
+                setattr(item, f, row[f])
+            to_update.append(item)
+    if to_create:
+        LegalRequirement.objects.bulk_create(to_create)
+    if to_update:
+        LegalRequirement.objects.bulk_update(to_update, fields)
     return len(rows)
 
 

@@ -2,6 +2,8 @@ from pathlib import Path
 
 from django import forms
 
+from apps.core.etiquetas import traducir_formulario
+
 from .models import ProcessNode, ProcessRelation
 
 
@@ -39,6 +41,7 @@ class ProcessNodeForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        traducir_formulario(self)
         for field in self.fields.values():
             field.widget.attrs.setdefault("class", "form-control")
 
@@ -62,6 +65,7 @@ class QuickProcessForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        traducir_formulario(self)
         for field in self.fields.values():
             field.widget.attrs.setdefault("class", "form-control")
 
@@ -78,6 +82,7 @@ class ProcessRelationForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        traducir_formulario(self)
         for field in self.fields.values():
             field.widget.attrs.setdefault("class", "form-control")
 

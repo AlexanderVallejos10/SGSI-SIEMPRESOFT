@@ -1,6 +1,7 @@
 from django import forms
 from django.forms import inlineformset_factory
 
+from apps.core.etiquetas import traducir_formulario
 from apps.processes.models import ProcessNode
 from apps.risks.models import Risk
 
@@ -63,6 +64,7 @@ class RiskForm(StyledForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        traducir_formulario(self)
         if not self.instance._state.adding:
             self.initial["processes"] = self.instance.processes.all()
             assessment = self.instance.assessments.first()

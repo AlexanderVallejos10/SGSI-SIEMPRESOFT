@@ -3,6 +3,8 @@ from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.utils.text import slugify
 
+from apps.core.etiquetas import traducir_formulario
+
 from .models import (
     OrganizationalArea,
     OrganizationRelationType,
@@ -61,6 +63,7 @@ class AreaForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        traducir_formulario(self)
 
         self.fields["code"].required = False
         available = Q(area__isnull=True, is_active=True)
@@ -107,6 +110,7 @@ class PositionForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        traducir_formulario(self)
 
         self.fields["code"].required = False
 
@@ -161,6 +165,7 @@ class PositionMoveForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        traducir_formulario(self)
 
         if self.instance and self.instance.pk:
             self.fields["parent"].queryset = (
@@ -200,6 +205,7 @@ class PositionAssignmentForm(forms.ModelForm):
 
     def __init__(self, *args, position=None, **kwargs):
         super().__init__(*args, **kwargs)
+        traducir_formulario(self)
 
         self.position = position
         self.fields["user"].queryset = (

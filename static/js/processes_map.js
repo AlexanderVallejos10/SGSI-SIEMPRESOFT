@@ -447,6 +447,9 @@ document.addEventListener("DOMContentLoaded", () => {
         return lanes.find((l) => y >= l.top && y < l.top + l.height) || (y < lanes[0].top ? lanes[0] : lanes[lanes.length - 1]);
     }
     function setState(text, tone) {
+        const av = window.SGSI && window.SGSI.avisos;
+        if (av && tone === "saved") av.guardado({ texto: text });
+        if (av && tone === "error") av.error(text);
         if (!saveState) return;
         saveState.textContent = text;
         saveState.dataset.tone = tone || "";

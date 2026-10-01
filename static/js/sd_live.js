@@ -31,11 +31,12 @@
   // ---------------------------------------------------------------- avisos emergentes
   function toast(n) {
     const box = document.querySelector("[data-live-toasts]");
+    box.querySelectorAll(".tb-toast").forEach((old) => old.remove());
     const el = document.createElement(n.url ? "a" : "div");
     el.className = "tb-toast";
     if (n.url) el.href = n.url;
     el.innerHTML = `<b>${esc(n.title)}</b>${n.body ? `<span>${esc(n.body)}</span>` : ""}`;
-    el.addEventListener("click", () => markRead(n.id));
+    if (n.id) el.addEventListener("click", () => markRead(n.id));
     box.appendChild(el);
     if (!reduce) el.animate([{ opacity: 0, transform: "translateY(8px)" }, { opacity: 1, transform: "none" }], { duration: 220, easing: "ease-out" });
     setTimeout(() => {
@@ -70,7 +71,11 @@
           : '<li class="tb-empty">Sin notificaciones nuevas.</li>';
       }
     });
-    if (!first) notes.filter((n) => n.id > lastId && !n.read).reverse().forEach(toast);
+    if (!first) {
+      const nuevas = notes.filter((n) => n.id > lastId && !n.read);
+      if (nuevas.length === 1) toast(nuevas[0]);
+      else if (nuevas.length > 1) toast({ title: `${nuevas.length} notificaciones nuevas`, body: nuevas[0].title, url: cfg.dataset.list || "" });
+    }
     lastId = Math.max(lastId, data.last_id || 0);
     if ("pending_requests" in data) {
       document.querySelectorAll("[data-requests-badge]").forEach((b) => { b.textContent = data.pending_requests; b.hidden = !data.pending_requests; });

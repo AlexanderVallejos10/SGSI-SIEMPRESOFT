@@ -34,6 +34,14 @@ AUDITED_APP_LABELS = {
     "risks",
     "incidents",
     "assurance",
+    "processes",
+    "registers",
+    "governance",
+    "traceability",
+    "context41",
+    "context42",
+    "dashboard",
+    "dashboard_live",
 }
 
 

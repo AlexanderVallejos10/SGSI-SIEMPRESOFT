@@ -22,7 +22,73 @@
   });
   pass?.addEventListener("keyup", (e) => caps.classList.toggle("is-on", !!(e.getModifierState && e.getModifierState("CapsLock"))));
 
+  function startRive() {
+    const cfg = $("[data-login-config]"), canvas = $("[data-rive]"), R = window.rive;
+    if (!R || !canvas || !cfg || !cfg.dataset.riveSrc) return;
+    const REPOSO = Number(cfg.dataset.riveReposo || 3.5);
+    const inputs = {};
+    const set = (name, value) => { const i = inputs[name]; if (i) i.value = value; };
+    const fire = (name) => { const i = inputs[name]; if (i && i.fire) i.fire(); };
+    let anim = null, linea = "", pausa = null;
+    const reposar = () => { if (!anim || !linea) return; anim.pause(); anim.scrub(linea, REPOSO); };
+    const trazarUnaVez = () => {
+      if (!anim || !linea) return;
+      clearTimeout(pausa);
+      if (reduce) { reposar(); return; }
+      anim.stop(linea);
+      anim.play(linea);
+      pausa = setTimeout(reposar, REPOSO * 1000);
+    };
+    try {
+      if (cfg.dataset.riveWasm) R.RuntimeLoader.setWasmUrl(cfg.dataset.riveWasm);
+      anim = new R.Rive({
+        src: cfg.dataset.riveSrc,
+        canvas,
+        autoplay: false,
+        layout: new R.Layout({ fit: R.Fit.Contain, alignment: R.Alignment.CenterLeft }),
+        onLoad: () => {
+          anim.resizeDrawingSurfaceToCanvas();
+          const tablero = (anim.contents.artboards || []).find((a) => a.name === anim.activeArtboard) || (anim.contents.artboards || [])[0] || {};
+          const maquinas = (tablero.stateMachines || []).map((m) => m.name);
+          $("[data-mark]").classList.add("has-rive");
+          if (maquinas.includes("Ingreso") && !reduce) {
+            anim.play("Ingreso");
+            (anim.stateMachineInputs("Ingreso") || []).forEach((i) => { inputs[i.name] = i; });
+            if ($("[data-error]")) fire("error");
+            return;
+          }
+          linea = (tablero.animations || [])[0] || "";
+          trazarUnaVez();
+        },
+      });
+    } catch (e) { return; }
+    const user = $("#id_username");
+    form.addEventListener("focusin", (e) => {
+      if (!e.target.matches("input")) return;
+      set("enfocado", true);
+      set("ocultar", e.target === pass && pass.type === "password");
+    });
+    form.addEventListener("focusout", () => setTimeout(() => {
+      if (!form.contains(document.activeElement) || !document.activeElement.matches("input")) { set("enfocado", false); set("ocultar", false); }
+    }, 0));
+    user?.addEventListener("input", () => { fire("escribiendo"); set("mirar", Math.min(100, user.value.length * 4)); });
+    toggle?.addEventListener("click", () => set("ocultar", pass.type === "password"));
+    form.addEventListener("pointermove", (e) => {
+      const r = form.getBoundingClientRect();
+      set("mirar", Math.round(((e.clientX - r.left) / r.width) * 100));
+    });
+    form.addEventListener("submit", () => {
+      if (inputs.verificando) { set("verificando", true); return; }
+      if (!anim || !linea || reduce) return;
+      clearTimeout(pausa);
+      anim.stop(linea);
+      anim.play(linea);
+    });
+  }
+  startRive();
+
   function playLottie() {
+    if ($("[data-mark]")?.classList.contains("has-rive")) return true;
     const box = $("[data-lottie]"), src = $("[data-login-config]")?.dataset.lottieSrc;
     if (reduce || !window.lottie || !box || !src) return false;
     try {

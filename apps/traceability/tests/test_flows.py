@@ -66,7 +66,7 @@ class TraceabilityFlows(TestCase):
             "color": "#dcecf8",
             "sort_order": 100,
             "is_active": "on",
-            "positions_to_link": [str(self.position.pk)],
+            "positions": [str(self.position.pk)],
         }
         response = self.client.post(reverse("organization:area_edit", args=[self.area.pk]), data)
         self.assertEqual(response.status_code, 302)

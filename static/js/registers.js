@@ -49,10 +49,12 @@ document.addEventListener("DOMContentLoaded", () => {
             row.replaceWith(fresh);
             flash(fresh, true);
             refresh(data.summary);
+            window.SGSI?.avisos.guardado();
             return fresh;
         } catch (e) {
             row.classList.remove("is-saving");
             flash(row, false);
+            window.SGSI?.avisos.error("No se pudo guardar la fila");
         }
     }
 
@@ -121,7 +123,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!del) return;
         const row = del.closest(".rg-row");
         const label = row.querySelector(".rg-cell")?.textContent.trim().slice(0, 60) || "esta fila";
-        if (!window.confirm(`¿Quitar «${label}» del registro?`)) return;
+        const ok = window.SGSI ? await window.SGSI.avisos.confirmar({ titulo: "Quitar fila", texto: `Se quitará «${label}» de este registro.`, accion: "Quitar fila", peligro: true }) : window.confirm(`¿Quitar «${label}» del registro?`);
+        if (!ok) return;
         try {
             const data = await post(row.dataset.delete);
             row.classList.add("is-leaving");
@@ -163,7 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
             refresh(res.summary);
             const first = row.querySelector(".rg-cell[tabindex]");
             if (first) { row.scrollIntoView({ behavior: "smooth", block: "center" }); edit(first); }
-        } catch (e) { window.alert("No se pudo agregar la fila. Intente de nuevo."); }
+        } catch (e) { window.SGSI ? window.SGSI.avisos.error("No se pudo agregar la fila") : window.alert("No se pudo agregar la fila. Intente de nuevo."); }
     });
 
     // ---------- pestañas, búsqueda y filtro de estado ----------

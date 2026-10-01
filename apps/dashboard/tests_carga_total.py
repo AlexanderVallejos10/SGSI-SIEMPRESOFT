@@ -7,15 +7,16 @@ from django.test import TestCase, override_settings
 
 from apps.assets.models import Asset
 from apps.assurance.models import Audit, Finding
+from apps.core.testing import ACTIVOS, DOCUMENTOS, MATRIZ_2026, REGISTROS, requiere_datos_reales
 from apps.dashboard.manual_documents import resolve
 from apps.documents.models import Document
 from apps.incidents.models import Incident, Vulnerability
 from apps.organization.models import PositionAssignment
 
-
 PASOS = ["datos", "unificar", "organigrama", "documentos", "riesgos", "incidentes", "auditorias", "vulnerabilidades"]
 
 
+@requiere_datos_reales(ACTIVOS, REGISTROS, DOCUMENTOS, MATRIZ_2026)
 @override_settings(MEDIA_ROOT=tempfile.mkdtemp(prefix="sgsi-test-media-"))
 class CargaTotalDeSiempresoft(TestCase):
     """Ejecuta cargar_todo_siempresoft con los datos reales sobre una base con el organigrama por defecto."""

@@ -7,7 +7,7 @@
 {% block content %}
 
 <div class="breadcrumb">
-    ⌂ / Gestión /
+    <a href="/">Inicio</a> / Gestión del SGSI /
     {{ entity.title }}
 </div>
 
@@ -15,14 +15,13 @@
 
     <div>
         <h1>
-            {{ entity.icon }}
+            <svg class="ico" aria-hidden="true"><use href="#{{ entity.icon }}"></use></svg>
             {{ entity.title }}
         </h1>
 
         <p>
-            Datos reales administrados desde
-            PostgreSQL. Los cambios quedan
-            en el modelo del SGSI.
+            Cada cambio queda registrado en la
+            bitácora de auditoría del SGSI.
         </p>
     </div>
 
@@ -47,7 +46,7 @@
         class="{% if tab.active %}active{% endif %}"
         href="{% url 'dashboard:entity_list' tab.entity %}"
     >
-        {{ tab.icon }}
+        <svg class="ico" aria-hidden="true"><use href="#{{ tab.icon }}"></use></svg>
         {{ tab.title }}
     </a>
 

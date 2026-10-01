@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -295,6 +296,23 @@ def _record_alignment_change(request, alignment, entity_type, old, new):
     )
 
 
+def _requested_relation(request, current):
+    if "relation" not in request.POST:
+        return _next_relation(current)
+    value = request.POST["relation"].strip().upper()
+    if value not in ("P", "S", ""):
+        return None
+    return value
+
+
+def _cell(name, alignment, previous):
+    return {
+        "url": reverse(f"dashboard_live:toggle_{name}_alignment", args=[alignment.pk]),
+        "relation": alignment.relation,
+        "previous": previous,
+    }
+
+
 @login_required
 @require_POST
 def toggle_oee_alignment(request, pk):
@@ -302,8 +320,10 @@ def toggle_oee_alignment(request, pk):
         raise PermissionDenied
     alignment = get_object_or_404(OeeOsiAlignment, pk=pk, dataset__is_current=True)
     old = alignment.relation
-    new = _next_relation(old)
-
+    new = _requested_relation(request, old)
+    if new is None:
+        return JsonResponse({"ok": False, "error": "Relación no válida."}, status=400)
+    changed = []
     if new == "P":
         siblings = OeeOsiAlignment.objects.filter(
             dataset=alignment.dataset,
@@ -316,12 +336,14 @@ def toggle_oee_alignment(request, pk):
             sibling.updated_by = request.user
             sibling.save(update_fields=("relation", "updated_by", "updated_at"))
             _record_alignment_change(request, sibling, "oee_osi", sibling_old, "S")
-
-    alignment.relation = new
-    alignment.updated_by = request.user
-    alignment.save(update_fields=("relation", "updated_by", "updated_at"))
-    _record_alignment_change(request, alignment, "oee_osi", old, new)
-    return JsonResponse({"ok": True, "relation": new})
+            changed.append(_cell("oee", sibling, sibling_old))
+    if new != old:
+        alignment.relation = new
+        alignment.updated_by = request.user
+        alignment.save(update_fields=("relation", "updated_by", "updated_at"))
+        _record_alignment_change(request, alignment, "oee_osi", old, new)
+    changed.insert(0, _cell("oee", alignment, old))
+    return JsonResponse({"ok": True, "relation": new, "changed": changed})
 
 
 @login_required
@@ -331,12 +353,15 @@ def toggle_req_alignment(request, pk):
         raise PermissionDenied
     alignment = get_object_or_404(RequirementOsiAlignment, pk=pk, dataset__is_current=True)
     old = alignment.relation
-    new = _next_relation(old)
-    alignment.relation = new
-    alignment.updated_by = request.user
-    alignment.save(update_fields=("relation", "updated_by", "updated_at"))
-    _record_alignment_change(request, alignment, "req_osi", old, new)
-    return JsonResponse({"ok": True, "relation": new})
+    new = _requested_relation(request, old)
+    if new is None:
+        return JsonResponse({"ok": False, "error": "Relación no válida."}, status=400)
+    if new != old:
+        alignment.relation = new
+        alignment.updated_by = request.user
+        alignment.save(update_fields=("relation", "updated_by", "updated_at"))
+        _record_alignment_change(request, alignment, "req_osi", old, new)
+    return JsonResponse({"ok": True, "relation": new, "changed": [_cell("req", alignment, old)]})
 
 
 @login_required

@@ -30,7 +30,10 @@
         <form
             method="post"
             action="{% url 'processes:process_archive' process.pk %}"
-            onsubmit="return confirm('¿Retirar este proceso del mapa? El historial no se eliminará.');"
+            data-confirmar-titulo="Retirar proceso del mapa"
+            data-confirmar="El proceso deja de mostrarse en el mapa. Su historial y sus vínculos se conservan."
+            data-confirmar-accion="Retirar proceso"
+            data-confirmar-peligro
         >
             {% csrf_token %}
             <button class="outline-btn danger-btn" type="submit">

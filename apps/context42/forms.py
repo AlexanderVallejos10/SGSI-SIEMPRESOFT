@@ -1,5 +1,7 @@
 from django import forms
 
+from apps.core.etiquetas import traducir_formulario
+
 from .models import Context42DocumentVersion
 
 
@@ -13,6 +15,7 @@ class Context42VersionUploadForm(forms.ModelForm):
 
     def __init__(self, *args, document=None, **kwargs):
         super().__init__(*args, **kwargs)
+        traducir_formulario(self)
         self.document = document
         for field in self.fields.values():
             field.widget.attrs.setdefault("class", "form-control")

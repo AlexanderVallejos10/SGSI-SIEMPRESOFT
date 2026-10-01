@@ -6,6 +6,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment
 from openpyxl.utils import get_column_letter
 
+from apps.core.merging import MERGED_SUFFIX
 from apps.registers.exporters import BODY_FONT, BORDER, HEAD_FILL, HEAD_FONT, WRAP, _title_block
 
 from .models import Asset, AssetClass, AssetMovement, Maintenance
@@ -38,7 +39,7 @@ def _responsible(a):
 def build_inventory():
     wb = Workbook()
     wb.remove(wb.active)
-    assets = Asset.objects.select_related("custodian").order_by("code")
+    assets = Asset.objects.exclude(code__endswith=MERGED_SUFFIX).select_related("custodian").order_by("code")
 
     _sheet(wb, "INVENTARIO DE EQUIPOS", "Equipos",
            ["Código", "Tipo", "Nombre del equipo", "Modelo / placa", "Responsable", "Ubicación", "Estado", "Último inventario", "Fuente"],

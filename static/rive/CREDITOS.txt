@@ -1,0 +1,4 @@
+sgsi_escudo.riv (pantalla de ingreso y confirmación de guardado)
+Adaptacion de la animacion "Shield animation" publicada en la comunidad de Rive:
+https://rive.app/community/files/19669-37013-shield-animation/
+Licencia de la comunidad de Rive (Creative Commons Atribucion 4.0). Ajustes de SiempreSoft: colores de la marca y fondo transparente.

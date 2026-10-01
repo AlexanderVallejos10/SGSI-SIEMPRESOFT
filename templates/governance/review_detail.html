@@ -120,7 +120,7 @@
   </section>
 
   {% if can_approve %}
-  <form method="post" class="ac-panel gv-noprint" onsubmit="return confirm('Al aprobarla, la revisión queda cerrada y ya no se puede editar. ¿Aprobar?')">
+  <form method="post" class="ac-panel gv-noprint" data-confirmar-titulo="Aprobar revisión por la Dirección" data-confirmar="Al aprobarla, la revisión queda cerrada y ya no se puede editar." data-confirmar-accion="Aprobar revisión">
     {% csrf_token %}<input type="hidden" name="action" value="approve">
     <h2>Aprobación</h2><p>La aprueba el Gerente General. Queda registrada con su nombre y la fecha.</p>
     <button class="ac-btn is-primary" type="submit">Aprobar revisión</button>

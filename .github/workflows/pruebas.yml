@@ -1,0 +1,49 @@
+name: Pruebas del SGSI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: pruebas-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      db:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: sgsi
+          POSTGRES_USER: sgsi
+          POSTGRES_PASSWORD: sgsi
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U sgsi -d sgsi"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DJANGO_SETTINGS_MODULE: config.settings.dev
+      DJANGO_SECRET_KEY: solo-para-pruebas-automaticas
+      DJANGO_DEBUG: "False"
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,testserver
+      DATABASE_URL: postgresql://sgsi:sgsi@localhost:5432/sgsi
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements/base.txt
+      - name: Instalar dependencias
+        run: pip install -r requirements/base.txt
+      - name: Revisar configuración
+        run: python manage.py check
+      - name: Revisar que no falten migraciones
+        run: python manage.py makemigrations --check --dry-run
+      - name: Ejecutar pruebas
+        run: python manage.py test --noinput

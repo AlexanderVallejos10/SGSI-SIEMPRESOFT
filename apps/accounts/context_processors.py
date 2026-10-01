@@ -1,3 +1,5 @@
+from apps.core.visual import rive_disponible
+
 from .security import is_sgsi_admin
 
 
@@ -6,7 +8,7 @@ def access(request):
     if not user or not user.is_authenticated:
         return {}
     admin = is_sgsi_admin(user)
-    data = {"sgsi_admin": admin, "unread_notifications": user.notifications.filter(read_at__isnull=True).count()}
+    data = {"sgsi_admin": admin, "unread_notifications": user.notifications.filter(read_at__isnull=True).count(), "rive_aviso": rive_disponible()}
     if admin:
         from .models import PasswordChangeRequest
         data["pending_password_requests"] = PasswordChangeRequest.objects.filter(status="pending").count()

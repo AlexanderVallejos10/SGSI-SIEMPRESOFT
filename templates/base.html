@@ -17,6 +17,7 @@
     {% block extra_css %}{% endblock %}
     <link rel="stylesheet" href="{% static 'css/access.css' %}">
     <link rel="stylesheet" href="{% static 'css/sd_system.css' %}">
+    <link rel="stylesheet" href="{% static 'css/avisos.css' %}">
 </head>
 <body>
 <script>try{if(localStorage.getItem("sgsi-nav")==="collapsed"&&window.innerWidth>900)document.body.classList.add("nav-collapsed")}catch(e){}</script>
@@ -63,7 +64,7 @@
             <p class="nav-title">Gestión del SGSI</p>
             {% if sgsi_admin %}{% url 'accounts:access_list' as access_url %}<a class="nav-link{% if request.path == access_url %} is-current{% endif %}" href="{{ access_url }}" title="Accesos y permisos"><svg class="ico"><use href="#i-shield"></use></svg><span>Accesos y permisos</span>{% if pending_password_requests %}<em class="nav-badge" data-requests-badge>{{ pending_password_requests }}</em>{% else %}<em class="nav-badge" data-requests-badge hidden></em>{% endif %}</a>{% endif %}
             {% url 'accounts:connected' as connected_url %}<a class="nav-link{% if request.path == connected_url %} is-current{% endif %}" href="{{ connected_url }}" title="Conectados"><svg class="ico"><use href="#i-online"></use></svg><span>Conectados</span><em class="nav-count" data-online-count></em></a>
-            <a class="nav-link" href="{% url 'dashboard:entity_list' 'usuarios' %}" title="Usuarios y accesos"><svg class="ico"><use href="#i-users"></use></svg><span>Usuarios y accesos</span></a>
+            <a class="nav-link" href="{% url 'dashboard:entity_list' 'usuarios' %}" title="Colaboradores"><svg class="ico"><use href="#i-users"></use></svg><span>Colaboradores</span></a>
             <a class="nav-link" href="{% url 'organization:chart' %}" title="Organización"><svg class="ico"><use href="#i-org"></use></svg><span>Organización</span></a>
             <a class="nav-link" href="{% url 'processes:map' %}" title="Procesos"><svg class="ico"><use href="#i-process"></use></svg><span>Procesos</span></a>
             <a class="nav-link" href="{% url 'assets:list' %}" title="Activos y equipos"><svg class="ico"><use href="#i-assets"></use></svg><span>Activos y equipos</span></a>
@@ -141,9 +142,9 @@
 
         <main class="main-content">
             {% if messages %}
-            <div class="messages-stack">
+            <div class="messages-stack" data-mensajes>
                 {% for message in messages %}
-                <div class="system-message">{{ message }}</div>
+                <div class="system-message" data-nivel="{{ message.tags }}">{{ message }}</div>
                 {% endfor %}
             </div>
             {% endif %}
@@ -151,7 +152,9 @@
         </main>
     </section>
 </div>
+<script src="{% static 'js/sgsi_avisos.js' %}"></script>
 <script src="{% static 'js/mockup_sgsi.js' %}"></script>
+{% if rive_aviso %}<div hidden data-avisos-config data-rive-lib="{% static 'vendor/rive/rive.js' %}" data-rive-wasm="{% static 'vendor/rive/rive.wasm' %}" data-rive-escudo="{% static 'rive/sgsi_escudo.riv' %}"></div>{% endif %}
 <div hidden data-sgsi-loader-config data-lottie-lib="{% static 'vendor/lottie_light.min.js' %}" data-lottie-src="{% static 'lottie/sgsi-loader.json' %}" data-pdfjs-local="{% static 'vendor/pdfjs/pdf.min.js' %}" data-pdfjs-worker-local="{% static 'vendor/pdfjs/pdf.worker.min.js' %}"></div>
 {% include "partials/sgsi_loader.html" with overlay=True text="Cargando" %}
 <script src="{% static 'js/sgsi_loader.js' %}" defer></script>
@@ -159,7 +162,7 @@
 <script src="{% static 'js/theme.js' %}" defer></script>
 <script src="{% static 'js/pdf_viewer.js' %}" defer></script>
 <script src="{% static 'js/sd_ui.js' %}" defer></script>
-<div hidden data-live-config data-pulse="{% url 'accounts:pulse' %}" data-login="{% url 'accounts:login' %}" data-read="{% url 'accounts:notification_read' 0 %}"></div>
+<div hidden data-live-config data-pulse="{% url 'accounts:pulse' %}" data-login="{% url 'accounts:login' %}" data-read="{% url 'accounts:notification_read' 0 %}" data-list="{% url 'accounts:notifications' %}"></div>
 <div class="tb-toasts" data-live-toasts aria-live="polite"></div>
 <script src="{% static 'js/sd_live.js' %}" defer></script>
 {% block extra_js %}{% endblock %}
